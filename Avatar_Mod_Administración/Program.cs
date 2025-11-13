@@ -10,15 +10,15 @@ builder.Services.AddRazorPages();
 
 builder.Services.AddHttpClient<IRubroApiClient, RubroApiClient>(client =>
 {
-    var baseUrl = builder.Configuration["Adm_Notas:BaseUrl"]
-                  ?? throw new InvalidOperationException("Adm_Notas:BaseUrl no configurado");
+    var baseUrl = builder.Configuration["ServiciosApi:Adm_Notas"]
+                  ?? throw new InvalidOperationException("Base URL de Historial no configurada");
     client.BaseAddress = new Uri(baseUrl);
 });
 
 builder.Services.AddHttpClient<INotaApiClient, NotaApiClient>(client =>
 {
     var baseUrl = builder.Configuration["ServiciosApi:Adm_Notas"]
-                  ?? throw new InvalidOperationException("Adm_Notas:BaseUrl no configurado");
+                  ?? throw new InvalidOperationException("Base URL de Historial no configurada");
     client.BaseAddress = new Uri(baseUrl);
 });
 

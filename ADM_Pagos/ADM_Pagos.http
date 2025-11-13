@@ -1,0 +1,6 @@
+@ADM_Pagos_HostAddress = http://localhost:5070
+
+GET {{ADM_Pagos_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

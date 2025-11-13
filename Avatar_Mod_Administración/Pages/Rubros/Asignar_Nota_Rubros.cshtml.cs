@@ -7,7 +7,6 @@ namespace Avatar_Mod_Administración.Pages.Rubros
 {
     public class Asignar_Nota_RubrosModel : PageModel
     {
-
         private readonly IRubroApiClient _apiRubros;
         private readonly INotaApiClient _apiNotas;
 
@@ -29,7 +28,9 @@ namespace Avatar_Mod_Administración.Pages.Rubros
         public string? Message { get; set; }
         public string? ErrorMessage { get; set; }
 
-        // ======= Obtener rubros y notas =======
+        // ============================
+        // Obtener rubros y notas
+        // ============================
         public async Task OnGetAsync()
         {
             if (ID_Grupo == 0)
@@ -51,7 +52,7 @@ namespace Avatar_Mod_Administración.Pages.Rubros
 
             Rubros = dataR ?? new();
 
-            // Obtener notas del estudiante (solo si se ingresó)
+            // Obtener notas si se especificó estudiante
             if (ID_Estudiante != 0)
             {
                 var (okNotas, statusN, msgN, dataN) = await _apiNotas.ObtenerNotas(ID_Estudiante, ID_Grupo);
@@ -69,7 +70,9 @@ namespace Avatar_Mod_Administración.Pages.Rubros
             }
         }
 
-        // ======= Asignar nota a un rubro =======
+        // ============================
+        // Asignar o editar nota
+        // ============================
         public async Task<IActionResult> OnPostAsignarNotaAsync(int idRubro, decimal valorNota)
         {
             if (ID_Grupo == 0 || ID_Estudiante == 0)
@@ -89,7 +92,7 @@ namespace Avatar_Mod_Administración.Pages.Rubros
                 ID_Estudiante = ID_Estudiante,
                 ID_Rubro = idRubro,
                 Valor_Nota = valorNota,
-                ID_Curso = ID_Grupo // este es tu idCurso (grupo)
+                ID_Curso = ID_Grupo
             };
 
             var (ok, status, msg) = await _apiNotas.AsignarNota(request);
@@ -104,10 +107,4 @@ namespace Avatar_Mod_Administración.Pages.Rubros
             return RedirectToPage(new { ID_Grupo, ID_Estudiante });
         }
     }
-
-
-
 }
-       
-
-
