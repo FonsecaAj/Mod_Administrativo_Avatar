@@ -1,0 +1,43 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.Rubros.Obtener_DesgloseModel
+@{
+    ViewData["Title"] = "Obtener Desglose";
+}
+<h1 class="display-6 mb-4">Consultar Desglose</h1>
+
+<form method="get" class="mb-4">
+    <div class="input-group" style="max-width: 350px;">
+        <input asp-for="ID_Grupo" class="form-control" placeholder="Ingrese ID del grupo..." />
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </div>
+</form>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger mt-3">@Model.ErrorMessage</div>
+}
+else if (Model.InfoMessage != null)
+{
+    <div class="alert alert-info mt-3">@Model.InfoMessage</div>
+}
+
+@if (Model.Rubros != null)
+{
+    <table class="table table-striped shadow-sm mt-4">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre del Rubro</th>
+                <th>Porcentaje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var rubro in Model.Rubros)
+            {
+                <tr>
+                    <td>@rubro.Nombre_Rubro</td>
+                    <td>@rubro.Porcentaje %</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}

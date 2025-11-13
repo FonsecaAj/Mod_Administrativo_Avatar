@@ -1,0 +1,71 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.Rubros.Asignar_Nota_RubrosModel
+@{
+    ViewData["Title"] = "Asignar nota a rubros";
+}
+
+<h1 class="display-6 mb-4">Gestión de Notas por Rubro</h1>
+
+<!-- Buscar grupo y estudiante -->
+<form method="get" class="mb-4">
+    <div class="row g-2" style="max-width: 600px;">
+        <div class="col">
+            <input asp-for="ID_Grupo" class="form-control" placeholder="ID del grupo" />
+        </div>
+        <div class="col">
+            <input asp-for="ID_Estudiante" class="form-control" placeholder="ID del estudiante" />
+        </div>
+        <div class="col-auto">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+    </div>
+</form>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Message != null)
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (Model.Rubros != null && Model.Rubros.Any())
+{
+    <form method="post">
+        <table class="table table-striped shadow-sm mt-3">
+            <thead class="table-dark">
+                <tr>
+                    <th>Rubro</th>
+                    <th>Porcentaje</th>
+                    <th>Nota actual</th>
+                    <th>Nueva nota</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var rubro in Model.Rubros)
+                {
+                    var notaExistente = Model.Notas?.FirstOrDefault(n => n.ID_Rubro == rubro.ID_Rubro);
+                    <tr>
+                        <td>@rubro.Nombre_Rubro</td>
+                        <td>@rubro.Porcentaje %</td>
+                        <td>@(notaExistente != null ? notaExistente.Valor_Nota.ToString("0.##") : "-")</td>
+                        <td>
+                            <input type="number" step="0.01" min="0" max="100"
+                                   name="valorNota" class="form-control"
+                                   value="@(notaExistente?.Valor_Nota ?? 0)" />
+                            <input type="hidden" name="idRubro" value="@rubro.ID_Rubro" />
+                        </td>
+                        <td>
+                            <button formaction="?handler=AsignarNota"
+                                    class="btn btn-success btn-sm">
+                                💾 Guardar
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </form>
+}

@@ -1,0 +1,153 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.Academico.ListadoEstudiantesModel
+@{
+    ViewData["Title"] = "Listado de Estudiantes por Período";
+}
+
+<h1 class="display-6 mb-4">Listado de Estudiantes por Período</h1>
+
+<form method="get" class="card p-4 shadow-sm mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label">Período</label>
+            <input asp-for="Periodo" type="number" class="form-control" placeholder="Ej: 1" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Carrera</label>
+            <input asp-for="Carrera" type="text" class="form-control" placeholder="Ej: Tecnologías de la Información" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Curso</label>
+            <input asp-for="Curso" type="text" class="form-control" placeholder="Ej: Programación I" />
+        </div>
+
+        <div class="col-md-3">
+            <label class="form-label">Grupo</label>
+            <input asp-for="Grupo" type="text" class="form-control" placeholder="Ej: Programación I G1" />
+        </div>
+
+        <div class="col-md-1 d-grid">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+    </div>
+</form>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Message != null)
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (Model.Estudiantes != null && Model.Estudiantes.Any())
+{
+    <div class="d-flex justify-content-between mb-2">
+        <div>
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="exportarCSV()">📄 Exportar CSV</button>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="exportarPDF()">📕 Exportar PDF</button>
+        </div>
+        <div><strong>Total estudiantes:</strong> @Model.Estudiantes.Count()</div>
+    </div>
+
+    <table class="table table-striped shadow-sm" id="tablaEstudiantes">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Identificación</th>
+                <th>Nombre</th>
+                <th>Carrera</th>
+                <th>Curso</th>
+                <th>Grupo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in Model.Estudiantes)
+            {
+                // aplica filtros de texto (cliente)
+                if ((string.IsNullOrEmpty(Model.Carrera) || e.Carrera.Contains(Model.Carrera, StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrEmpty(Model.Curso) || e.Curso.Contains(Model.Curso, StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrEmpty(Model.Grupo) || e.Grupo.Contains(Model.Grupo, StringComparison.OrdinalIgnoreCase)))
+                {
+                    <tr>
+                        <td>@e.ID_Estudiante</td>
+                        <td>@e.Tipo_Identificacion</td>
+                        <td>@e.Identificacion</td>
+                        <td>@e.Nombre_Completo</td>
+                        <td>@e.Carrera</td>
+                        <td>@e.Curso</td>
+                        <td>@e.Grupo</td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+}
+else if (Model.Periodo != 0)
+{
+    <div class="alert alert-warning">No se encontraron registros para el período indicado.</div>
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        // ============================
+        //  Exportar CSV
+        // ============================
+        function exportarCSV() {
+            const rows = [['ID', 'Tipo', 'Identificación', 'Nombre', 'Carrera', 'Curso', 'Grupo']];
+            document.querySelectorAll('#tablaEstudiantes tbody tr').forEach(tr => {
+                const cols = [...tr.children].map(td => td.innerText);
+                rows.push(cols);
+            });
+            const csvContent = '\uFEFF' + rows.map(r => r.map(v => `"${v}"`).join(',')).join('\r\n');
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'ListadoEstudiantes.csv';
+            link.click();
+        }
+
+        // ============================
+        //  Exportar PDF (Texto real)
+        // ============================
+        async function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Título
+            doc.setFontSize(16);
+            doc.text('Listado de Estudiantes por Período', 14, 15);
+            doc.setFontSize(11);
+            doc.text('Reporte generado automáticamente', 14, 22);
+
+            // Encabezados
+            const headers = ['ID', 'Tipo', 'Identificación', 'Nombre', 'Carrera', 'Curso', 'Grupo'];
+            const colWidths = [10, 25, 30, 40, 40, 35, 25];
+            let y = 30;
+
+            doc.setFont(undefined, 'bold');
+            headers.forEach((h, i) => doc.text(h, 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
+            doc.setFont(undefined, 'normal');
+            y += 7;
+
+            // Filas
+            document.querySelectorAll('#tablaEstudiantes tbody tr').forEach(tr => {
+                const cols = [...tr.children].map(td => td.innerText);
+                cols.forEach((c, i) => doc.text(String(c), 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
+                y += 7;
+                if (y > 270) {
+                    doc.addPage();
+                    y = 20;
+                }
+            });
+
+            doc.save('ListadoEstudiantes.pdf');
+        }
+    </script>
+}

@@ -1,0 +1,136 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.Academico.HistorialAcademicoModel
+@{
+    ViewData["Title"] = "Historial Académico";
+}
+
+<h1 class="display-6 mb-4">Consulta de Promedios por Estudiante</h1>
+
+<form method="get" class="card p-4 shadow-sm mb-4">
+    <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+            <label class="form-label">Tipo de identificación</label>
+            <select name="Tipo" class="form-select">
+                <option value="">Seleccione...</option>
+                <option value="cedula" selected="@("cedula" == Model.Tipo)">Cédula</option>
+                <option value="pasaporte" selected="@("pasaporte" == Model.Tipo)">Pasaporte</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">Identificación</label>
+            <input name="Identificacion" class="form-control" value="@Model.Identificacion" placeholder="Ej: 305670111" />
+        </div>
+        <div class="col-md-2 d-grid">
+            <button type="submit" class="btn btn-primary">Buscar</button>
+        </div>
+    </div>
+</form>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Message != null)
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (Model.Historial != null && Model.Historial.Any())
+{
+    <div class="d-flex justify-content-between mb-2">
+        <div>
+            <button type="button" class="btn btn-outline-success btn-sm" onclick="exportarCSV()">📄 Exportar CSV</button>
+            <button type="button" class="btn btn-outline-danger btn-sm" onclick="exportarPDF()">📕 Exportar PDF</button>
+        </div>
+        <div><strong>Total cursos:</strong> @Model.Historial.Count()</div>
+    </div>
+
+    <table id="tablaHistorial" class="table table-striped shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Código del Curso</th>
+                <th>Nombre del Curso</th>
+                <th>Promedio</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Historial)
+            {
+                <tr>
+                    <td>@item.Codigo_Curso</td>
+                    <td>@item.Nombre_Curso</td>
+                    <td>@item.Promedio</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else if (Model.Tipo != null && Model.Identificacion != null)
+{
+    <div class="alert alert-warning">No se encontraron registros para este estudiante.</div>
+}
+
+@section Scripts {
+    <!-- jsPDF desde CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <script>
+        // ============================
+        //  Exportar CSV
+        // ============================
+                function exportarCSV() {
+            const rows = [['Código del Curso', 'Nombre del Curso', 'Promedio']];
+            document.querySelectorAll('#tablaHistorial tbody tr').forEach(tr => {
+                const cols = [...tr.children].map(td => td.innerText);
+                rows.push(cols);
+            });
+
+            // Unir todo con comas, con BOM UTF-8 al inicio
+            const csvContent = '\uFEFF' + rows.map(r => r.map(v => `"${v}"`).join(',')).join('\r\n');
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'HistorialAcademico.csv';
+            link.click();
+        }
+
+        // ============================
+        //  Exportar PDF
+        // ============================
+        async function exportarPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Título
+            doc.setFontSize(16);
+            doc.text('Historial Académico', 14, 15);
+            doc.setFontSize(11);
+            doc.text('Promedios por Estudiante', 14, 22);
+
+            // Encabezados
+            const startY = 30;
+            const headers = ['Código del Curso', 'Nombre del Curso', 'Promedio'];
+            const colWidths = [50, 100, 30];
+            let y = startY;
+
+            doc.setFont(undefined, 'bold');
+            headers.forEach((h, i) => doc.text(h, 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
+            doc.setFont(undefined, 'normal');
+            y += 7;
+
+            // Filas de datos
+            document.querySelectorAll('#tablaHistorial tbody tr').forEach(tr => {
+                const cols = [...tr.children].map(td => td.innerText);
+                cols.forEach((c, i) => doc.text(String(c), 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
+                y += 7;
+                if (y > 270) { // salto de página
+                    doc.addPage();
+                    y = 20;
+                }
+            });
+
+            doc.save('HistorialAcademico.pdf');
+        }
+    </script>
+}

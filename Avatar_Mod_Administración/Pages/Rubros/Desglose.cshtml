@@ -1,0 +1,63 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.Rubros.DesgloseModel
+@{
+    ViewData["Title"] = "Desglose de Rubros";
+}
+
+<h1 class="display-6 mb-4">Gestión de Desglose por Grupo</h1>
+
+<!-- Buscar grupo -->
+<form method="get" class="mb-4">
+    <div class="input-group" style="max-width: 350px;">
+        <input asp-for="ID_Grupo" class="form-control" placeholder="Ingrese ID del grupo..." />
+        <button type="submit" class="btn btn-primary">Buscar</button>
+    </div>
+</form>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+else if (Model.Message != null)
+{
+    <div class="alert alert-info">@Model.Message</div>
+}
+
+@if (Model.SinDesglose && Model.ID_Grupo != 0)
+{
+    <!-- Estado: SIN DESGLOSE -->
+ 
+        <div class="alert alert-warning mt-3">
+            Sin desglose: No existe desglose para este grupo.
+            <div class="mt-3">
+            <a asp-page="/Rubros/Cargar_Desglose"
+               asp-route-ID_Grupo="@Model.ID_Grupo"
+               class="btn btn-success">
+                Cargar desglose
+            </a>
+            </div>
+        </div>
+
+}
+else if (Model.Rubros != null)
+{
+    <!-- Estado: CON DESGLOSE -->
+    <table class="table table-striped shadow-sm mt-4">
+        <thead class="table-dark">
+            <tr>
+                <th>Nombre del Rubro</th>
+                <th>Porcentaje</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var r in Model.Rubros)
+            {
+                <tr>
+                    <td>@r.Nombre_Rubro</td>
+                    <td>@r.Porcentaje %</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+

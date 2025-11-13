@@ -1,0 +1,103 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.Rubros.Cargar_DesgloseModel
+@{
+    ViewData["Title"] = "Cargar Desglose";
+}
+
+<h1 class="display-6 mb-4">Cargar desglose</h1>
+
+@if (Model.ErrorMessage != null)
+{
+    <div class="alert alert-danger">@Model.ErrorMessage</div>
+}
+@if (Model.SuccessMessage != null)
+{
+    <div class="alert alert-success">@Model.SuccessMessage</div>
+}
+
+<form method="post" class="card shadow-sm p-4" id="formDesglose">
+    <div class="mb-3">
+        <label asp-for="Desglose.ID_Grupo" class="form-label">ID Grupo</label>
+        <input asp-for="Desglose.ID_Grupo" class="form-control"
+               readonly="@(Model.ID_Grupo != 0)" />
+    </div>
+
+    <h5>Rubros</h5>
+
+    <table class="table table-bordered" id="tablaRubros">
+        <thead>
+            <tr>
+                <th>Nombre del Rubro</th>
+                <th>Porcentaje</th>
+                <th style="width: 60px;"></th>
+            </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+
+    <div class="mt-2">
+        <button type="button" class="btn btn-outline-primary" id="btnAgregar">➕ Agregar rubro</button>
+    </div>
+
+    <div class="mt-4 d-flex gap-2">
+        <button type="submit" class="btn btn-success">Guardar desglose</button>
+        <a asp-page="Index" class="btn btn-outline-secondary">Volver</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        let contador = 0;
+
+        // Función para agregar un rubro dinámicamente
+        function agregarRubro(nombre = "", porcentaje = "") {
+            const tbody = document.querySelector("#tablaRubros tbody");
+
+            const fila = document.createElement("tr");
+            fila.innerHTML = `
+                <td>
+                    <input name="Desglose.Rubros[${contador}].Nombre_Rubro"
+                           value="${nombre}" class="form-control" />
+                </td>
+                <td>
+                    <input name="Desglose.Rubros[${contador}].Porcentaje"
+                           value="${porcentaje}" type="number" class="form-control" />
+                </td>
+                <td class="text-center">
+                    <button type="button" class="btn btn-danger btn-sm" onclick="eliminarFila(this)">🗑️</button>
+                </td>
+            `;
+            tbody.appendChild(fila);
+            contador++;
+        }
+
+        // Función para eliminar una fila
+        function eliminarFila(btn) {
+            const fila = btn.closest("tr");
+            fila.remove();
+            // Reindexar los campos (muy importante)
+            reindexar();
+        }
+
+        // Función para reindexar los nombres de los campos después de eliminar
+        function reindexar() {
+            const filas = document.querySelectorAll("#tablaRubros tbody tr");
+            filas.forEach((fila, i) => {
+                const inputs = fila.querySelectorAll("input");
+                inputs[0].name = `Desglose.Rubros[${i}].Nombre_Rubro`;
+                inputs[1].name = `Desglose.Rubros[${i}].Porcentaje`;
+            });
+            contador = filas.length;
+        }
+
+        // Agregar una fila inicial por defecto
+        document.addEventListener("DOMContentLoaded", () => {
+            agregarRubro();
+        });
+
+        // Agregar nueva fila al hacer clic en el botón
+        document.getElementById("btnAgregar").addEventListener("click", () => agregarRubro());
+    </script>
+}
