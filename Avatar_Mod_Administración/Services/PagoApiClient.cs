@@ -116,8 +116,85 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        public async Task<(bool ok, int statusCode, string? message, PagoDto? pago)>
-            ObtenerPagoAsync(int idPago, string token)
+        public async Task<(bool ok, int statusCode, string? message, PagoDto? pago, IEnumerable<PagoDetalleDto>? detalles)>
+    ObtenerPagoAsync(int idPago, string token) // ⭐ CAMBIO: Ahora retorna detalles
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(token))
+                    // ⭐ CAMBIO: Retorna null para los detalles también
+                    return (false, 401, "Token no proporcionado", null, null);
+
+                var tokenLimpio = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? token.Substring(7).Trim()
+                    : token.Trim();
+
+                // Si _http es compartido, es buena práctica remover y establecer el Authorization
+                _http.DefaultRequestHeaders.Remove("Authorization");
+                _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenLimpio);
+
+                var url = $"{_baseUrl}/api/pago/{idPago}";
+                _logger.LogInformation("Consultando pago en: {Url}", url);
+
+                var response = await _http.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error {Status}: {Error}", response.StatusCode, err);
+                    // ⭐ CAMBIO: Retorna null para los detalles también
+                    return (false, (int)response.StatusCode, $"Error {response.StatusCode}", null, null);
+                }
+
+                using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+                int status = json.RootElement.GetProperty("statusCode").GetInt32();
+                string message = json.RootElement.GetProperty("message").GetString() ?? "";
+
+                PagoDto? pago = null;
+                // ⭐ NUEVO: Inicializar lista de detalles
+                IEnumerable<PagoDetalleDto>? detalles = Enumerable.Empty<PagoDetalleDto>();
+
+                if (json.RootElement.TryGetProperty("responseObject", out var obj) && obj.ValueKind == JsonValueKind.Object)
+                {
+                    var options = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
+
+                    // 1. Extraer y deserializar el objeto 'pago' principal
+                    if (obj.TryGetProperty("pago", out var pagoElement) && pagoElement.ValueKind == JsonValueKind.Object)
+                    {
+                        pago = JsonSerializer.Deserialize<PagoDto>(
+                            pagoElement.GetRawText(),
+                            options
+                        );
+                    }
+                    else
+                    {
+                        _logger.LogWarning("La propiedad 'pago' no se encontró dentro de 'responseObject' para ID: {idPago}", idPago);
+                    }
+
+                    // ⭐ 2. NUEVO: Extraer y deserializar el array 'detalles'
+                    if (obj.TryGetProperty("detalles", out var detallesElement) && detallesElement.ValueKind == JsonValueKind.Array)
+                    {
+                        detalles = JsonSerializer.Deserialize<List<PagoDetalleDto>>(
+                            detallesElement.GetRawText(),
+                            options
+                        );
+                    }
+                }
+
+                // ⭐ CAMBIO: Retorna el pago y la lista de detalles
+                return (status == 200, status, message, pago, detalles);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener pago con ID {idPago}", idPago);
+                // ⭐ CAMBIO: Retorna null para los detalles también
+                return (false, 500, $"Error procesando respuesta: {ex.Message}", null, null);
+            }
+        }
+
+
+        public async Task<(bool ok, int statusCode, string? message, IEnumerable<PagoDto>? pagos)>
+            ListarPagosPorPeriodoAsync(DateTime inicio, DateTime fin, string token)
         {
             try
             {
@@ -131,8 +208,12 @@ namespace Avatar_Mod_Administración.Services
                 _http.DefaultRequestHeaders.Remove("Authorization");
                 _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenLimpio);
 
-                var url = $"{_baseUrl}/api/pago/{idPago}";
-                _logger.LogInformation("Consultando pago en: {Url}", url);
+                // Formato de fecha esperado por la API (YYYY/MM/DD) y codificación URL
+                var inicioStr = inicio.ToString("yyyy/MM/dd");
+                var finStr = fin.ToString("yyyy/MM/dd");
+
+                var url = $"{_baseUrl}/api/pago/listado?inicio={inicioStr}&fin={finStr}";
+                _logger.LogInformation("Consultando listado de pagos en: {Url}", url);
 
                 var response = await _http.GetAsync(url);
 
@@ -147,20 +228,20 @@ namespace Avatar_Mod_Administración.Services
                 int status = json.RootElement.GetProperty("statusCode").GetInt32();
                 string message = json.RootElement.GetProperty("message").GetString() ?? "";
 
-                PagoDto? pago = null;
-                if (json.RootElement.TryGetProperty("responseObject", out var obj) && obj.ValueKind == JsonValueKind.Object)
+                IEnumerable<PagoDto>? pagos = Enumerable.Empty<PagoDto>();
+                if (json.RootElement.TryGetProperty("responseObject", out var obj) && obj.ValueKind == JsonValueKind.Array)
                 {
-                    pago = JsonSerializer.Deserialize<PagoDto>(
+                    pagos = JsonSerializer.Deserialize<IEnumerable<PagoDto>>(
                         obj.GetRawText(),
                         new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
                     );
                 }
 
-                return (status == 200, status, message, pago);
+                return (status == 200, status, message, pagos);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener pago");
+                _logger.LogError(ex, "Error al listar pagos por periodo");
                 return (false, 500, $"Error procesando respuesta: {ex.Message}", null);
             }
         }
