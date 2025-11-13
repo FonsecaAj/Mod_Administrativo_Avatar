@@ -1,0 +1,72 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.ADM13_Grupo.CrearModel
+@{
+    ViewData["Title"] = "Crear Grupo";
+}
+
+<h1>Crear Grupo</h1>
+
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alert alert-danger">@Model.MensajeError</div>
+}
+
+<form method="post" class="row g-3">
+    <div class="col-md-2">
+        <label asp-for="Grupo.NumeroGrupo" class="form-label"></label>
+        <input asp-for="Grupo.NumeroGrupo" class="form-control" />
+        <span asp-validation-for="Grupo.NumeroGrupo" class="text-danger"></span>
+    </div>
+    <div class="col-md-4">
+        <label asp-for="Grupo.IdCurso" class="form-label"></label>
+        <select asp-for="Grupo.IdCurso" class="form-select">
+            <option value="">-- Seleccione un curso --</option>
+            @foreach (var c in Model.Cursos)
+            {
+                <option value="@c.ID_Curso">@c.Nombre</option>
+            }
+        </select>
+        <span asp-validation-for="Grupo.IdCurso" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Grupo.IdProfesor" class="form-label"></label>
+        <select asp-for="Grupo.IdProfesor" class="form-select">
+            <option value="">-- Seleccione un profesor --</option>
+            @foreach (var p in Model.Profesores)
+            {
+                <option value="@p.IdProfesor">@p.NombreCompleto</option>
+            }
+        </select>
+        <span asp-validation-for="Grupo.IdProfesor" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-4">
+        <label asp-for="Grupo.IdPeriodo" class="form-label"></label>
+        <select asp-for="Grupo.IdPeriodo" class="form-select">
+            <option value="">-- Seleccione un periodo --</option>
+            @foreach (var per in Model.Periodos)
+            {
+                <option value="@per.IdPeriodo">@per.Anno-@per.NumeroPeriodo</option>
+            }
+        </select>
+        <span asp-validation-for="Grupo.IdPeriodo" class="text-danger"></span>
+    </div>
+
+   
+
+    <div class="col-md-4">
+        <label asp-for="Grupo.Horario" class="form-label"></label>
+        <input asp-for="Grupo.Horario" class="form-control" placeholder="08:00 - 09:40" />
+        <span asp-validation-for="Grupo.Horario" class="text-danger"></span>
+    </div>
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Guardar</button>
+        <a asp-page="Index" class="btn btn-secondary">Volver</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}
