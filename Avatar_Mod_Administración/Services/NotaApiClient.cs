@@ -1,5 +1,7 @@
 ﻿using Avatar_Mod_Administración.Entities;
 using System.Net.Http.Headers;
+using System.Text;
+using System.Text.Json;
 
 namespace Avatar_Mod_Administración.Services
 {
@@ -12,68 +14,46 @@ namespace Avatar_Mod_Administración.Services
         public NotaApiClient(HttpClient http, IConfiguration config)
         {
             _http = http;
-
-            // Token temporal para pruebas 
-            _token = config["Adm_Notas:AccessToken"]
-                ?? throw new InvalidOperationException("Token no configurado en appsettings.json");
+            _token = config["ServiciosApi:AccessToken"] ?? throw new InvalidOperationException("Falta token de acceso");
         }
 
-        // Obtener notas por estudiante y curso
-        public async Task<(bool ok, int statusCode, string? message, List<NotaDto>? data)> ObtenerNotas(int idEstudiante, int idCurso, CancellationToken ct = default)
+        // ====== Obtener notas por estudiante y curso ======
+        public async Task<(bool ok, int statusCode, string? message, List<NotaDto>? data)> ObtenerNotas(int idEstudiante, int idCurso)
         {
-            _http.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token);
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
 
-            var response = await _http.GetAsync($"/api/rubros/obtenernotas?idEstudiante={idEstudiante}&idCurso={idCurso}", ct);
-
+            var response = await _http.GetAsync($"/api/rubros/obtenernotas?idEstudiante={idEstudiante}&idCurso={idCurso}");
             if (!response.IsSuccessStatusCode)
                 return (false, (int)response.StatusCode, $"Error {response.StatusCode}", null);
 
-            try
-            {
-                using var stream = await response.Content.ReadAsStreamAsync(ct);
-                using var doc = await System.Text.Json.JsonDocument.ParseAsync(stream, cancellationToken: ct);
+            var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
+            int status = payload.RootElement.GetProperty("statusCode").GetInt32();
+            string message = payload.RootElement.GetProperty("message").GetString() ?? "";
 
-                var root = doc.RootElement;
-                int statusCode = root.GetProperty("statusCode").GetInt32();
-                string message = root.GetProperty("message").GetString() ?? "";
-                List<NotaDto>? notas = null;
+            List<NotaDto>? notas = null;
+            if (payload.RootElement.TryGetProperty("responseObject", out var arr) && arr.ValueKind == JsonValueKind.Array)
+                notas = JsonSerializer.Deserialize<List<NotaDto>>(arr.GetRawText(),
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
-                if (root.TryGetProperty("responseObject", out var arr) && arr.ValueKind == System.Text.Json.JsonValueKind.Array)
-                {
-                    notas = System.Text.Json.JsonSerializer.Deserialize<List<NotaDto>>(arr.GetRawText());
-                }
-
-                return (statusCode == 200, statusCode, message, notas);
-            }
-            catch (Exception ex)
-            {
-                return (false, 500, $"Error al procesar respuesta: {ex.Message}", null);
-            }
+            return (status == 200, status, message, notas);
         }
 
-        // Asignar o modificar nota de rubro
-        public async Task<(bool ok, int statusCode, string? message)> AsignarNota(NotaRequest request, CancellationToken ct = default)
+        // ====== Asignar o editar nota ======
+        public async Task<(bool ok, int statusCode, string? message)> AsignarNota(NotaRequest request)
         {
-            _http.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", _token);
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
 
-            var response = await _http.PostAsJsonAsync("/api/rubros/asignarnotarubro", request, ct);
+            var json = JsonSerializer.Serialize(request);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            string? msg = null;
-            try
-            {
-                var payload = await response.Content.ReadFromJsonAsync<Dictionary<string, object?>>(cancellationToken: ct);
-                if (payload != null && payload.TryGetValue("message", out var m))
-                    msg = m?.ToString();
-            }
-            catch { }
+            var response = await _http.PostAsync("/api/rubros/asignarnotarubro", content);
+            var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
 
-            return (response.IsSuccessStatusCode, (int)response.StatusCode, msg);
+            int status = payload.RootElement.GetProperty("statusCode").GetInt32();
+            string message = payload.RootElement.GetProperty("message").GetString() ?? "";
+
+            return (status == 201 || status == 200, status, message);
         }
-
-
-
 
 
     }

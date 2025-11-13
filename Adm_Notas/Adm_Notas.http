@@ -1,0 +1,6 @@
+@Adm_Notas_HostAddress = http://localhost:5088
+
+GET {{Adm_Notas_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
