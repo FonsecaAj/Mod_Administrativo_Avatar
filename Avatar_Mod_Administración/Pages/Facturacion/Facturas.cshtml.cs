@@ -1,14 +1,22 @@
 using Avatar_Mod_Administración.Entities;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Avatar_Mod_Administración.Pages.Facturacion
 {
-    public class FacturasModel : PageModel
+    public class FacturasModel : BasePageModel
     {
         private readonly IFacturaApiClient _api;
-        public FacturasModel(IFacturaApiClient api) => _api = api;
+
+        public FacturasModel(
+            IFacturaApiClient api,
+            IAuthService authService,
+            IUsuarioService usuarioService,
+            ILogger<FacturasModel> logger)
+            : base(authService, usuarioService, logger)
+        {
+            _api = api;
+        }
 
         [BindProperty] public string Identificacion { get; set; } = string.Empty;
         [BindProperty] public int ID_Factura { get; set; }
@@ -19,13 +27,18 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
 
         public async Task<IActionResult> OnPostCrearAsync()
         {
+            var result = await InicializarSesionAsync();
+            if (result != null) return result;
+
             if (string.IsNullOrWhiteSpace(Identificacion))
             {
                 ErrorMessage = "Debe ingresar la identificación del estudiante.";
                 return Page();
             }
 
-            var (ok, status, msg, idFactura) = await _api.CrearFacturaAsync(Identificacion);
+            var token = ObtenerToken();
+            var (ok, status, msg, idFactura) = await _api.CrearFacturaAsync(Identificacion, token);
+
             if (!ok)
             {
                 ErrorMessage = msg;
@@ -38,13 +51,18 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
 
         public async Task<IActionResult> OnPostReversarAsync()
         {
+            var result = await InicializarSesionAsync();
+            if (result != null) return result;
+
             if (ID_Factura <= 0)
             {
                 ErrorMessage = "Debe ingresar un ID válido.";
                 return Page();
             }
 
-            var (ok, status, msg) = await _api.ReversarFacturaAsync(ID_Factura);
+            var token = ObtenerToken();
+            var (ok, status, msg) = await _api.ReversarFacturaAsync(ID_Factura, token);
+
             if (!ok)
             {
                 ErrorMessage = msg;
@@ -57,13 +75,18 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
 
         public async Task<IActionResult> OnPostConsultarAsync()
         {
+            var result = await InicializarSesionAsync();
+            if (result != null) return result;
+
             if (ID_Factura <= 0)
             {
                 ErrorMessage = "Debe ingresar un ID válido.";
                 return Page();
             }
 
-            var (ok, status, msg, factura) = await _api.ObtenerFacturaAsync(ID_Factura);
+            var token = ObtenerToken();
+            var (ok, status, msg, factura) = await _api.ObtenerFacturaAsync(ID_Factura, token);
+
             if (!ok)
             {
                 ErrorMessage = msg;
@@ -74,6 +97,5 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
             Message = msg;
             return Page();
         }
-
     }
 }

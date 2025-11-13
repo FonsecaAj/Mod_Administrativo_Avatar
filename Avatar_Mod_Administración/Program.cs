@@ -53,44 +53,50 @@ builder.Services.AddHttpClient<IModuloService, ModuloService>(client =>
 
 builder.Services.AddHttpClient<IRubroApiClient, RubroApiClient>(client =>
 {
-    var baseUrl = builder.Configuration["ServiciosApi:Adm_Notas"]
-                  ?? throw new InvalidOperationException("Base URL de Historial no configurada");
+    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Adm_Notas"]
+        ?? throw new InvalidOperationException("Base URL de Adm_Notas no configurada");
     client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<INotaApiClient, NotaApiClient>(client =>
 {
-    var baseUrl = builder.Configuration["ServiciosApi:Adm_Notas"]
-                  ?? throw new InvalidOperationException("Base URL de Historial no configurada");
+    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Adm_Notas"]
+        ?? throw new InvalidOperationException("Base URL de Adm_Notas no configurada");
     client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IHistorialAcademicoApiClient, HistorialAcademicoApiClient>(client =>
 {
-    var baseUrl = builder.Configuration["ServiciosApi:HistorialAcademico"]
+    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:HistorialAcademico"]
         ?? throw new InvalidOperationException("Base URL de Historial no configurada");
     client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IListadoEstudiantesApiClient, ListadoEstudiantesApiClient>(client =>
 {
-    var baseUrl = builder.Configuration["ServiciosApi:Listado_Estudiantes"]
+    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Listado_Estudiantes"]
         ?? throw new InvalidOperationException("Base URL de Listado de Estudiantes no configurada");
     client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IFacturaApiClient, FacturaApiClient>(client =>
 {
-    var baseUrl = builder.Configuration["ServiciosApi:Adm_Facturacion"]
+    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Adm_Facturacion"]
         ?? throw new InvalidOperationException("Base URL de Adm_Facturacion no configurada");
     client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IPagoApiClient, PagoApiClient>(client =>
 {
-    var baseUrl = builder.Configuration["ServiciosApi:Pagos"]
+    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Pagos"]
         ?? "http://localhost:5070";
     client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 var app = builder.Build();

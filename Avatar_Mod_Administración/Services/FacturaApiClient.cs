@@ -7,77 +7,144 @@ namespace Avatar_Mod_Administración.Services
 {
     public class FacturaApiClient : IFacturaApiClient
     {
-
         private readonly HttpClient _http;
-        private readonly string _token;
+        private readonly string _baseUrl;
+        private readonly ILogger<FacturaApiClient> _logger;
 
-        public FacturaApiClient(HttpClient http, IConfiguration config)
+        public FacturaApiClient(HttpClient http, IConfiguration config, ILogger<FacturaApiClient> logger)
         {
             _http = http;
-            _token = config["ServiciosApi:AccessToken"]
-                ?? throw new InvalidOperationException("Token no configurado en appsettings.json");
+            _logger = logger;
+            _baseUrl = config["ApiUrls:ServiciosApi:Adm_Facturacion"]
+                ?? throw new InvalidOperationException("Base URL de Adm_Facturacion no configurada");
         }
 
-        public async Task<(bool ok, int statusCode, string? message, int? idFactura)> CrearFacturaAsync(string identificacion, CancellationToken ct = default)
+        public async Task<(bool ok, int statusCode, string? message, int? idFactura)>
+            CrearFacturaAsync(string identificacion, string token, CancellationToken ct = default)
         {
-            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(token))
+                    return (false, 401, "Token no proporcionado", null);
 
-            // Enviamos un string literal en el cuerpo
-            var content = new StringContent(JsonSerializer.Serialize(identificacion), Encoding.UTF8, "application/json");
+                var tokenLimpio = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? token.Substring(7).Trim()
+                    : token.Trim();
 
-            var response = await _http.PostAsync("/api/factura", content, ct);
+                _http.DefaultRequestHeaders.Remove("Authorization");
+                _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenLimpio);
 
-            if (!response.IsSuccessStatusCode)
-                return (false, (int)response.StatusCode, $"Error {response.StatusCode}", null);
+                var url = $"{_baseUrl}/api/factura";
+                _logger.LogInformation("Creando factura en: {Url}", url);
 
-            using var stream = await response.Content.ReadAsStreamAsync(ct);
-            using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+                var content = new StringContent(JsonSerializer.Serialize(identificacion), Encoding.UTF8, "application/json");
+                var response = await _http.PostAsync(url, content, ct);
 
-            int statusCode = doc.RootElement.GetProperty("statusCode").GetInt32();
-            string message = doc.RootElement.GetProperty("message").GetString() ?? "";
-            int? id = doc.RootElement.TryGetProperty("responseObject", out var ro) ? ro.GetInt32() : null;
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error {Status}: {Error}", response.StatusCode, err);
+                    return (false, (int)response.StatusCode, $"Error {response.StatusCode}", null);
+                }
 
-            return (statusCode == 201, statusCode, message, id);
+                using var stream = await response.Content.ReadAsStreamAsync(ct);
+                using var doc = await JsonDocument.ParseAsync(stream, cancellationToken: ct);
+
+                int status = doc.RootElement.GetProperty("statusCode").GetInt32();
+                string message = doc.RootElement.GetProperty("message").GetString() ?? "";
+                int? id = doc.RootElement.TryGetProperty("responseObject", out var ro) ? ro.GetInt32() : null;
+
+                return (status == 201, status, message, id);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al crear factura");
+                return (false, 500, $"Error procesando respuesta: {ex.Message}", null);
+            }
         }
 
-        public async Task<(bool ok, int statusCode, string? message)> ReversarFacturaAsync(int idFactura, CancellationToken ct = default)
+        public async Task<(bool ok, int statusCode, string? message)>
+            ReversarFacturaAsync(int idFactura, string token, CancellationToken ct = default)
         {
-            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(token))
+                    return (false, 401, "Token no proporcionado");
 
-            var response = await _http.PutAsync($"/api/factura/{idFactura}/reversar", null, ct);
-            if (!response.IsSuccessStatusCode)
-                return (false, (int)response.StatusCode, $"Error {response.StatusCode}");
+                var tokenLimpio = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? token.Substring(7).Trim()
+                    : token.Trim();
 
-            var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
-            int status = payload.RootElement.GetProperty("statusCode").GetInt32();
-            string message = payload.RootElement.GetProperty("message").GetString() ?? "";
+                _http.DefaultRequestHeaders.Remove("Authorization");
+                _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenLimpio);
 
-            return (status == 200, status, message);
+                var url = $"{_baseUrl}/api/factura/{idFactura}/reversar";
+                _logger.LogInformation("Reversando factura en: {Url}", url);
+
+                var response = await _http.PutAsync(url, null, ct);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error {Status}: {Error}", response.StatusCode, err);
+                    return (false, (int)response.StatusCode, $"Error {response.StatusCode}");
+                }
+
+                using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
+                int status = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string message = payload.RootElement.GetProperty("message").GetString() ?? "";
+
+                return (status == 200, status, message);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al reversar factura");
+                return (false, 500, $"Error procesando respuesta: {ex.Message}");
+            }
         }
 
-        public async Task<(bool ok, int statusCode, string? message, FacturaDto? factura)> ObtenerFacturaAsync(int idFactura, CancellationToken ct = default)
+        public async Task<(bool ok, int statusCode, string? message, FacturaDto? factura)>
+            ObtenerFacturaAsync(int idFactura, string token, CancellationToken ct = default)
         {
-            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", _token);
+            try
+            {
+                if (string.IsNullOrWhiteSpace(token))
+                    return (false, 401, "Token no proporcionado", null);
 
-            var response = await _http.GetAsync($"/api/factura/{idFactura}", ct);
-            if (!response.IsSuccessStatusCode)
-                return (false, (int)response.StatusCode, $"Error {response.StatusCode}", null);
+                var tokenLimpio = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? token.Substring(7).Trim()
+                    : token.Trim();
 
-            var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
-            int status = payload.RootElement.GetProperty("statusCode").GetInt32();
-            string message = payload.RootElement.GetProperty("message").GetString() ?? "";
-            FacturaDto? factura = null;
+                _http.DefaultRequestHeaders.Remove("Authorization");
+                _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenLimpio);
 
-            if (payload.RootElement.TryGetProperty("responseObject", out var obj) && obj.ValueKind == JsonValueKind.Object)
-                    factura = JsonSerializer.Deserialize<FacturaDto>(
-                        obj.GetRawText(),
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
-                    );
+                var url = $"{_baseUrl}/api/factura/{idFactura}";
+                _logger.LogInformation("Consultando factura en: {Url}", url);
 
-            return (status == 200, status, message, factura);
+                var response = await _http.GetAsync(url, ct);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var err = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error {Status}: {Error}", response.StatusCode, err);
+                    return (false, (int)response.StatusCode, $"Error {response.StatusCode}", null);
+                }
+
+                using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
+                int status = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string message = payload.RootElement.GetProperty("message").GetString() ?? "";
+                FacturaDto? factura = null;
+
+                if (payload.RootElement.TryGetProperty("responseObject", out var obj) && obj.ValueKind == JsonValueKind.Object)
+                    factura = JsonSerializer.Deserialize<FacturaDto>(obj.GetRawText(), new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                return (status == 200, status, message, factura);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener factura");
+                return (false, 500, $"Error procesando respuesta: {ex.Message}", null);
+            }
         }
-
-
-
     }
 }
