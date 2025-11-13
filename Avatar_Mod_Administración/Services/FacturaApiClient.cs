@@ -64,7 +64,7 @@ namespace Avatar_Mod_Administración.Services
         }
 
         public async Task<(bool ok, int statusCode, string? message)>
-            ReversarFacturaAsync(int idFactura, string token, CancellationToken ct = default)
+    ReversarFacturaAsync(int idFactura, string motivo, string token, CancellationToken ct = default)
         {
             try
             {
@@ -78,27 +78,32 @@ namespace Avatar_Mod_Administración.Services
                 _http.DefaultRequestHeaders.Remove("Authorization");
                 _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenLimpio);
 
-                var url = $"{_baseUrl}/api/factura/{idFactura}/reversar";
-                _logger.LogInformation("Reversando factura en: {Url}", url);
+                // Serializar el motivo (detalle del reverso)
+                var contenido = new StringContent(JsonSerializer.Serialize(motivo), Encoding.UTF8, "application/json");
 
-                var response = await _http.PutAsync(url, null, ct);
+                var url = $"{_baseUrl}/api/factura/{idFactura}/reversar";
+                _logger.LogInformation("Reversando factura en: {Url} con motivo: {Motivo}", url, motivo);
+
+                var response = await _http.PutAsync(url, contenido, ct);
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var err = await response.Content.ReadAsStringAsync();
+                    var err = await response.Content.ReadAsStringAsync(ct);
                     _logger.LogError("Error {Status}: {Error}", response.StatusCode, err);
-                    return (false, (int)response.StatusCode, $"Error {response.StatusCode}");
+                    return (false, (int)response.StatusCode, $"Error {response.StatusCode}: {err}");
                 }
 
                 using var payload = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync(ct), cancellationToken: ct);
                 int status = payload.RootElement.GetProperty("statusCode").GetInt32();
                 string message = payload.RootElement.GetProperty("message").GetString() ?? "";
 
+                _logger.LogInformation("Factura {FacturaId} reversada correctamente. Estado {Status}: {Mensaje}", idFactura, status, message);
+
                 return (status == 200, status, message);
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al reversar factura");
+                _logger.LogError(ex, "Error al reversar factura con ID {FacturaId}", idFactura);
                 return (false, 500, $"Error procesando respuesta: {ex.Message}");
             }
         }

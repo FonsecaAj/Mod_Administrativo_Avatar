@@ -12,7 +12,7 @@
 }
 else if (Model.Message != null)
 {
-    <div class="alert alert-info">@Model.Message</div>
+    <div class="alert alert-success">@Model.Message</div>
 }
 
 <div class="row g-4">
@@ -32,12 +32,12 @@ else if (Model.Message != null)
     <div class="col-md-6">
         <div class="card p-4 shadow-sm">
             <h5>♻️ Reversar Factura</h5>
-            <form method="post" asp-page-handler="Reversar" onsubmit="return confirm('¿Reversar esta factura?');">
+            <form id="formReversar" method="post" asp-page-handler="Reversar">
                 <div class="mb-3">
                     <label class="form-label">ID Factura</label>
                     <input asp-for="ID_Factura" type="number" class="form-control" placeholder="Ej: 5" />
                 </div>
-                <button type="submit" class="btn btn-danger">Reversar</button>
+                <button type="button" class="btn btn-danger" onclick="abrirModalReversar()">Reversar</button>
             </form>
         </div>
     </div>
@@ -89,3 +89,71 @@ else if (Model.Message != null)
         </table>
     }
 </div>
+
+<!-- ==========================
+     Modal personalizado
+=========================== -->
+<div class="modal fade" id="modalReversar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmar reversión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Estás a punto de <strong>reversar la factura</strong>. Esta acción no se puede deshacer.</p>
+                <div class="mb-3">
+                    <label for="motivo" class="form-label fw-semibold">Motivo de reversión</label>
+                    <textarea id="motivo" class="form-control" rows="3" placeholder="Describa brevemente el motivo..." required></textarea>
+                </div>
+                <div id="errorModalMsg" class="text-danger small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarReversion()">Confirmar Reversión</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modal;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            modal = new bootstrap.Modal(document.getElementById("modalReversar"));
+        });
+
+        function abrirModalReversar() {
+            const id = document.querySelector("#ID_Factura").value;
+            if (!id || parseInt(id) <= 0) {
+                alert("Debe ingresar un ID de factura válido antes de continuar.");
+                return;
+            }
+            modal.show();
+        }
+
+        function confirmarReversion() {
+            const motivo = document.getElementById("motivo").value.trim();
+            if (!motivo) {
+                document.getElementById("errorModalMsg").innerText = "Por favor, indique un motivo antes de continuar.";
+                return;
+            }
+
+            // Crear un input oculto con el motivo
+            const form = document.getElementById("formReversar");
+            let hidden = document.getElementById("inputMotivo");
+            if (!hidden) {
+                hidden = document.createElement("input");
+                hidden.type = "hidden";
+                hidden.name = "Motivo";
+                hidden.id = "inputMotivo";
+                form.appendChild(hidden);
+            }
+            hidden.value = motivo;
+
+            modal.hide();
+            form.submit();
+        }
+    </script>
+}

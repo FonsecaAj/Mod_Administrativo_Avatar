@@ -20,6 +20,7 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
 
         [BindProperty] public string Identificacion { get; set; } = string.Empty;
         [BindProperty] public int ID_Factura { get; set; }
+        [BindProperty] public string? Motivo { get; set; }
 
         public FacturaDto? Factura { get; set; }
         public string? Message { get; set; }
@@ -39,13 +40,8 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
             var token = ObtenerToken();
             var (ok, status, msg, idFactura) = await _api.CrearFacturaAsync(Identificacion, token);
 
-            if (!ok)
-            {
-                ErrorMessage = msg;
-                return Page();
-            }
-
-            Message = msg;
+            Message = ok ? msg : null;
+            ErrorMessage = !ok ? msg : null;
             return Page();
         }
 
@@ -60,16 +56,17 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
                 return Page();
             }
 
-            var token = ObtenerToken();
-            var (ok, status, msg) = await _api.ReversarFacturaAsync(ID_Factura, token);
-
-            if (!ok)
+            if (string.IsNullOrWhiteSpace(Motivo))
             {
-                ErrorMessage = msg;
+                ErrorMessage = "Debe indicar un motivo de reversión.";
                 return Page();
             }
 
-            Message = msg;
+            var token = ObtenerToken();
+            var (ok, status, msg) = await _api.ReversarFacturaAsync(ID_Factura, Motivo!, token);
+
+            Message = ok ? msg : null;
+            ErrorMessage = !ok ? msg : null;
             return Page();
         }
 
@@ -87,14 +84,9 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
             var token = ObtenerToken();
             var (ok, status, msg, factura) = await _api.ObtenerFacturaAsync(ID_Factura, token);
 
-            if (!ok)
-            {
-                ErrorMessage = msg;
-                return Page();
-            }
-
+            Message = ok ? msg : null;
+            ErrorMessage = !ok ? msg : null;
             Factura = factura;
-            Message = msg;
             return Page();
         }
     }
