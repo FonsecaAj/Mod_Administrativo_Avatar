@@ -39,14 +39,14 @@ namespace Avatar_Mod_Administración.Pages
                 var sesion = _authService.ObtenerSesionActual();
                 if (sesion == null)
                 {
-                    _logger.LogWarning("⚠️ No hay sesión activa, redirigiendo a Login");
+                    _logger.LogWarning("No hay sesión activa, redirigiendo a Login");
                     return RedirectToPage("/Login");
                 }
 
                 var renovado = await _authService.RenovarSesionAutomaticaAsync();
                 if (!renovado)
                 {
-                    _logger.LogWarning("⚠️ Token expirado y no se pudo renovar");
+                    _logger.LogWarning("Token expirado y no se pudo renovar");
                     return RedirectToPage("/Login");
                 }
 
@@ -59,7 +59,7 @@ namespace Avatar_Mod_Administración.Pages
                 // Si no hay datos en sesión, obtenerlos del backend
                 if (string.IsNullOrEmpty(usuarioNombre) || string.IsNullOrEmpty(usuarioRol))
                 {
-                    _logger.LogInformation("📡 Obteniendo datos del usuario desde USR1");
+                    _logger.LogInformation("Obteniendo datos del usuario desde USR1");
 
                     var usuario = await _usuarioService.ObtenerPorEmailAsync(sesion.UsuarioID, sesion.AccessToken);
 
@@ -74,11 +74,11 @@ namespace Avatar_Mod_Administración.Pages
                         HttpContext.Session.SetString("UsuarioRol", usuarioRol);
                         HttpContext.Session.SetString("UsuarioRolId", usuarioRolIdStr);
 
-                        _logger.LogDebug("✅ Datos guardados en sesión HTTP");
+                        _logger.LogDebug("Datos guardados en sesión HTTP");
                     }
                     else
                     {
-                        _logger.LogWarning("⚠️ No se pudo obtener datos del usuario");
+                        _logger.LogWarning("No se pudo obtener datos del usuario");
                         usuarioNombre = sesion.UsuarioID;
                         usuarioRol = "Sin Rol";
                         usuarioRolIdStr = "0";
@@ -91,14 +91,14 @@ namespace Avatar_Mod_Administración.Pages
                 ViewData["UsuarioRol"] = usuarioRol ?? "Invitado";
                 ViewData["UsuarioRolId"] = usuarioRolIdStr ?? "0";
 
-                _logger.LogDebug("✅ Sesión inicializada: {Email}, Rol: {Rol} (ID: {RolId})",
+                _logger.LogDebug("Sesión inicializada: {Email}, Rol: {Rol} (ID: {RolId})",
                     sesion.UsuarioID, usuarioRol, usuarioRolIdStr);
 
                 return null;
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Error al inicializar sesión");
+                _logger.LogError(ex, "Error al inicializar sesión");
                 return RedirectToPage("/Login");
             }
         }
@@ -115,12 +115,12 @@ namespace Avatar_Mod_Administración.Pages
             {
                 await _authService.CerrarSesionAsync();
                 HttpContext.Session.Clear();
-                _logger.LogInformation("✅ Sesión cerrada");
+                _logger.LogInformation("Sesión cerrada");
                 return RedirectToPage("/Login");
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "❌ Error al cerrar sesión");
+                _logger.LogError(ex, "Error al cerrar sesión");
                 return RedirectToPage("/Login");
             }
         }
