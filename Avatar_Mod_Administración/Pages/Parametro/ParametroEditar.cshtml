@@ -1,0 +1,131 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.Parametro.ParametroEditarModel
+@{
+    ViewData["Title"] = "Editar Parámetro";
+    ViewData["Breadcrumb"] = "<li class='breadcrumb-item'><a href='/Parametro/Parametros'>Parámetros</a></li><li class='breadcrumb-item active'>Editar Parámetro</li>";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/parametros.css" asp-append-version="true" />
+}
+
+<div class="container parametros-container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <!-- Card Principal -->
+            <div class="card parametro-form-card">
+                <div class="card-header bg-warning">
+                    <h4>
+                        <i class="bi bi-pencil-square"></i>
+                        Editar Parámetro
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="parametro-form">
+                        <!-- Errores de validación -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-parametro">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div>
+                                <strong>Error de validación</strong>
+                                <p class="mb-0">Por favor, corrija los errores e intente nuevamente.</p>
+                            </div>
+                        </div>
+
+                        <!-- Información del parámetro actual -->
+                        <div class="alert alert-info alert-parametro">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <div>
+                                <strong>Editando parámetro:</strong>
+                                <code class="ms-2">@Model.Id</code>
+                                <p class="mb-0 mt-2">
+                                    <small>
+                                        <i class="bi bi-lock-fill me-1"></i>
+                                        El ID del parámetro no puede ser modificado
+                                    </small>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Campo ID (Solo lectura) -->
+                        <div class="mb-4">
+                            <label asp-for="Input.IdParametro" class="form-label">
+                                <i class="bi bi-tag-fill"></i>
+                                ID del Parámetro
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Input.IdParametro"
+                                   class="form-control"
+                                   maxlength="10"
+                                   style="text-transform: uppercase;"
+                                   readonly />
+                            <div class="form-text">
+                                <i class="bi bi-lock"></i>
+                                El ID del parámetro no puede ser modificado
+                            </div>
+                            <span asp-validation-for="Input.IdParametro" class="text-danger"></span>
+                        </div>
+
+                        <!-- Campo Valor -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Valor" class="form-label">
+                                <i class="bi bi-file-text"></i>
+                                Valor del Parámetro
+                                <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="Input.Valor"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Ingrese el nuevo valor"
+                                      maxlength="500"
+                                      autofocus></textarea>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Máximo 500 caracteres
+                            </div>
+                            <span asp-validation-for="Input.Valor" class="text-danger"></span>
+                        </div>
+
+                        <!-- Nota de campos requeridos -->
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check"></i>
+                                Los campos marcados con <span class="text-danger fw-bold">*</span> son obligatorios
+                            </small>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="form-actions">
+                            <a asp-page="/Parametro/Parametros" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-save"></i>
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card de Información de Seguridad -->
+            <div class="alert alert-warning alert-parametro mt-3">
+                <i class="bi bi-shield-exclamation"></i>
+                <div>
+                    <strong>Importante - Consideraciones de Seguridad:</strong>
+                    <ul class="mb-0 mt-2 small">
+                        <li>Los parámetros pueden contener información sensible del sistema</li>
+                        <li>Verifique cuidadosamente el valor antes de guardarlo</li>
+                        <li>Algunos parámetros pueden afectar el funcionamiento de la aplicación</li>
+                        <li>Los cambios se aplican inmediatamente después de guardar</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/parametros.js" asp-append-version="true"></script>
+}

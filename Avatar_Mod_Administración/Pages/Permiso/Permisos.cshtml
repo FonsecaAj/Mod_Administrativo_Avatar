@@ -1,0 +1,334 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.Permisos.PermisosModel
+@{
+    ViewData["Title"] = "Gestión de Permisos";
+    ViewData["Breadcrumb"] = "<li class='breadcrumb-item active'>Gestión de Permisos</li>";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/permisos.css" asp-append-version="true" />
+}
+
+<div class="container permisos-container">
+    <!-- Header -->
+    <div class="permisos-header">
+        <div>
+            <h2>
+                <i class="bi bi-shield-lock"></i>
+                Asignación de Permisos
+            </h2>
+            <p>Administre los módulos asignados a cada rol</p>
+        </div>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show alert-permisos" role="alert">
+            <i class="bi bi-check-circle-fill"></i>
+            <div>
+                <strong>¡Éxito!</strong>
+                <p class="mb-0">@TempData["Mensaje"]</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show alert-permisos" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>
+                <strong>Error</strong>
+                <p class="mb-0">@TempData["Error"]</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Card Principal -->
+    <div class="card permisos-card">
+        <div class="card-body">
+            <form method="post" id="formPermisos">
+
+                <!-- Sección de Selección de Rol -->
+                <div class="rol-selector-section">
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label for="rolSelect" class="form-label">
+                                <i class="bi bi-person-badge"></i>
+                                Seleccionar Rol
+                            </label>
+                            <select id="rolSelect"
+                                    class="form-select"
+                                    asp-for="RolSeleccionado"
+                                    required>
+                                <option value="0">-- Seleccione un rol --</option>
+                                @foreach (var rol in Model.Roles)
+                                {
+                                    <option value="@rol.IdRol">@rol.Nombre</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end gap-2">
+                            <button type="button"
+                                    id="btnCargarPermisos"
+                                    class="btn-permisos btn-cargar">
+                                <i class="bi bi-arrow-clockwise"></i>
+                                Cargar Permisos
+                            </button>
+                            <button type="submit"
+                                    id="btnGuardar"
+                                    class="btn-permisos btn-guardar"
+                                    disabled>
+                                <i class="bi bi-save"></i>
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <input type="hidden" asp-for="ModulosSeleccionados" id="modulosSeleccionados" />
+
+                <!-- Matriz de Permisos -->
+                <div id="matrizPermisos" style="display: none;">
+                    <div class="permisos-divider"></div>
+
+                    <!-- Header de la Matriz -->
+                    <div class="matriz-header">
+                        <h5>
+                            <i class="bi bi-list-check"></i>
+                            Módulos Disponibles
+                        </h5>
+                        <div class="btn-group">
+                            <button type="button"
+                                    class="btn-seleccion btn-seleccionar-todos"
+                                    id="btnSeleccionarTodos">
+                                <i class="bi bi-check-all"></i>
+                                Seleccionar Todos
+                            </button>
+                            <button type="button"
+                                    class="btn-seleccion btn-deseleccionar-todos"
+                                    id="btnDeseleccionarTodos">
+                                <i class="bi bi-x-lg"></i>
+                                Deseleccionar Todos
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Tabla de Módulos -->
+                    @if (Model.Modulos.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover table-permisos">
+                                <thead>
+                                    <tr>
+                                        <th width="80" class="text-center">
+                                            <i class="bi bi-check2-square"></i>
+                                            Acceso
+                                        </th>
+                                        <th>
+                                            <i class="bi bi-grid-3x3-gap"></i>
+                                            Módulo
+                                        </th>
+                                        <th width="120">
+                                            <i class="bi bi-toggle-on"></i>
+                                            Estado
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tablaModulos">
+                                    @foreach (var modulo in Model.Modulos)
+                                    {
+                                        <tr>
+                                            <td class="text-center">
+                                                <div class="form-check d-flex justify-content-center">
+                                                    <input class="form-check-input checkbox-modulo"
+                                                           type="checkbox"
+                                                           value="@modulo.IdModulo"
+                                                           id="modulo_@modulo.IdModulo"
+                                                           data-nombre="@modulo.Nombre">
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <label for="modulo_@modulo.IdModulo" class="form-check-label">
+                                                    <i class="bi bi-box me-2 text-muted"></i>
+                                                    @modulo.Nombre
+                                                </label>
+                                            </td>
+                                            <td>
+                                                @if (modulo.Activo)
+                                                {
+                                                    <span class="badge-estado badge-activo">
+                                                        <i class="bi bi-check-circle me-1"></i>
+                                                        Activo
+                                                    </span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge-estado badge-inactivo">
+                                                        <i class="bi bi-x-circle me-1"></i>
+                                                        Inactivo
+                                                    </span>
+                                                }
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="bi bi-inbox"></i>
+                            <span class="text-muted">
+                                No hay módulos disponibles para asignar.
+                            </span>
+                        </div>
+                    }
+
+                    <!-- Resumen de Selección -->
+                    <div id="resumenSeleccion" class="resumen-seleccion" style="display: none;">
+                        <i class="bi bi-info-circle-fill"></i>
+                        <div>
+                            <strong>Módulos seleccionados:</strong>
+                            <span class="contador" id="contadorSeleccionados">0</span>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/permisos.js" asp-append-version="true"></script>
+    <script>
+        console.log('🚀 Iniciando página de permisos');
+
+        let permisosOriginales = [];
+
+        // Handler para cargar permisos
+        document.getElementById('btnCargarPermisos').addEventListener('click', async function() {
+            const rolSelect = document.getElementById('rolSelect');
+            const rolId = rolSelect.value;
+
+            console.log('🔍 Valor seleccionado:', rolId);
+
+            if (!rolId || rolId === '0') {
+                if (typeof PermisosUtils !== 'undefined') {
+                    PermisosUtils.showNotification('Debe seleccionar un rol válido', 'danger');
+                } else {
+                    alert('Debe seleccionar un rol válido');
+                }
+                rolSelect.focus();
+                return;
+            }
+
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Cargando...';
+
+            try {
+                console.log(`📡 Solicitando permisos para rol ${rolId}`);
+
+                const response = await fetch(`/api/permisos/${rolId}`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                console.log(`📥 Respuesta recibida: ${response.status}`);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const permisos = await response.json();
+                console.log('✅ Permisos obtenidos:', permisos);
+
+                permisosOriginales = permisos.map(p => p.idModulo);
+                console.log('📋 IDs a marcar:', permisosOriginales);
+
+                // Desmarcar todos
+                document.querySelectorAll('.checkbox-modulo').forEach(cb => cb.checked = false);
+
+                // Marcar los asignados
+                let marcados = 0;
+                permisosOriginales.forEach(idModulo => {
+                    const checkbox = document.getElementById(`modulo_${idModulo}`);
+                    if (checkbox) {
+                        checkbox.checked = true;
+                        marcados++;
+                    }
+                });
+
+                console.log(`✅ Marcados ${marcados} checkboxes`);
+
+                // Mostrar matriz
+                document.getElementById('matrizPermisos').style.display = 'block';
+                document.getElementById('btnGuardar').disabled = false;
+
+                actualizarResumen();
+
+                if (typeof PermisosUtils !== 'undefined') {
+                    PermisosUtils.showNotification('Permisos cargados correctamente', 'success');
+                }
+
+            } catch (error) {
+                console.error('❌ Error:', error);
+                if (typeof PermisosUtils !== 'undefined') {
+                    PermisosUtils.showNotification('Error al cargar permisos', 'danger');
+                } else {
+                    alert('Error al cargar permisos');
+                }
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = originalText;
+            }
+        });
+
+        // Seleccionar todos
+        document.getElementById('btnSeleccionarTodos').addEventListener('click', function() {
+            document.querySelectorAll('.checkbox-modulo').forEach(cb => cb.checked = true);
+            actualizarResumen();
+        });
+
+        // Deseleccionar todos
+        document.getElementById('btnDeseleccionarTodos').addEventListener('click', function() {
+            document.querySelectorAll('.checkbox-modulo').forEach(cb => cb.checked = false);
+            actualizarResumen();
+        });
+
+        // Change en checkboxes
+        document.querySelectorAll('.checkbox-modulo').forEach(cb => {
+            cb.addEventListener('change', actualizarResumen);
+        });
+
+        // Submit del formulario
+        document.getElementById('formPermisos').addEventListener('submit', function(e) {
+            const rolId = document.getElementById('rolSelect').value;
+
+            if (!rolId || rolId === '0') {
+                e.preventDefault();
+                alert('Debe seleccionar un rol');
+                return false;
+            }
+
+            const checkboxes = document.querySelectorAll('.checkbox-modulo:checked');
+            const ids = Array.from(checkboxes).map(cb => cb.value);
+            document.getElementById('modulosSeleccionados').value = ids.join(',');
+
+            console.log('💾 Guardando:', { rolId, modulos: ids });
+        });
+
+        function actualizarResumen() {
+            const count = document.querySelectorAll('.checkbox-modulo:checked').length;
+            document.getElementById('contadorSeleccionados').textContent = count;
+            document.getElementById('resumenSeleccion').style.display = count > 0 ? 'flex' : 'none';
+        }
+
+        console.log('✅ Página de permisos lista');
+    </script>
+}

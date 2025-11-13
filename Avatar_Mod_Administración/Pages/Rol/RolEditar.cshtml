@@ -1,0 +1,137 @@
+﻿@page
+@using Avatar_Mod_Administración.Entities
+@model Avatar_Mod_Administración.Pages.Rol.RolEditarModel
+@{
+    ViewData["Title"] = "Editar Rol";
+    ViewData["Breadcrumb"] = "<li class='breadcrumb-item'><a href='/Rol/Roles'>Roles</a></li><li class='breadcrumb-item active'>Editar Rol</li>";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/roles.css" asp-append-version="true" />
+}
+
+<div class="container roles-container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <!-- Card Principal -->
+            <div class="card rol-form-card">
+                <div class="card-header bg-warning">
+                    <h4>
+                        <i class="bi bi-pencil-square"></i>
+                        Editar Rol
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="rol-form">
+                        <!-- Errores de validación -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-rol">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div>
+                                <strong>Error de validación</strong>
+                                <p class="mb-0">Por favor, corrija los errores e intente nuevamente.</p>
+                            </div>
+                        </div>
+
+                        <!-- Información del rol actual -->
+                        <div class="alert alert-info alert-rol">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <div>
+                                <strong>Editando rol ID: @Model.Id</strong>
+                                @if (!string.IsNullOrEmpty(Model.NombreOriginal))
+                                {
+                                    <p class="mb-0 mt-1">
+                                        <small>
+                                            <i class="bi bi-arrow-right me-1"></i>
+                                            Nombre actual: <strong class="text-primary">@Model.NombreOriginal</strong>
+                                        </small>
+                                    </p>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Campo Nombre -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Nombre" class="form-label">
+                                <i class="bi bi-person-badge"></i>
+                                Nombre del Rol
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Input.Nombre"
+                                   class="form-control"
+                                   placeholder="Ingrese el nuevo nombre"
+                                   maxlength="50"
+                                   autofocus />
+                            <div class="form-text">
+                                <i class="bi bi-check-circle text-success"></i>
+                                Solo letras y espacios (3-50 caracteres)
+                            </div>
+                            <span asp-validation-for="Input.Nombre" class="text-danger"></span>
+                        </div>
+
+                        <!-- Nota de campos requeridos -->
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check"></i>
+                                Los campos marcados con <span class="text-danger fw-bold">*</span> son obligatorios
+                            </small>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="form-actions">
+                            <a asp-page="/Rol/Roles" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning">
+                                <i class="bi bi-save"></i>
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card de Información -->
+            <div class="card info-rules-card">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-lightbulb-fill"></i>
+                        Reglas de validación
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>El nombre debe tener entre <strong>3 y 50 caracteres</strong></li>
+                        <li>Solo se permiten <strong>letras</strong> (incluyendo acentos y ñ) y <strong>espacios</strong></li>
+                        <li>No se permiten <strong>números</strong> ni <strong>caracteres especiales</strong></li>
+                        <li>No se permiten <strong>espacios consecutivos</strong></li>
+                        <li>El nombre debe ser <strong>único</strong> en el sistema</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/roles.js" asp-append-version="true"></script>
+
+    <script>
+        // Preview del nombre en tiempo real
+        document.addEventListener('DOMContentLoaded', function() {
+            const nombreInput = document.querySelector('input[name="Input.Nombre"]');
+
+            if (nombreInput) {
+                // Mostrar el valor original en consola para debugging
+                console.log('Nombre original:', '@Model.NombreOriginal');
+
+                nombreInput.addEventListener('input', function() {
+                    // Animación suave al escribir
+                    this.style.animation = 'none';
+                    setTimeout(() => {
+                        this.style.animation = 'fadeIn 0.3s ease';
+                    }, 10);
+                });
+            }
+        });
+    </script>
+}
