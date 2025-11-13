@@ -21,7 +21,7 @@ namespace Avatar_Mod_Administración.Pages.Pagos
         [BindProperty] public int ID_Factura { get; set; }
         [BindProperty] public int ID_Pago { get; set; }
         [BindProperty] public string MetodoPago { get; set; } = "Tarjeta";
-
+        [BindProperty] public string? Motivo { get; set; }
         public PagoDto? Pago { get; set; }
         public string? Message { get; set; }
         public string? ErrorMessage { get; set; }
@@ -62,8 +62,17 @@ namespace Avatar_Mod_Administración.Pages.Pagos
                 return Page();
             }
 
+            
+            if (string.IsNullOrWhiteSpace(Motivo))
+            {
+                ErrorMessage = "Debe indicar un motivo de reversión.";
+                return Page();
+            }
+
             var token = ObtenerToken();
-            var (ok, status, msg) = await _api.ReversarPagoAsync(ID_Pago, token);
+
+            
+            var (ok, status, msg) = await _api.ReversarPagoAsync(ID_Pago, Motivo!, token);
 
             if (!ok)
             {

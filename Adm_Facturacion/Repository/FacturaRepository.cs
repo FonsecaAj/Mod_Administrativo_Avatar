@@ -49,7 +49,7 @@ namespace Adm_Facturacion.Repository
         {
             using var connection = _dbConnectionFactory.CreateConnection();
 
-            // 🔹 Abrimos la conexión antes de usarla
+            // Abrimos la conexión antes de usarla
             if (connection is Microsoft.Data.SqlClient.SqlConnection sqlConn)
                 await sqlConn.OpenAsync();
             else

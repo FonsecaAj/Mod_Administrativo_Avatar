@@ -72,7 +72,7 @@ namespace Avatar_Mod_Administración.Services
         }
 
         public async Task<(bool ok, int statusCode, string? message)>
-            ReversarPagoAsync(int idPago, string token)
+            ReversarPagoAsync(int idPago, string motivo, string token)
         {
             try
             {
@@ -86,10 +86,13 @@ namespace Avatar_Mod_Administración.Services
                 _http.DefaultRequestHeaders.Remove("Authorization");
                 _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenLimpio);
 
-                var url = $"{_baseUrl}/api/pago/{idPago}/reversar";
-                _logger.LogInformation("Reversando pago en: {Url}", url);
+                // Serializar el motivo (detalle del reverso)
+                var contenido = new StringContent(JsonSerializer.Serialize(motivo), Encoding.UTF8, "application/json");
 
-                var response = await _http.PutAsync(url, null);
+                var url = $"{_baseUrl}/api/pago/{idPago}/reversar";
+                _logger.LogInformation("Reversando pago en: {Url} con motivo: {Motivo}", url, motivo); // Log de motivo
+
+                var response = await _http.PutAsync(url, contenido); // Se envía el contenido
 
                 if (!response.IsSuccessStatusCode)
                 {
@@ -101,6 +104,8 @@ namespace Avatar_Mod_Administración.Services
                 using var json = await JsonDocument.ParseAsync(await response.Content.ReadAsStreamAsync());
                 int status = json.RootElement.GetProperty("statusCode").GetInt32();
                 string message = json.RootElement.GetProperty("message").GetString() ?? "";
+
+                _logger.LogInformation("Pago {PagoId} reversado correctamente. Estado {Status}: {Mensaje}", idPago, status, message);
 
                 return (status == 200, status, message);
             }

@@ -12,7 +12,7 @@
 }
 else if (Model.Message != null)
 {
-    <div class="alert alert-info">@Model.Message</div>
+    <div class="alert alert-success">@Model.Message</div>
 }
 
 <div class="row g-4">
@@ -40,12 +40,12 @@ else if (Model.Message != null)
     <div class="col-md-6">
         <div class="card p-4 shadow-sm">
             <h5>♻️ Reversar Pago</h5>
-            <form method="post" asp-page-handler="Reversar" onsubmit="return confirm('¿Desea reversar este pago?');">
+            <form id="formReversarPago" method="post" asp-page-handler="Reversar">
                 <div class="mb-3">
                     <label class="form-label">ID Pago</label>
                     <input asp-for="ID_Pago" type="number" class="form-control" placeholder="Ej: 4" />
                 </div>
-                <button type="submit" class="btn btn-danger">Reversar Pago</button>
+                <button type="button" class="btn btn-danger" onclick="abrirModalReversarPago()">Reversar Pago</button>
             </form>
         </div>
     </div>
@@ -73,3 +73,83 @@ else if (Model.Message != null)
         </table>
     }
 </div>
+
+<div class="modal fade" id="modalReversarPago" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmar reversión de Pago</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Estás a punto de **reversar el pago**. Esta acción no se puede deshacer.</p>
+                <div class="mb-3">
+                    <label for="motivoPago" class="form-label fw-semibold">Motivo de reversión</label>
+                    <textarea id="motivoPago" class="form-control" rows="3" placeholder="Describa brevemente el motivo..." required></textarea>
+                </div>
+                <div id="errorModalMsgPago" class="text-danger small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarReversionPago()">Confirmar Reversión</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalPago;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Inicializar el modal de pago
+            modalPago = new bootstrap.Modal(document.getElementById("modalReversarPago"));
+        });
+
+        // Función para abrir el modal de reversión de pago
+        function abrirModalReversarPago() {
+            // Asegurarse de que se haya ingresado un ID de pago válido
+            const idInput = document.querySelector("#ID_Pago");
+            const id = idInput ? idInput.value : null;
+
+            if (!id || parseInt(id) <= 0) {
+                alert("Debe ingresar un ID de pago válido antes de continuar.");
+                return;
+            }
+
+            // Limpiar campos y mensajes de error
+            document.getElementById("motivoPago").value = "";
+            document.getElementById("errorModalMsgPago").innerText = "";
+
+            // Mostrar el modal
+            modalPago.show();
+        }
+
+        // Función para confirmar la reversión de pago y enviar el formulario con el motivo
+        function confirmarReversionPago() {
+            const motivo = document.getElementById("motivoPago").value.trim();
+            if (!motivo) {
+                document.getElementById("errorModalMsgPago").innerText = "Por favor, indique un motivo antes de continuar.";
+                return;
+            }
+
+            
+            const form = document.getElementById("formReversarPago");
+
+            
+            let hidden = document.getElementById("inputMotivoPago");
+            if (!hidden) {
+                hidden = document.createElement("input");
+                hidden.type = "hidden";
+                hidden.name = "Motivo"; 
+                hidden.id = "inputMotivoPago";
+                form.appendChild(hidden);
+            }
+            hidden.value = motivo;
+
+            
+            modalPago.hide();
+            form.submit();
+        }
+    </script>
+}
