@@ -15,6 +15,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Estudiantes_Matriculados", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Adm_Facturacion", "Adm_Facturacion\Adm_Facturacion.csproj", "{C0C8204B-DFF6-BCA4-D9FE-E84235BDB71C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Adm_Pagos", "ADM_Pagos\Adm_Pagos.csproj", "{FB87C9C5-DFC0-F28E-7909-54BE14D57D66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -45,6 +47,10 @@ Global
 		{C0C8204B-DFF6-BCA4-D9FE-E84235BDB71C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C0C8204B-DFF6-BCA4-D9FE-E84235BDB71C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C0C8204B-DFF6-BCA4-D9FE-E84235BDB71C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB87C9C5-DFC0-F28E-7909-54BE14D57D66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB87C9C5-DFC0-F28E-7909-54BE14D57D66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB87C9C5-DFC0-F28E-7909-54BE14D57D66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB87C9C5-DFC0-F28E-7909-54BE14D57D66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
