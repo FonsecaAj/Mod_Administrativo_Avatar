@@ -25,7 +25,7 @@ namespace Avatar_Mod_Administración.Pages.Parametro
 
         public int TotalPaginas { get; set; }
         public int TotalParametros { get; set; }
-        private const int ParametrosPorPagina = 30;
+        private const int ParametrosPorPagina = 5;
 
         public async Task<IActionResult> OnGetAsync(int pagina = 1)
         {
