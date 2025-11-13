@@ -1,0 +1,279 @@
+﻿@page
+@using Avatar_Mod_Administración.Entities
+@model Avatar_Mod_Administración.Pages.Parametro.ParametrosModel
+@{
+    ViewData["Title"] = "Administración de Parámetros";
+    ViewData["Breadcrumb"] = "<li class='breadcrumb-item active'>Parámetros</li>";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/parametros.css" asp-append-version="true" />
+}
+
+<div class="container parametros-container">
+    <!-- Header -->
+    <div class="parametros-header">
+        <h2>
+            <i class="bi bi-gear-fill"></i>
+            Administración de Parámetros
+        </h2>
+        <a asp-page="/Parametro/ParametroCrear" class="btn-crear-parametro">
+            <i class="bi bi-plus-circle"></i>
+            Crear Parámetro
+        </a>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show alert-parametro" role="alert">
+            <i class="bi bi-check-circle-fill"></i>
+            <div>
+                <strong>¡Éxito!</strong>
+                <p class="mb-0">@TempData["Mensaje"]</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show alert-parametro" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>
+                <strong>Error</strong>
+                <p class="mb-0">@TempData["Error"]</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Tabla de Parámetros -->
+    <div class="card parametros-table-card">
+        <div class="card-body">
+            @if (Model.Parametros.Count > 0)
+            {
+                <div class="mb-3 px-3 pt-3">
+                    <span class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Mostrando <strong>@Model.Parametros.Count</strong>
+                        @(Model.Parametros.Count == 1 ? "parámetro" : "parámetros")
+                        en esta página
+                    </span>
+                </div>
+            }
+
+            <div class="table-responsive">
+                <table class="table table-hover table-parametros mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID Parámetro</th>
+                            <th>Valor</th>
+                            <th>Fecha Creación</th>
+                            <th>Última Modificación</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Parametros.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="5" class="empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <span class="text-muted">No se encontraron parámetros registrados</span>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var parametro in Model.Parametros)
+                            {
+                                <tr>
+                                    <td>
+                                        <code>@parametro.IdParametro</code>
+                                    </td>
+                                    <td>
+                                        @if (parametro.Valor.Length > 50)
+                                        {
+                                            <span class="valor-truncado"
+                                                  data-bs-toggle="tooltip"
+                                                  data-bs-html="true"
+                                                  title="<strong>Valor completo:</strong><br>@parametro.Valor">
+                                                @parametro.Valor.Substring(0, 50)...
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            @parametro.Valor
+                                        }
+                                    </td>
+                                    <td>
+                                        <i class="bi bi-calendar-plus text-success me-1"></i>
+                                        @parametro.FechaCreacion.ToString("dd/MM/yyyy HH:mm")
+                                    </td>
+                                    <td>
+                                        @if (parametro.FechaModificacion.HasValue)
+                                        {
+                                            <i class="bi bi-calendar-check text-warning me-1"></i>
+                                            @parametro.FechaModificacion.Value.ToString("dd/MM/yyyy HH:mm")
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">
+                                                <i class="bi bi-dash-circle me-1"></i>Sin modificaciones
+                                            </span>
+                                        }
+                                    </td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <a asp-page="/Parametro/ParametroEditar"
+                                               asp-route-id="@parametro.IdParametro"
+                                               class="btn-action btn-warning"
+                                               data-bs-toggle="tooltip"
+                                               title="Editar parámetro">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <button type="button"
+                                                    class="btn-action btn-danger"
+                                                    onclick="confirmarEliminacion('@parametro.IdParametro')"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Eliminar parámetro">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginación -->
+            @if (Model.TotalPaginas > 1)
+            {
+                <div class="pagination-container">
+                    <nav aria-label="Paginación de parámetros">
+                        <ul class="pagination justify-content-center mb-0">
+                            <!-- Botón Anterior -->
+                            <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                                <a class="page-link"
+                                   asp-page="/Parametro/Parametros"
+                                   asp-route-pagina="@(Model.PaginaActual - 1)"
+                                   aria-label="Anterior">
+                                    <i class="bi bi-chevron-left"></i>
+                                    <span class="d-none d-md-inline ms-1">Anterior</span>
+                                </a>
+                            </li>
+
+                            <!-- Primera página -->
+                            @if (Model.PaginaActual > 3)
+                            {
+                                <li class="page-item">
+                                    <a class="page-link" asp-page="/Parametro/Parametros" asp-route-pagina="1">1</a>
+                                </li>
+                                @if (Model.PaginaActual > 4)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                            }
+
+                            <!-- Páginas alrededor de la actual -->
+                            @for (int i = Math.Max(1, Model.PaginaActual - 2); i <= Math.Min(Model.TotalPaginas, Model.PaginaActual + 2); i++)
+                            {
+                                <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                                    <a class="page-link" asp-page="/Parametro/Parametros" asp-route-pagina="@i">
+                                        @i
+                                        @if (i == Model.PaginaActual)
+                                        {
+                                            <span class="visually-hidden">(actual)</span>
+                                        }
+                                    </a>
+                                </li>
+                            }
+
+                            <!-- Última página -->
+                            @if (Model.PaginaActual < Model.TotalPaginas - 2)
+                            {
+                                @if (Model.PaginaActual < Model.TotalPaginas - 3)
+                                {
+                                    <li class="page-item disabled">
+                                        <span class="page-link">...</span>
+                                    </li>
+                                }
+                                <li class="page-item">
+                                    <a class="page-link" asp-page="/Parametro/Parametros" asp-route-pagina="@Model.TotalPaginas">@Model.TotalPaginas</a>
+                                </li>
+                            }
+
+                            <!-- Botón Siguiente -->
+                            <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                                <a class="page-link"
+                                   asp-page="/Parametro/Parametros"
+                                   asp-route-pagina="@(Model.PaginaActual + 1)"
+                                   aria-label="Siguiente">
+                                    <span class="d-none d-md-inline me-1">Siguiente</span>
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            </li>
+                        </ul>
+                    </nav>
+
+                    <!-- Información de paginación -->
+                    <div class="pagination-info">
+                        <i class="bi bi-info-circle"></i>
+                        Mostrando página <strong>@Model.PaginaActual</strong> de <strong>@Model.TotalPaginas</strong>
+                        (<strong>@Model.TotalParametros</strong> @(Model.TotalParametros == 1 ? "parámetro" : "parámetros") en total)
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+<!-- Modal de Eliminación -->
+<div class="modal fade modal-eliminar" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEliminarLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Confirmar eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">
+                    ¿Está seguro que desea eliminar el parámetro
+                    <code id="idEliminar"></code>?
+                </p>
+
+                <p class="text-danger mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Esta acción no se puede deshacer.</strong>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <form method="post" id="formEliminar">
+                    <input type="hidden" name="id" id="idInput" />
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle"></i>
+                            Cancelar
+                        </button>
+                        <button type="submit" asp-page-handler="Eliminar" class="btn btn-danger">
+                            <i class="bi bi-trash-fill"></i>
+                            Eliminar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/parametros.js" asp-append-version="true"></script>
+}

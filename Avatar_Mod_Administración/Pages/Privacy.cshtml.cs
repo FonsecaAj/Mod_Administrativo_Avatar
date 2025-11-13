@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 
-namespace Avatar_Mod_Administración.Pages
+namespace Modulo_Admin.Pages
 {
     public class PrivacyModel : PageModel
     {

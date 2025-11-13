@@ -44,11 +44,41 @@ app.MapPost("/login", async (
     try
     {
         if (string.IsNullOrWhiteSpace(usuario) || string.IsNullOrWhiteSpace(contrasenna))
+        {
+            var intentoFallido = new
+            {
+                Usuario = usuario ?? "desconocido",
+                Motivo = "Credenciales vacías",
+                Fecha = DateTime.UtcNow,
+                Exitoso = false
+            };
+
+            await bitacoraService.RegistrarAsync(
+                usuario ?? "desconocido",
+                JsonSerializer.Serialize(intentoFallido),
+                "GENERICA"
+            );
+
             return Results.Json(new { error = "Usuario y/o contraseña incorrectos" }, statusCode: 401);
+        }
 
         var usuarioDto = await usuarioRepository.ValidarCredencialesAsync(usuario, contrasenna);
         if (usuarioDto == null)
         {
+            var intentoFallido = new
+            {
+                Usuario = usuario,
+                Motivo = "Credenciales incorrectas",
+                Fecha = DateTime.UtcNow,
+                Exitoso = false
+            };
+
+            await bitacoraService.RegistrarAsync(
+                usuario,
+                JsonSerializer.Serialize(intentoFallido),
+                "GENERICA"
+            );
+
             return Results.Json(new { error = "Usuario y/o contraseña incorrectos" }, statusCode: 401);
         }
 
@@ -59,7 +89,6 @@ app.MapPost("/login", async (
 
         var ahora = DateTime.UtcNow;
         var horaVencimiento = ahora.AddMinutes(jwtExpiracionMinutos);
-
 
         var jwtToken = jwtService.GenerarJwtToken(usuario, jwtExpiracionMinutos);
         var refreshToken = jwtService.GenerarRefreshToken();
@@ -82,10 +111,18 @@ app.MapPost("/login", async (
             Activo = true
         });
 
-        var loginInfo = new { usuario, fecha = ahora };
+        var loginInfo = new
+        {
+            Usuario = usuario,
+            Fecha = ahora,
+            ExpiracionJwt = horaVencimiento,
+            Exitoso = true
+        };
+
         await bitacoraService.RegistrarAsync(
             usuario,
-            $"Usuario inició sesión - {JsonSerializer.Serialize(loginInfo)}"
+            JsonSerializer.Serialize(loginInfo),
+            "GENERICA"
         );
 
         Console.WriteLine($"Login exitoso para {usuario}");
@@ -125,7 +162,7 @@ app.MapPost("/refresh", async (
 
         if (tokenExistente == null || !tokenExistente.Activo || tokenExistente.FechaExpiracion < DateTime.UtcNow)
         {
-            Console.WriteLine($"⚠Refresh token invalido o expirado");
+            Console.WriteLine($"Refresh token invalido o expirado");
             return Results.Json(new { error = "No autorizado" }, statusCode: 401);
         }
 
@@ -161,10 +198,18 @@ app.MapPost("/refresh", async (
             Activo = true
         });
 
-        var refreshInfo = new { usuario = tokenExistente.UsuarioEmail, fecha = ahora };
+        var refreshInfo = new
+        {
+            Usuario = tokenExistente.UsuarioEmail,
+            Fecha = ahora,
+            ExpiracionJwt = horaVencimiento,
+            Accion = "Token renovado"
+        };
+
         await bitacoraService.RegistrarAsync(
             tokenExistente.UsuarioEmail,
-            $"Token renovado - {JsonSerializer.Serialize(refreshInfo)}"
+            JsonSerializer.Serialize(refreshInfo),
+            "GENERICA"
         );
 
         return Results.Created("/refresh", new RefreshResponse
@@ -232,6 +277,74 @@ app.MapPost("/validate", async (
     }
 })
 .WithName("Validate")
+.WithOpenApi();
+
+// POST /logout - Cerrar sesión
+app.MapPost("/logout", async (
+    [FromHeader(Name = "Authorization")] string? authorization,
+    IAutenticacionRepository repository,
+    IJwtService jwtService,
+    IBitacoraService bitacoraService) =>
+{
+    try
+    {
+        Console.WriteLine($"Logout llamado con Authorization: {authorization}");
+
+        if (string.IsNullOrWhiteSpace(authorization))
+        {
+            Console.WriteLine("Authorization header vacío");
+            return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        }
+
+        var token = authorization.Replace("Bearer ", "").Trim();
+        Console.WriteLine($"Token extraído: {token.Substring(0, Math.Min(20, token.Length))}...");
+
+        if (!jwtService.ValidarToken(token))
+        {
+            Console.WriteLine("Token JWT inválido");
+            return Results.Json(new { error = "Token inválido" }, statusCode: 401);
+        }
+
+        var tokenBd = await repository.ObtenerJwtTokenAsync(token);
+        if (tokenBd == null)
+        {
+            Console.WriteLine("Token no encontrado en BD");
+            return Results.Json(new { error = "Token no encontrado" }, statusCode: 401);
+        }
+
+        var usuario = tokenBd.UsuarioEmail;
+        Console.WriteLine($"Usuario identificado: {usuario}");
+
+        // Desactivar todos los tokens del usuario
+        await repository.DesactivarTokensUsuarioAsync(usuario);
+        Console.WriteLine($"Tokens desactivados para {usuario}");
+
+        var logoutInfo = new
+        {
+            Usuario = usuario,
+            Fecha = DateTime.UtcNow,
+            Accion = "Cierre de sesion exitoso"
+        };
+
+        Console.WriteLine($"Registrando en bitacora: {JsonSerializer.Serialize(logoutInfo)}");
+
+        await bitacoraService.RegistrarAsync(
+            usuario,
+            JsonSerializer.Serialize(logoutInfo),
+            "GENERICA"
+        );
+
+        Console.WriteLine("Logout completado exitosamente");
+        return Results.Ok(new { mensaje = "Sesión cerrada exitosamente" });
+    }
+    catch (Exception ex)
+    {
+        Console.WriteLine($"Error en logout: {ex.Message}");
+        Console.WriteLine($"StackTrace: {ex.StackTrace}");
+        return Results.Json(new { error = "Error interno del servidor" }, statusCode: 500);
+    }
+})
+.WithName("Logout")
 .WithOpenApi();
 
 app.Run();

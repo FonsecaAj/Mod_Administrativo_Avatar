@@ -1,0 +1,222 @@
+﻿@page
+@using Avatar_Mod_Administración.Entities
+@model Avatar_Mod_Administración.Pages.Usuario.UsuarioEditarModel
+@{
+    ViewData["Title"] = "Editar Usuario";
+    ViewData["Breadcrumb"] = "<li class='breadcrumb-item'><a href='/Usuario/Usuarios'>Usuarios</a></li><li class='breadcrumb-item active'>Editar Usuario</li>";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/usuarios.css" asp-append-version="true" />
+}
+
+<div class="container usuarios-container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <!-- Card Principal -->
+            <div class="card usuario-form-card">
+                <div class="card-header bg-warning">
+                    <h4>
+                        <i class="bi bi-pencil-square"></i>
+                        Editar Usuario
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="usuario-form">
+                        <!-- Errores de validación -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-usuario">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div>
+                                <strong>Error de validación</strong>
+                                <p class="mb-0">Por favor, corrija los errores e intente nuevamente.</p>
+                            </div>
+                        </div>
+
+                        <!-- Información del usuario actual -->
+                        <div class="alert alert-info alert-usuario">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <div>
+                                <strong>Editando usuario:</strong>
+                                <p class="mb-0 mt-1">
+                                    <i class="bi bi-envelope me-1"></i>
+                                    <strong class="text-primary">@Model.Email</strong>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Campo Email -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Email" class="form-label">
+                                <i class="bi bi-envelope-fill"></i>
+                                Email
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Input.Email" class="form-control" id="emailInput"
+                                   placeholder="ejemplo@cuc.cr" />
+                            <div class="form-text">
+                                <i class="bi bi-info-circle text-primary"></i>
+                                Debe ser dominio @@cuc.cr (estudiante) o @@cuc.ac.cr (profesor/administrador)
+                            </div>
+                            <span asp-validation-for="Input.Email" class="text-danger"></span>
+                        </div>
+
+                        <!-- Campo Tipo de Identificación -->
+                        <div class="mb-4">
+                            <label asp-for="Input.IdTipoIdentificacion" class="form-label">
+                                <i class="bi bi-card-list"></i>
+                                Tipo de Identificación
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Input.IdTipoIdentificacion" class="form-select">
+                                <option value="">-- Seleccione un tipo --</option>
+                                @foreach (var tipo in Model.TiposIdentificacion)
+                                {
+                                    <option value="@tipo.IdTipoIdentificacion">@tipo.Nombre</option>
+                                }
+                            </select>
+                            <span asp-validation-for="Input.IdTipoIdentificacion" class="text-danger"></span>
+                        </div>
+
+                        <!-- Campo Identificación -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Identificacion" class="form-label">
+                                <i class="bi bi-credit-card"></i>
+                                Identificación
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Input.Identificacion" class="form-control"
+                                   placeholder="Ingrese el número de identificación" />
+                            <span asp-validation-for="Input.Identificacion" class="text-danger"></span>
+                        </div>
+
+                        <!-- Campo Nombre -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Nombre" class="form-label">
+                                <i class="bi bi-person-fill"></i>
+                                Nombre Completo
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Input.Nombre" class="form-control"
+                                   placeholder="Ingrese el nombre completo" />
+                            <div class="form-text">
+                                <i class="bi bi-check-circle text-success"></i>
+                                No puede estar vacío ni contener solo espacios
+                            </div>
+                            <span asp-validation-for="Input.Nombre" class="text-danger"></span>
+                        </div>
+
+                        <!-- Campo Contraseña -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Contrasenna" class="form-label">
+                                <i class="bi bi-key-fill"></i>
+                                Contraseña
+                            </label>
+                            <input asp-for="Input.Contrasenna" type="password" class="form-control"
+                                   placeholder="Dejar en blanco para no cambiar" />
+                            <div class="form-text">
+                                <i class="bi bi-info-circle text-primary"></i>
+                                <strong>Opcional:</strong> Deje este campo vacío si no desea cambiar la contraseña.
+                                Si desea cambiarla, debe tener mínimo 6 caracteres.
+                            </div>
+                            <span asp-validation-for="Input.Contrasenna" class="text-danger"></span>
+                        </div>
+
+                        <!-- Campo Rol (condicional) -->
+                        <div class="mb-4" id="rolContainer" style="display:none;">
+                            <label asp-for="Input.RolDeseado" class="form-label">
+                                <i class="bi bi-shield-fill"></i>
+                                Rol
+                                <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="Input.RolDeseado" class="form-select">
+                                <option value="">-- Seleccione un rol --</option>
+                                <option value="profesor">Profesor</option>
+                                <option value="administrador">Administrador</option>
+                            </select>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle text-primary"></i>
+                                Seleccione el rol apropiado para el usuario académico
+                            </div>
+                            <span asp-validation-for="Input.RolDeseado" class="text-danger"></span>
+                        </div>
+
+                        <!-- Alerta informativa para estudiantes -->
+                        <div class="mb-4" id="estudianteInfo" style="display:none;">
+                            <div class="alert alert-info alert-usuario mb-0">
+                                <i class="bi bi-info-circle-fill"></i>
+                                <div>
+                                    Los usuarios con dominio <strong>@@cuc.cr</strong> tienen asignado automáticamente el rol de <strong>Estudiante</strong>.
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Nota de campos requeridos -->
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check"></i>
+                                Los campos marcados con <span class="text-danger fw-bold">*</span> son obligatorios
+                            </small>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="form-actions-usuario">
+                            <a asp-page="/Usuario/Usuarios" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-warning text-white">
+                                <i class="bi bi-save"></i>
+                                Guardar Cambios
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card de Información -->
+            <div class="card info-rules-card mt-3">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-lightbulb-fill"></i>
+                        Información importante
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>El email determina el dominio y el rol base del usuario</li>
+                        <li>Los usuarios con <strong>@@cuc.cr</strong> son siempre <strong>Estudiantes</strong></li>
+                        <li>Los usuarios con <strong>@@cuc.ac.cr</strong> pueden ser <strong>Profesores</strong> o <strong>Administradores</strong></li>
+                        <li>La contraseña se encripta antes de guardarse en la base de datos</li>
+                        <li>Si no especifica una nueva contraseña, se mantendrá la actual</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/usuarios.js" asp-append-version="true"></script>
+    <script>
+        function actualizarVisibilidadRol() {
+            const email = document.getElementById('emailInput').value.toLowerCase();
+            const rolContainer = document.getElementById('rolContainer');
+            const estudianteInfo = document.getElementById('estudianteInfo');
+
+            if (email.endsWith('@@cuc.ac.cr')) {
+                rolContainer.style.display = 'block';
+                estudianteInfo.style.display = 'none';
+            } else if (email.endsWith('@@cuc.cr')) {
+                rolContainer.style.display = 'none';
+                estudianteInfo.style.display = 'block';
+                document.querySelector('select[name="Input.RolDeseado"]').value = '';
+            } else {
+                rolContainer.style.display = 'none';
+                estudianteInfo.style.display = 'none';
+                document.querySelector('select[name="Input.RolDeseado"]').value = '';
+            }
+        }
+
+        document.getElementById('emailInput').addEventListener('input', actualizarVisibilidadRol);
+        window.addEventListener('DOMContentLoaded', actualizarVisibilidadRol);
+    </script>
+}
