@@ -63,7 +63,7 @@ namespace Avatar_Mod_Administración.Pages.Usuario
                 return Page();
             }
 
-            // Validar y asignar rol según dominio
+            // Validar y asignar rol según dominioa
             if (email.EndsWith("@cuc.cr"))
             {
                 Input.RolDeseado = "estudiante";

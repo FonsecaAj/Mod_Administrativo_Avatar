@@ -1,0 +1,61 @@
+﻿@page
+@model Avatar_Mod_Administracion.Pages.ADM10_Cursos.IndexModel
+@{
+    ViewData["Title"] = "Administrar Cursos";
+}
+
+<h2>Administrar Cursos</h2>
+
+<form method="get" class="mb-4">
+    <div class="row">
+        <div class="col-md-5">
+            <label>Carrera:</label>
+            <select asp-for="IdCarreraSeleccionada" asp-items="Model.Carreras" class="form-select"></select>
+        </div>
+        <div class="col-md-4">
+            <label>Nivel:</label>
+            <select asp-for="NivelSeleccionado" asp-items="Model.Niveles" class="form-select"></select>
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
+        </div>
+    </div>
+</form>
+
+<p>
+    <a asp-page="Crear" class="btn btn-success">Nuevo Curso</a>
+</p>
+
+<table class="table table-bordered mt-3">
+    <thead class="table-dark">
+        <tr>
+            <th>Identificador</th>
+            <th>Nombre</th>
+            <th>Nivel</th>
+            <th>ID Carrera</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model.Cursos.Any())
+        {
+            foreach (var c in Model.Cursos)
+            {
+                <tr>
+                    <td>@c.Identificador</td>
+                    <td>@c.Nombre</td>
+                    <td>@c.Nivel</td>
+                    <td>@c.ID_Carrera</td>
+                    <td>
+                        <a asp-page="Editar" asp-route-id="@c.ID_Curso" class="btn btn-warning btn-sm">Editar</a>
+                        <a asp-page="Eliminar" asp-route-id="@c.ID_Curso" class="btn btn-danger btn-sm">Eliminar</a>
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr><td colspan="5" class="text-center">No hay cursos registrados</td></tr>
+        }
+    </tbody>
+</table>

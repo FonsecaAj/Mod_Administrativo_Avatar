@@ -1,0 +1,21 @@
+﻿@page "{id:int}"
+@model Avatar_Mod_Administracion.Pages.ADM10_Cursos.EliminarModel
+@{
+    ViewData["Title"] = "Eliminar Curso";
+}
+
+<h2>Eliminar curso</h2>
+
+<div class="alert alert-warning">
+    ¿Seguro que deseas eliminar el curso <strong>@Model.CursoEliminar.Nombre</strong>?
+</div>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+
+    <input type="hidden" asp-for="CursoEliminar.ID_Curso" />
+
+    <button type="submit" class="btn btn-danger">Eliminar</button>
+    <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+</form>

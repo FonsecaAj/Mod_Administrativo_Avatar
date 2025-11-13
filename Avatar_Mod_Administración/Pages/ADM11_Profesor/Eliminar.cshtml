@@ -1,0 +1,36 @@
+﻿@page "{id:int}"
+@model Avatar_Mod_Administración.Pages.ADM11_Profesor.EliminarModel
+@{
+    ViewData["Title"] = "Eliminar Profesor";
+}
+
+<h1>Eliminar Profesor</h1>
+
+@if (Model.Profesor == null)
+{
+    <div class="alert alert-danger">Profesor no encontrado.</div>
+    <a asp-page="Index" class="btn btn-secondary">Volver</a>
+}
+else
+{
+    <div class="alert alert-warning">
+        ¿Está seguro que desea eliminar al profesor
+        <strong>@Model.Profesor.NombreCompleto</strong>?
+    </div>
+
+    <dl class="row">
+        <dt class="col-sm-3">Identificación</dt>
+        <dd class="col-sm-9">@Model.Profesor.NumeroIdentificacion</dd>
+
+        <dt class="col-sm-3">Email</dt>
+        <dd class="col-sm-9">@Model.Profesor.Email</dd>
+
+        <dt class="col-sm-3">Teléfono</dt>
+        <dd class="col-sm-9">@Model.Profesor.Telefono</dd>
+    </dl>
+
+    <form method="post">
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+}

@@ -1,0 +1,6 @@
+@ApiACD5_HostAddress = http://localhost:5094
+
+GET {{ApiACD5_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

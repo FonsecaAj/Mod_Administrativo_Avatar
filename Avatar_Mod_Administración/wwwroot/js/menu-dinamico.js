@@ -20,6 +20,7 @@
         'Desglose y Notas': { icono: 'bi-clipboard-data', url: '/Notas/Index', grupo: 'Evaluación', prefijo: '/Notas' },
         'Promedios': { icono: 'bi-graph-up', url: '/Promedios/Index', grupo: 'Evaluación', prefijo: '/Promedios' },
         'Reportes': { icono: 'bi-file-earmark-bar-graph', url: '/Reportes/Index', grupo: 'Reportes', prefijo: '/Reportes' }
+
     };
 
     let modulosCargados = [];
@@ -58,23 +59,42 @@
             return await response.json();
         } catch (error) { return []; }
     }
-
     async function cargarMenuDinamico() {
         const loader = document.getElementById('menu-loader');
+
         try {
             const sesionValida = await verificarSesion();
             if (!sesionValida) return;
+
             const datosUsuario = obtenerDatosUsuario();
             if (!datosUsuario?.token) { mostrarMenuPorDefecto(); return; }
+
             const rolIdNum = parseInt(datosUsuario.rolId);
             if (!rolIdNum || rolIdNum === 0) { mostrarMenuPorDefecto(); return; }
+
             const modulos = await cargarModulosPorRol(datosUsuario.rolId, datosUsuario.token);
-            if (!modulos || modulos.length === 0) { mostrarMenuPorDefecto(); return; }
-            modulosCargados = modulos;
+
             if (loader) loader.remove();
+
+            //  ADMINISTRADOR
+            if (datosUsuario.rol?.toLowerCase() === 'administrador' || rolIdNum === 4) {
+                construirMenu(modulos);
+                agregarOpcionesAdministrador();
+                actualizarBreadcrumbs();
+                return;
+            }
+
+            //  menú normal
+            if (!modulos || modulos.length === 0) { mostrarMenuPorDefecto(); return; }
+
+            modulosCargados = modulos;
             construirMenu(modulos);
             actualizarBreadcrumbs();
-        } catch (error) { mostrarMenuPorDefecto(); }
+
+        } catch (error) {
+            console.error('Error al cargar menú:', error);
+            mostrarMenuPorDefecto();
+        }
     }
 
     function construirMenu(modulos) {
@@ -273,5 +293,46 @@
             actualizarBreadcrumbs();
         }
     }, 200);
+
+
+
+    //CONSTRUIR OPCIONES DEL MENU DE ADMINISTRADOR
+
+    function agregarOpcionesAdministrador() {
+        const sidebarNav = document.querySelector('.sidebar-nav');
+        if (!sidebarNav) return;
+
+        // Título de la sección
+        const tituloSeccion = document.createElement('div');
+        tituloSeccion.className = 'nav-section-title';
+        tituloSeccion.textContent = 'Administrador';
+        sidebarNav.appendChild(tituloSeccion);
+
+        // Opciones específicas del administrador
+        const opciones = [
+            { texto: 'Home', url: '/Index', icono: 'bi-house' },
+            { texto: 'Historial Académico', url: '/Academico/HistorialAcademico', icono: 'bi-journal-text' },
+            { texto: 'Listados por periodo', url: '/Academico/ListadoEstudiantes', icono: 'bi-people' },
+            { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt' },
+            { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash' },
+            { texto: 'Cursos', url: '/ADM10_Cursos', icono: 'bi-book' },
+            { texto: 'Profesores', url: '/ADM11_Profesor', icono: 'bi-people' },
+            { texto: 'Periodo', url: '/ADM12_Periodo', icono: 'bi-journal-text' },
+            { texto: 'Grupo', url: '/ADM13_Grupo', icono: 'bi-journal-text' },
+            { texto: 'Prematricula', url: '/ADM14_Prematricula', icono: 'bi-receipt' }
+
+        ];
+
+        opciones.forEach(op => {
+            const item = document.createElement('div');
+            item.className = 'nav-item';
+            item.innerHTML = `
+            <a href="${op.url}" class="nav-link">
+                <i class="bi ${op.icono}"></i>
+                <span>${op.texto}</span>
+            </a>`;
+            sidebarNav.appendChild(item);
+        });
+    }
 
 })();
