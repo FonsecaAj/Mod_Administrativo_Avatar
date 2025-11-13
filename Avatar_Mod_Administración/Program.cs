@@ -24,17 +24,11 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
-    var baseUrl = builder.Configuration["ServiciosApi:Adm_Notas"]
-                  ?? throw new InvalidOperationException("Base URL de Historial no configurada");
-    client.BaseAddress = new Uri(baseUrl);
 });
 
 builder.Services.AddHttpClient<IUsuarioService, UsuarioService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
-    var baseUrl = builder.Configuration["ServiciosApi:Adm_Notas"]
-                  ?? throw new InvalidOperationException("Base URL de Historial no configurada");
-    client.BaseAddress = new Uri(baseUrl);
 });
 
 builder.Services.AddHttpClient<IRolService, RolService>(client =>
