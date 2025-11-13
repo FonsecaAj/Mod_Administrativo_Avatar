@@ -1,0 +1,44 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.ADM14_Prematricula.CrearModel
+@{
+    ViewData["Title"] = "Nueva Prematrícula";
+}
+
+<h2>Nueva Prematrícula</h2>
+
+<form method="post">
+    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+    <div class="mb-3">
+        <label class="form-label">ID Estudiante</label>
+        <input asp-for="Prematricula.ID_Estudiante" class="form-control" />
+        <span asp-validation-for="Prematricula.ID_Estudiante" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Carrera</label>
+        <select asp-for="Prematricula.ID_Carrera" asp-items="Model.Carreras" class="form-select">
+            <option value="">-- Seleccione --</option>
+        </select>
+        <span asp-validation-for="Prematricula.ID_Carrera" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Curso</label>
+        <select asp-for="Prematricula.ID_Curso" asp-items="Model.Cursos" class="form-select">
+            <option value="">-- Seleccione --</option>
+        </select>
+        <span asp-validation-for="Prematricula.ID_Curso" class="text-danger"></span>
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label">Periodo (futuro)</label>
+        <select asp-for="Prematricula.ID_Periodo" asp-items="Model.Periodos" class="form-select">
+            <option value="">-- Seleccione --</option>
+        </select>
+        <span asp-validation-for="Prematricula.ID_Periodo" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Guardar</button>
+    <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+</form>

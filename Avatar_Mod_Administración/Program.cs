@@ -97,7 +97,47 @@ builder.Services.AddHttpClient<IPagoApiClient, PagoApiClient>(client =>
         ?? "http://localhost:5070";
     client.BaseAddress = new Uri(baseUrl);
     client.Timeout = TimeSpan.FromSeconds(30);
+
 });
+
+//  Cliente HTTP para Cursos (Adm_Cursos)
+builder.Services.AddHttpClient<ICursoApiClient, CursoApiClient>(client =>
+{
+    var baseUrl = builder.Configuration["Adm_Cursos:BaseUrl"]
+                  ?? throw new InvalidOperationException("Adm_Cursos:BaseUrl no configurado");
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+
+builder.Services.AddHttpClient<IProfesorApiClient, ProfesorApiClient>(client =>
+{
+    var baseUrl = builder.Configuration["Adm_Profesores:BaseUrl"]
+                  ?? throw new InvalidOperationException("Adm_Profesores:BaseUrl no configurado");
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+
+builder.Services.AddHttpClient<IPeriodoApiClient, PeriodoApiClient>(client =>
+{
+    var baseUrl = builder.Configuration["Adm_Periodos:BaseUrl"]
+                  ?? throw new InvalidOperationException("Adm_Periodos:BaseUrl no configurado");
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+builder.Services.AddHttpClient<IGrupoApiClient, GrupoApiClient>(client =>
+{
+    var baseUrl = builder.Configuration["Adm_Grupos:BaseUrl"]
+                  ?? throw new InvalidOperationException("Adm_Grupos:BaseUrl no configurado");
+    client.BaseAddress = new Uri(baseUrl);
+});
+
+builder.Services.AddHttpClient<IPrematriculaApiClient, PrematriculaApiClient>(client =>
+{
+    var baseUrl = builder.Configuration["Adm_Prematricula:BaseUrl"]
+                  ?? throw new InvalidOperationException("Adm_Prematricula:BaseUrl no configurado");
+    client.BaseAddress = new Uri(baseUrl);
+});
+
 
 var app = builder.Build();
 

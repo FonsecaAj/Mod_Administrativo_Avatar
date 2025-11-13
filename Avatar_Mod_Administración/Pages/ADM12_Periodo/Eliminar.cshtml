@@ -1,0 +1,39 @@
+﻿@page "{id:int}"
+@model Avatar_Mod_Administración.Pages.ADM12_Periodo.EliminarModel
+@{
+    ViewData["Title"] = "Eliminar Periodo";
+}
+
+<h1>Eliminar Periodo</h1>
+
+@if (Model.Periodo == null)
+{
+    <div class="alert alert-danger">Periodo no encontrado.</div>
+    <a asp-page="Index" class="btn btn-secondary">Volver</a>
+}
+else
+{
+    <div class="alert alert-warning">
+        ¿Está seguro que desea eliminar el periodo
+        <strong>@Model.Periodo.Anno - @Model.Periodo.NumeroPeriodo</strong>?
+    </div>
+
+    <dl class="row">
+        <dt class="col-sm-3">Año</dt>
+        <dd class="col-sm-9">@Model.Periodo.Anno</dd>
+
+        <dt class="col-sm-3">Número de periodo</dt>
+        <dd class="col-sm-9">@Model.Periodo.NumeroPeriodo</dd>
+
+        <dt class="col-sm-3">Fecha de inicio</dt>
+        <dd class="col-sm-9">@Model.Periodo.FechaInicio.ToString("dd/MM/yyyy")</dd>
+
+        <dt class="col-sm-3">Fecha de fin</dt>
+        <dd class="col-sm-9">@Model.Periodo.FechaFin.ToString("dd/MM/yyyy")</dd>
+    </dl>
+
+    <form method="post">
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+}

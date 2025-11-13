@@ -1,0 +1,31 @@
+﻿@page
+@model Avatar_Mod_Administracion.Pages.ADM10_Cursos.CrearModel
+@{
+    ViewData["Title"] = "Crear Curso";
+}
+
+<h2>Registrar nuevo curso</h2>
+
+<form method="post" class="mt-4">
+    <div class="mb-3">
+        <label>Identificador</label>
+        <input asp-for="NuevoCurso.Identificador" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Nombre</label>
+        <input asp-for="NuevoCurso.Nombre" class="form-control" />
+        <span asp-validation-for="NuevoCurso.Nombre" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label>Nivel</label>
+        <input asp-for="NuevoCurso.Nivel" type="number" min="1" max="12" class="form-control" />
+        <span asp-validation-for="NuevoCurso.Nivel" class="text-danger"></span>
+    </div>
+    <div class="mb-3">
+        <label>Carrera</label>
+        <select asp-for="NuevoCurso.ID_Carrera" asp-items="Model.Carreras" class="form-select"></select>
+    </div>
+
+    <button type="submit" class="btn btn-success">Guardar</button>
+    <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+</form>
