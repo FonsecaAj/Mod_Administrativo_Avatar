@@ -37,6 +37,7 @@ else if (Model.Message != null)
                     <label class="form-label">ID Factura</label>
                     <input asp-for="ID_Factura" type="number" class="form-control" placeholder="Ej: 5" />
                 </div>
+                <input type="hidden" asp-for="Motivo" id="inputMotivo" />
                 <button type="button" class="btn btn-danger" onclick="abrirModalReversar()">Reversar</button>
             </form>
         </div>
@@ -45,10 +46,93 @@ else if (Model.Message != null)
 
 <hr class="my-4" />
 
+<div class="card p-4 shadow-sm mb-4">
+    <h5>📄 Listado de Facturas por Periodo y Estado</h5>
+    <form method="post" asp-page-handler="Listar">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label asp-for="FechaInicio" class="form-label">Fecha Inicio</label>
+                <input asp-for="FechaInicio" type="date" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="FechaFin" class="form-label">Fecha Fin</label>
+                <input asp-for="FechaFin" type="date" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="EstadoFiltro" class="form-label">Estado</label>
+                <select asp-for="EstadoFiltro" class="form-select">
+                    <option value="">TODOS</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Pagada">Pagada</option>
+                    <option value="Anulada">Anulada</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-info w-100">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.FacturasListado != null && Model.FacturasListado.Any())
+    {
+        <h6 class="mt-4">Resultados (@Model.FacturasListado.Count)</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mt-2">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Identificación</th>
+                        <th>Fecha</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var f in Model.FacturasListado)
+                    {
+                        <tr>
+                            <td>@f.ID_Factura</td>
+                            <td>@f.Identificacion_Estudiante</td>
+                            <td>@f.Fecha_Emision.ToString("dd/MM/yyyy")</td>
+                            <td>@f.Total.ToString("C")</td>
+                            <td>
+                                <span class="badge @(f.Estado == "Pagada" ? "bg-success" : f.Estado == "Anulada" ? "bg-danger" : "bg-warning text-dark")">
+                                    @f.Estado
+                                </span>
+                            </td>
+                            <td>
+                                <form method="post" asp-page-handler="Consultar" class="d-inline">
+                                    <input type="hidden" asp-for="FechaInicio" />
+                                    <input type="hidden" asp-for="FechaFin" />
+                                    <input type="hidden" asp-for="EstadoFiltro" />
+
+                                    <input type="hidden" asp-for="ID_Factura" value="@f.ID_Factura" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Ver Detalle</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+    else if (Model.FacturasListado != null)
+    {
+        <div class="alert alert-info mt-3">No se encontraron facturas con los filtros seleccionados.</div>
+    }
+</div>
+
+<hr class="my-4" />
+
 <div class="card p-4 shadow-sm">
-    <h5>🔍 Consultar Factura</h5>
+    <h5>🔍 Consultar Factura por ID</h5>
     <form method="post" asp-page-handler="Consultar">
         <div class="mb-3 d-flex" style="max-width: 350px;">
+            <input type="hidden" asp-for="FechaInicio" />
+            <input type="hidden" asp-for="FechaFin" />
+            <input type="hidden" asp-for="EstadoFiltro" />
+
             <input asp-for="ID_Factura" type="number" class="form-control me-2" placeholder="ID Factura" />
             <button type="submit" class="btn btn-secondary">Buscar</button>
         </div>
@@ -56,43 +140,46 @@ else if (Model.Message != null)
 
     @if (Model.Factura != null)
     {
-        <h6 class="mt-3">Detalle de Factura</h6>
-        <table class="table table-bordered mt-2">
-            <tr><th>ID</th><td>@Model.Factura.ID_Factura</td></tr>
-            <tr><th>Estudiante</th><td>@Model.Factura.Identificacion_Estudiante</td></tr>
-            <tr><th>Fecha</th><td>@Model.Factura.Fecha_Emision.ToString("dd/MM/yyyy")</td></tr>
-            <tr><th>Monto Base</th><td>@Model.Factura.Monto_Base.ToString("C")</td></tr>
-            <tr><th>Impuesto</th><td>@Model.Factura.Impuesto.ToString("C")</td></tr>
-            <tr><th>Total</th><td>@Model.Factura.Total.ToString("C")</td></tr>
-            <tr><th>Estado</th><td>@Model.Factura.Estado</td></tr>
-        </table>
+        <h6 class="mt-3">Detalle de Factura #@Model.Factura.ID_Factura</h6>
+        <div class="table-responsive">
+            <table class="table table-bordered mt-2">
+                <tr><th>ID</th><td>@Model.Factura.ID_Factura</td></tr>
+                <tr><th>Estudiante</th><td>@Model.Factura.Identificacion_Estudiante</td></tr>
+                <tr><th>Fecha</th><td>@Model.Factura.Fecha_Emision.ToString("dd/MM/yyyy")</td></tr>
+                <tr><th>Monto Base</th><td>@Model.Factura.Monto_Base.ToString("C")</td></tr>
+                <tr><th>Impuesto</th><td>@Model.Factura.Impuesto.ToString("C")</td></tr>
+                <tr><th>Total</th><td>@Model.Factura.Total.ToString("C")</td></tr>
+                <tr><th>Estado</th><td>@Model.Factura.Estado</td></tr>
+            </table>
+        </div>
 
         <h6>Detalle</h6>
-        <table class="table table-sm table-striped">
-            <thead>
-                <tr>
-                    <th>ID Detalle</th>
-                    <th>Descripción</th>
-                    <th>Monto</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var d in Model.Factura.Detalles)
-                {
+        <div class="table-responsive">
+            <table class="table table-sm table-striped">
+                <thead>
                     <tr>
-                        <td>@d.ID_Detalle</td>
-                        <td>@d.Descripcion</td>
-                        <td>@d.Monto.ToString("C")</td>
+                        <th>ID Detalle</th>
+                        <th>Descripción</th>
+                        <th>Monto</th>
+                        <th>Detalle</th>
                     </tr>
-                }
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Factura.Detalles)
+                    {
+                        <tr>
+                            <td>@d.ID_Detalle</td>
+                            <td>@d.Descripcion</td>
+                            <td>@d.Monto.ToString("C")</td>
+                            <td>@d.Detalle</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     }
 </div>
 
-<!-- ==========================
-     Modal personalizado
-=========================== -->
 <div class="modal fade" id="modalReversar" tabindex="-1">
     <div class="modal-dialog">
         <div class="modal-content shadow-lg">
@@ -140,17 +227,18 @@ else if (Model.Message != null)
                 return;
             }
 
-            // Crear un input oculto con el motivo
             const form = document.getElementById("formReversar");
-            let hidden = document.getElementById("inputMotivo");
-            if (!hidden) {
-                hidden = document.createElement("input");
-                hidden.type = "hidden";
-                hidden.name = "Motivo";
-                hidden.id = "inputMotivo";
-                form.appendChild(hidden);
+            let hiddenMotivo = document.getElementById("inputMotivo");
+
+            if (!hiddenMotivo) {
+                hiddenMotivo = document.createElement("input");
+                hiddenMotivo.type = "hidden";
+                hiddenMotivo.name = "Motivo";
+                hiddenMotivo.id = "inputMotivo";
+                form.appendChild(hiddenMotivo);
             }
-            hidden.value = motivo;
+
+            hiddenMotivo.value = motivo;
 
             modal.hide();
             form.submit();
