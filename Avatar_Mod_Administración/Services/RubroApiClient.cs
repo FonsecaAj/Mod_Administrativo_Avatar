@@ -13,9 +13,7 @@ namespace Avatar_Mod_Administración.Services
         {
             _http = http;
 
-            // Token temporal para pruebas 
-            _token = config["Adm_Notas:AccessToken"]
-                ?? throw new InvalidOperationException("Token no configurado en appsettings.json");
+            _token = config["ServiciosApi:AccessToken"] ?? throw new InvalidOperationException("Falta token de acceso");
         }
 
 
