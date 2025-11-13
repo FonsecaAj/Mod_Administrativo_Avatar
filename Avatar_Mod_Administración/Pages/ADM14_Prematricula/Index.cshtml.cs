@@ -1,12 +1,11 @@
 using Avatar_Mod_Administración.Entities;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Avatar_Mod_Administración.Pages.ADM14_Prematricula
 {
-    public class IndexModel : PageModel
+    public class IndexModel : BasePageModel
     {
         private readonly IPrematriculaApiClient _prematriculaApi;
         private readonly IPeriodoApiClient _periodoApi;
@@ -15,7 +14,11 @@ namespace Avatar_Mod_Administración.Pages.ADM14_Prematricula
         public IndexModel(
             IPrematriculaApiClient prematriculaApi,
             IPeriodoApiClient periodoApi,
-            ICursoApiClient cursoApi)
+            ICursoApiClient cursoApi,
+            IAuthService auth,
+            IUsuarioService usuarioService,
+            ILogger<IndexModel> logger)
+            : base(auth, usuarioService, logger)
         {
             _prematriculaApi = prematriculaApi;
             _periodoApi = periodoApi;
@@ -26,47 +29,42 @@ namespace Avatar_Mod_Administración.Pages.ADM14_Prematricula
         public PrematriculaFiltro Filtro { get; set; } = new();
 
         public IEnumerable<PrematriculaDto> Prematriculas { get; set; } = new List<PrematriculaDto>();
-
         public IEnumerable<SelectListItem> Periodos { get; set; } = new List<SelectListItem>();
         public IEnumerable<SelectListItem> Carreras { get; set; } = new List<SelectListItem>();
         public IEnumerable<SelectListItem> Cursos { get; set; } = new List<SelectListItem>();
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
-            
-            var periodos = await _periodoApi.ObtenerTodosAsync(); 
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
 
-            var periodosFuturos = (periodos ?? Enumerable.Empty<PeriodoDto>())
-                .Where(p => p.FechaInicio > DateTime.Today);
+            var periodos = await _periodoApi.ObtenerTodosAsync();
+            Periodos = (periodos ?? Enumerable.Empty<PeriodoDto>())
+                .Where(p => p.FechaInicio > DateTime.Today)
+                .Select(p => new SelectListItem
+                {
+                    Value = p.IdPeriodo.ToString(),
+                    Text = $"{p.Anno}-{p.NumeroPeriodo}"
+                });
 
-            Periodos = periodosFuturos.Select(p => new SelectListItem
-            {
-                Value = p.IdPeriodo.ToString(),
-                Text = $"{p.Anno}-{p.NumeroPeriodo}"
-            });
+            var lookups = await _cursoApi.ObtenerLookupsAsync();
+            Carreras = (lookups?.Carreras ?? Enumerable.Empty<LookupItem>())
+                .Select(c => new SelectListItem
+                {
+                    Value = c.Id.ToString(),
+                    Text = c.Nombre
+                });
 
-    
-            var lookups = await _cursoApi.ObtenerLookupsAsync(); 
-            var carrerasLookup = lookups?.Carreras ?? Enumerable.Empty<LookupItem>();
+            Cursos = (await _cursoApi.ObtenerTodosAsync())
+                .Select(c => new SelectListItem
+                {
+                    Value = c.ID_Curso.ToString(),
+                    Text = c.Nombre
+                });
 
-            Carreras = carrerasLookup.Select(c => new SelectListItem
-            {
-                Value = c.Id.ToString(),
-                Text = c.Nombre
-            });
-
-
-            var cursos = await _cursoApi.ObtenerTodosAsync();
-            var cursosLista = cursos ?? Enumerable.Empty<CursoDto>();
-
-            Cursos = cursosLista.Select(c => new SelectListItem
-            {
-                Value = c.ID_Curso.ToString(), 
-                Text = c.Nombre
-            });
-
-            
             Prematriculas = await _prematriculaApi.ObtenerTodosAsync(Filtro);
+
+            return Page();
         }
     }
 }

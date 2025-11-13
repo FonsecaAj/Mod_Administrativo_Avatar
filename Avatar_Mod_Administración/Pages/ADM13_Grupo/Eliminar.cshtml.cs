@@ -1,15 +1,19 @@
 using Avatar_Mod_Administración.Entities;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
 {
-    public class EliminarModel : PageModel
+    public class EliminarModel : BasePageModel
     {
         private readonly IGrupoApiClient _api;
 
-        public EliminarModel(IGrupoApiClient api)
+        public EliminarModel(
+            IGrupoApiClient api,
+            IAuthService auth,
+            IUsuarioService usuarioService,
+            ILogger<EliminarModel> logger)
+            : base(auth, usuarioService, logger)
         {
             _api = api;
         }
@@ -21,6 +25,9 @@ namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
             Grupo = await _api.ObtenerPorIdAsync(id);
             if (Grupo == null)
             {
@@ -33,6 +40,9 @@ namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
 
         public async Task<IActionResult> OnPostAsync(int id)
         {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
             var ok = await _api.EliminarAsync(id);
 
             if (ok)
@@ -41,7 +51,7 @@ namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
             }
             else
             {
-                MensajeError = "No se puede eliminar el grupo. Puede tener matrículas asociadas o hubo un error en la API.";
+                MensajeError = "No se puede eliminar el grupo. Puede tener matrículas asociadas.";
             }
 
             return RedirectToPage("Index");

@@ -1,11 +1,10 @@
 using Avatar_Mod_Administración.Entities;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
 {
-    public class CrearModel : PageModel
+    public class CrearModel : BasePageModel
     {
         private readonly IGrupoApiClient _grupoApi;
         private readonly ICursoApiClient _cursosApi;
@@ -16,7 +15,11 @@ namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
             IGrupoApiClient grupoApi,
             ICursoApiClient cursosApi,
             IProfesorApiClient profesoresApi,
-            IPeriodoApiClient periodosApi)
+            IPeriodoApiClient periodosApi,
+            IAuthService auth,
+            IUsuarioService usuarioService,
+            ILogger<CrearModel> logger)
+            : base(auth, usuarioService, logger)
         {
             _grupoApi = grupoApi;
             _cursosApi = cursosApi;
@@ -34,13 +37,20 @@ namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
         [TempData] public string? Mensaje { get; set; }
         [TempData] public string? MensajeError { get; set; }
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
             await CargarListasAsync();
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
             await CargarListasAsync();
 
             if (!ModelState.IsValid)
@@ -52,12 +62,9 @@ namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
             var ok = await _grupoApi.CrearAsync(Grupo);
 
             if (ok)
-            {
-                
                 return RedirectToPage("Index");
-            }
 
-            MensajeError = "No se pudo crear el grupo. Revise número único por curso/periodo u otros errores.";
+            MensajeError = "No se pudo crear el grupo.";
             return Page();
         }
 

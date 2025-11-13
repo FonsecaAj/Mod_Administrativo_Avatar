@@ -1,12 +1,11 @@
 using Avatar_Mod_Administración.Entities;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Avatar_Mod_Administración.Pages.ADM14_Prematricula
 {
-    public class EditarModel : PageModel
+    public class EditarModel : BasePageModel
     {
         private readonly IPrematriculaApiClient _prematriculaApi;
         private readonly ICursoApiClient _cursoApi;
@@ -15,7 +14,11 @@ namespace Avatar_Mod_Administración.Pages.ADM14_Prematricula
         public EditarModel(
             IPrematriculaApiClient prematriculaApi,
             ICursoApiClient cursoApi,
-            IPeriodoApiClient periodoApi)
+            IPeriodoApiClient periodoApi,
+            IAuthService auth,
+            IUsuarioService usuarioService,
+            ILogger<EditarModel> logger)
+            : base(auth, usuarioService, logger)
         {
             _prematriculaApi = prematriculaApi;
             _cursoApi = cursoApi;
@@ -31,58 +34,34 @@ namespace Avatar_Mod_Administración.Pages.ADM14_Prematricula
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
             var dto = await _prematriculaApi.ObtenerPorIdAsync(id);
+
             if (dto == null)
-                return NotFound();
+                return RedirectToPage("Index");
 
             Prematricula = dto;
 
             await CargarLookupsAsync();
-
             return Page();
-        }
-
-        private async Task CargarLookupsAsync()
-        {
-            var lookups = await _cursoApi.ObtenerLookupsAsync();
-
-            Carreras = (lookups?.Carreras ?? Enumerable.Empty<LookupItem>())
-                .Select(c => new SelectListItem
-                {
-                    Value = c.Id.ToString(),
-                    Text = c.Nombre
-                });
-
-            var cursos = await _cursoApi.ObtenerTodosAsync();
-
-            Cursos = (cursos ?? Enumerable.Empty<CursoDto>())
-                .Select(c => new SelectListItem
-                {
-                    Value = c.ID_Curso.ToString(),
-                    Text = c.Nombre
-                });
-
-        
-            var periodos = await _periodoApi.ObtenerTodosAsync();
-
-            Periodos = (periodos ?? Enumerable.Empty<PeriodoDto>())
-                .Where(p => p.FechaInicio > DateTime.Today)
-                .Select(p => new SelectListItem
-                {
-                    Value = p.IdPeriodo.ToString(),
-                    Text = $"{p.Anno}-{p.NumeroPeriodo}"
-                });
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
             await CargarLookupsAsync();
 
             if (!ModelState.IsValid)
                 return Page();
 
             var ok = await _prematriculaApi.ActualizarAsync(
-                Prematricula.ID_Prematricula, Prematricula);
+                Prematricula.ID_Prematricula,
+                Prematricula
+            );
 
             if (!ok)
             {
@@ -91,6 +70,25 @@ namespace Avatar_Mod_Administración.Pages.ADM14_Prematricula
             }
 
             return RedirectToPage("Index");
+        }
+
+        private async Task CargarLookupsAsync()
+        {
+            var lookups = await _cursoApi.ObtenerLookupsAsync();
+
+            Carreras = (lookups?.Carreras ?? Enumerable.Empty<LookupItem>())
+                .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Nombre });
+
+            Cursos = (await _cursoApi.ObtenerTodosAsync())
+                .Select(c => new SelectListItem { Value = c.ID_Curso.ToString(), Text = c.Nombre });
+
+            Periodos = (await _periodoApi.ObtenerTodosAsync())
+                .Where(p => p.FechaInicio > DateTime.Today)
+                .Select(p => new SelectListItem
+                {
+                    Value = p.IdPeriodo.ToString(),
+                    Text = $"{p.Anno}-{p.NumeroPeriodo}"
+                });
         }
     }
 }

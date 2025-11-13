@@ -8,25 +8,43 @@ namespace Avatar_Mod_Administración.Services
     {
         private readonly HttpClient _http;
         private readonly IConfiguration _config;
+        private readonly IAuthService _authService;
         private readonly string _baseUrl;
-        private readonly string _accessToken;
 
-        public CursoApiClient(HttpClient http, IConfiguration config)
+        public CursoApiClient(HttpClient http, IConfiguration config, IAuthService authService)
         {
             _http = http;
             _config = config;
+            _authService = authService;
 
             _baseUrl = $"{_config["Adm_Cursos:BaseUrl"]}/api/curso";
-            _accessToken = _config["Adm_Cursos:AccessToken"] ?? string.Empty;
         }
 
-      
+        
+        private string ObtenerTokenLimpio()
+        {
+            var sesion = _authService.ObtenerSesionActual();
+
+            if (sesion == null || string.IsNullOrWhiteSpace(sesion.AccessToken))
+                return string.Empty;
+
+            var token = sesion.AccessToken;
+
+            if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                token = token.Substring(7).Trim();
+
+            return token;
+        }
+
+        
         private void AplicarToken()
         {
-            if (!string.IsNullOrEmpty(_accessToken))
+            var token = ObtenerTokenLimpio();
+
+            if (!string.IsNullOrEmpty(token))
             {
                 _http.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", _accessToken);
+                    new AuthenticationHeaderValue("Bearer", token);
             }
         }
 

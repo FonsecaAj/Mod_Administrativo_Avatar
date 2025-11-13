@@ -2,159 +2,83 @@
 using ApiACD3.Services;
 using Microsoft.AspNetCore.Mvc;
 
-namespace ApiACD3
+namespace ApiACD3;
+
+public static class CursoEndpoints
 {
-    public static class CursoEndpoints
+    public static void MapCursoEndpoints(this WebApplication app)
     {
-        public static void MapCursoEndpoints(this IEndpointRouteBuilder routes)
+        var group = app.MapGroup("/api/curso").WithTags("Curso");
+
+        group.MapGet("/", async (ICursoService service, IAutenticacionService auth, HttpContext http) =>
         {
-            var group = routes.MapGroup("/api/curso").WithTags(nameof(Curso));
+            var token = http.Request.Headers["Authorization"].ToString();
+            if (!await auth.ValidarTokenAsync(token))
+                return Results.Unauthorized();
 
-         
-            group.MapGet("/", async (
-                ICursoService service,
-                IAutenticacionService auth,
-                HttpContext http) =>
-            {
-                var authorization = http.Request.Headers["Authorization"].ToString();
-                if (!await auth.ValidarTokenAsync(authorization))
-                    return Results.Unauthorized();
+            var result = await service.ObtenerTodos();
+            return Results.Json(result, statusCode: result.StatusCode);
+        });
 
-                var result = await service.ObtenerTodos();
+        group.MapGet("/{id:int}", async (int id, ICursoService service, IAutenticacionService auth, HttpContext http) =>
+        {
+            var token = http.Request.Headers["Authorization"].ToString();
+            if (!await auth.ValidarTokenAsync(token))
+                return Results.Unauthorized();
 
-                return result.StatusCode switch
-                {
-                    200 => Results.Json(result, statusCode: 200),
-                    404 => Results.Json(result, statusCode: 404),
-                    _ => Results.Json(result, statusCode: result.StatusCode)
-                };
-            });
+            var result = await service.ObtenerPorId(id);
+            return Results.Json(result, statusCode: result.StatusCode);
+        });
 
-      
-            group.MapGet("/{id:int}", async (
-                int id,
-                ICursoService service,
-                IAutenticacionService auth,
-                HttpContext http) =>
-            {
-                var authorization = http.Request.Headers["Authorization"].ToString();
-                if (!await auth.ValidarTokenAsync(authorization))
-                    return Results.Unauthorized();
+        group.MapGet("/carrera/{idCarrera:int}", async (int idCarrera, ICursoService service, IAutenticacionService auth, HttpContext http) =>
+        {
+            var token = http.Request.Headers["Authorization"].ToString();
+            if (!await auth.ValidarTokenAsync(token))
+                return Results.Unauthorized();
 
-                var result = await service.ObtenerPorId(id);
+            var result = await service.ObtenerPorCarrera(idCarrera);
+            return Results.Json(result, statusCode: result.StatusCode);
+        });
 
-                return result.StatusCode switch
-                {
-                    200 => Results.Json(result, statusCode: 200),
-                    400 => Results.Json(result, statusCode: 400),
-                    404 => Results.Json(result, statusCode: 404),
-                    _ => Results.Json(result, statusCode: result.StatusCode)
-                };
-            });
+        group.MapPost("/", async ([FromBody] Curso curso, ICursoService service, IAutenticacionService auth, HttpContext http) =>
+        {
+            var token = http.Request.Headers["Authorization"].ToString();
+            if (!await auth.ValidarTokenAsync(token))
+                return Results.Unauthorized();
 
-           
-            group.MapGet("/carrera/{idCarrera:int}", async (
-                int idCarrera,
-                ICursoService service,
-                IAutenticacionService auth,
-                HttpContext http) =>
-            {
-                var authorization = http.Request.Headers["Authorization"].ToString();
-                if (!await auth.ValidarTokenAsync(authorization))
-                    return Results.Unauthorized();
+            var result = await service.Crear(curso);
+            return Results.Json(result, statusCode: result.StatusCode);
+        });
 
-                var result = await service.ObtenerPorCarrera(idCarrera);
+        group.MapPut("/{id:int}", async (int id, [FromBody] Curso curso, ICursoService service, IAutenticacionService auth, HttpContext http) =>
+        {
+            var token = http.Request.Headers["Authorization"].ToString();
+            if (!await auth.ValidarTokenAsync(token))
+                return Results.Unauthorized();
 
-                return result.StatusCode switch
-                {
-                    200 => Results.Json(result, statusCode: 200),
-                    400 => Results.Json(result, statusCode: 400),
-                    404 => Results.Json(result, statusCode: 404),
-                    _ => Results.Json(result, statusCode: result.StatusCode)
-                };
-            });
+            curso.ID_Curso = id;
+            var result = await service.Actualizar(curso);
+            return Results.Json(result, statusCode: result.StatusCode);
+        });
 
-       
-            group.MapPost("/", async (
-                [FromBody] Curso cursoData,
-                ICursoService service,
-                IAutenticacionService auth,
-                HttpContext http) =>
-            {
-                var authorization = http.Request.Headers["Authorization"].ToString();
-                if (!await auth.ValidarTokenAsync(authorization))
-                    return Results.Unauthorized();
+        group.MapDelete("/{id:int}", async (int id, ICursoService service, IAutenticacionService auth, HttpContext http) =>
+        {
+            var token = http.Request.Headers["Authorization"].ToString();
+            if (!await auth.ValidarTokenAsync(token))
+                return Results.Unauthorized();
 
-                var result = await service.Crear(cursoData);
+            var result = await service.Eliminar(id);
+            return Results.Json(result, statusCode: result.StatusCode);
+        });
 
-                return result.StatusCode switch
-                {
-                    201 => Results.Json(result, statusCode: 201),
-                    200 => Results.Json(result, statusCode: 200),
-                    400 => Results.Json(result, statusCode: 400),
-                    500 => Results.Json(result, statusCode: 500),
-                    _ => Results.Json(result, statusCode: result.StatusCode)
-                };
-            });
+        group.MapGet("/lookups", async (ICursoService service, IAutenticacionService auth, HttpContext http) =>
+        {
+            var token = http.Request.Headers["Authorization"].ToString();
+            if (!await auth.ValidarTokenAsync(token))
+                return Results.Unauthorized();
 
-
-            group.MapPut("/{id:int}", async (
-                int id,
-                [FromBody] Curso cursoData,
-                ICursoService service,
-                IAutenticacionService auth,
-                HttpContext http) =>
-            {
-                var authorization = http.Request.Headers["Authorization"].ToString();
-                if (!await auth.ValidarTokenAsync(authorization))
-                    return Results.Unauthorized();
-                
-                cursoData.ID_Curso = id;
-
-                var result = await service.Actualizar(cursoData);
-
-                return result.StatusCode switch
-                {
-                    200 => Results.Json(result, statusCode: 200),
-                    400 => Results.Json(result, statusCode: 400),
-                    404 => Results.Json(result, statusCode: 404),
-                    500 => Results.Json(result, statusCode: 500),
-                    _ => Results.Json(result, statusCode: result.StatusCode)
-                };
-            });
-
-           
-            group.MapDelete("/{id:int}", async (
-                int id,
-                ICursoService service,
-                IAutenticacionService auth,
-                HttpContext http) =>
-            {
-                var authorization = http.Request.Headers["Authorization"].ToString();
-                if (!await auth.ValidarTokenAsync(authorization))
-                    return Results.Unauthorized();
-
-                var result = await service.Eliminar(id);
-
-                return result.StatusCode switch
-                {
-                    200 => Results.Json(result, statusCode: 200),
-                    400 => Results.Json(result, statusCode: 400),
-                    404 => Results.Json(result, statusCode: 404),
-                    500 => Results.Json(result, statusCode: 500),
-                    _ => Results.Json(result, statusCode: result.StatusCode)
-                };
-        
-            });
-
-
-            group.MapGet("/lookups", async (ICursoService service) =>
-            {
-                var result = await service.ObtenerLookups();
-                return Results.Json(result, statusCode: result.StatusCode);
-            });
-
-
-        }
+            var result = await service.ObtenerLookups();
+            return Results.Json(result, statusCode: result.StatusCode);
+        });
     }
 }

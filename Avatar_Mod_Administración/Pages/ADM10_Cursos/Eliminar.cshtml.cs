@@ -1,16 +1,20 @@
-
 using Avatar_Mod_Administración.Entities;
+using Avatar_Mod_Administración.Pages;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
 {
-    public class EliminarModel : PageModel
+    public class EliminarModel : BasePageModel
     {
         private readonly ICursoApiClient _cursoClient;
 
-        public EliminarModel(ICursoApiClient cursoClient)
+        public EliminarModel(
+            ICursoApiClient cursoClient,
+            IAuthService authService,
+            IUsuarioService usuarioService,
+            ILogger<EliminarModel> logger)
+            : base(authService, usuarioService, logger)
         {
             _cursoClient = cursoClient;
         }
@@ -20,6 +24,10 @@ namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
+            var resultado = await InicializarSesionAsync();
+            if (resultado != null)
+                return resultado;
+
             var curso = await _cursoClient.ObtenerPorIdAsync(id);
             if (curso == null)
                 return RedirectToPage("Index");
@@ -28,9 +36,12 @@ namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
             return Page();
         }
 
-        [ValidateAntiForgeryToken]
         public async Task<IActionResult> OnPostAsync(int id)
         {
+            var resultado = await InicializarSesionAsync();
+            if (resultado != null)
+                return resultado;
+
             var exito = await _cursoClient.EliminarAsync(id);
             if (exito)
                 return RedirectToPage("Index");

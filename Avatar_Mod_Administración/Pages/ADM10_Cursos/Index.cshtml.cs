@@ -1,5 +1,6 @@
 
 using Avatar_Mod_Administración.Entities;
+using Avatar_Mod_Administración.Pages;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -7,11 +8,16 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
 {
-    public class IndexModel : PageModel
+    public class IndexModel : BasePageModel
     {
         private readonly ICursoApiClient _cursoClient;
 
-        public IndexModel(ICursoApiClient cursoClient)
+        public IndexModel(
+            ICursoApiClient cursoClient,
+            IAuthService authService,
+            IUsuarioService usuarioService,
+            ILogger<IndexModel> logger)
+            : base(authService, usuarioService, logger)
         {
             _cursoClient = cursoClient;
         }
@@ -26,26 +32,39 @@ namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
         [BindProperty(SupportsGet = true)]
         public int NivelSeleccionado { get; set; }
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
-        
+           
+            var resultado = await InicializarSesionAsync();
+            if (resultado != null)
+                return resultado;
+
+          
             var lookups = await _cursoClient.ObtenerLookupsAsync();
 
             if (lookups != null)
             {
                 Carreras = lookups.Carreras
-                    .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Nombre })
+                    .Select(c => new SelectListItem
+                    {
+                        Value = c.Id.ToString(),
+                        Text = c.Nombre
+                    })
                     .ToList();
 
                 Niveles = lookups.Niveles
-                    .Select(n => new SelectListItem { Value = n.Id.ToString(), Text = n.Nombre })
+                    .Select(n => new SelectListItem
+                    {
+                        Value = n.Id.ToString(),
+                        Text = n.Nombre
+                    })
                     .ToList();
             }
 
             Carreras.Insert(0, new SelectListItem("Seleccione una carrera", "0"));
             Niveles.Insert(0, new SelectListItem("Todos los niveles", "0"));
 
-   
+            
             var cursos = await _cursoClient.ObtenerTodosAsync();
 
             if (IdCarreraSeleccionada > 0)
@@ -55,6 +74,10 @@ namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
                 cursos = cursos.Where(c => c.Nivel == NivelSeleccionado);
 
             Cursos = cursos.ToList();
+
+            return Page();
         }
     }
 }
+
+

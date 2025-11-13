@@ -20,6 +20,7 @@
         'Desglose y Notas': { icono: 'bi-clipboard-data', url: '/Notas/Index', grupo: 'Evaluación', prefijo: '/Notas' },
         'Promedios': { icono: 'bi-graph-up', url: '/Promedios/Index', grupo: 'Evaluación', prefijo: '/Promedios' },
         'Reportes': { icono: 'bi-file-earmark-bar-graph', url: '/Reportes/Index', grupo: 'Reportes', prefijo: '/Reportes' }
+
     };
 
     let modulosCargados = [];
@@ -313,7 +314,13 @@
             { texto: 'Historial Académico', url: '/Academico/HistorialAcademico', icono: 'bi-journal-text' },
             { texto: 'Listados por periodo', url: '/Academico/ListadoEstudiantes', icono: 'bi-people' },
             { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt' },
-            { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash' }
+            { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash' },
+            { texto: 'Cursos', url: '/ADM10_Cursos', icono: 'bi-book' },
+            { texto: 'Profesores', url: '/ADM11_Profesor', icono: 'bi-people' },
+            { texto: 'Periodo', url: '/ADM12_Periodo', icono: 'bi-journal-text' },
+            { texto: 'Grupo', url: '/ADM13_Grupo', icono: 'bi-journal-text' },
+            { texto: 'Prematricula', url: '/ADM14_Prematricula', icono: 'bi-receipt' }
+
         ];
 
         opciones.forEach(op => {

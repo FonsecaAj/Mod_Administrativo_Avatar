@@ -1,17 +1,21 @@
-
 using Avatar_Mod_Administración.Entities;
+using Avatar_Mod_Administración.Pages;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
 {
-    public class CrearModel : PageModel
+    public class CrearModel : BasePageModel
     {
         private readonly ICursoApiClient _cursoClient;
 
-        public CrearModel(ICursoApiClient cursoClient)
+        public CrearModel(
+            ICursoApiClient cursoClient,
+            IAuthService authService,
+            IUsuarioService usuarioService,
+            ILogger<CrearModel> logger)
+            : base(authService, usuarioService, logger)
         {
             _cursoClient = cursoClient;
         }
@@ -21,9 +25,12 @@ namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
 
         public List<SelectListItem> Carreras { get; set; } = new();
 
-        public async Task OnGetAsync()
+        public async Task<IActionResult> OnGetAsync()
         {
-         
+            var resultado = await InicializarSesionAsync();
+            if (resultado != null)
+                return resultado;
+
             var lookups = await _cursoClient.ObtenerLookupsAsync();
             if (lookups != null)
             {
@@ -31,12 +38,18 @@ namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
                     .Select(c => new SelectListItem { Value = c.Id.ToString(), Text = c.Nombre })
                     .ToList();
             }
+
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
-           
-            if (string.IsNullOrWhiteSpace(NuevoCurso.Nombre) || !NuevoCurso.Nombre.All(ch => char.IsLetter(ch) || char.IsWhiteSpace(ch)))
+            var resultado = await InicializarSesionAsync();
+            if (resultado != null)
+                return resultado;
+
+            if (string.IsNullOrWhiteSpace(NuevoCurso.Nombre) ||
+                !NuevoCurso.Nombre.All(ch => char.IsLetter(ch) || char.IsWhiteSpace(ch)))
                 ModelState.AddModelError("NuevoCurso.Nombre", "El nombre solo puede contener letras y espacios.");
 
             if (NuevoCurso.Nivel < 1 || NuevoCurso.Nivel > 12)

@@ -1,15 +1,19 @@
 using Avatar_Mod_Administración.Entities;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Avatar_Mod_Administración.Pages.ADM12_Periodo
 {
-    public class EditarModel : PageModel
+    public class EditarModel : BasePageModel
     {
         private readonly IPeriodoApiClient _api;
 
-        public EditarModel(IPeriodoApiClient api)
+        public EditarModel(
+            IPeriodoApiClient api,
+            IAuthService auth,
+            IUsuarioService usuarioService,
+            ILogger<EditarModel> logger)
+            : base(auth, usuarioService, logger)
         {
             _api = api;
         }
@@ -22,7 +26,11 @@ namespace Avatar_Mod_Administración.Pages.ADM12_Periodo
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
             var periodo = await _api.ObtenerPorIdAsync(id);
+
             if (periodo == null)
             {
                 MensajeError = "Periodo no encontrado.";
@@ -35,6 +43,9 @@ namespace Avatar_Mod_Administración.Pages.ADM12_Periodo
 
         public async Task<IActionResult> OnPostAsync()
         {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
             ValidarFechasYEstado();
 
             if (!ModelState.IsValid)

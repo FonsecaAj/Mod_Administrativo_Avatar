@@ -8,27 +8,46 @@ namespace Avatar_Mod_Administración.Services
     {
         private readonly HttpClient _http;
         private readonly IConfiguration _config;
+        private readonly IAuthService _authService;
         private readonly string _baseUrl;
-        private readonly string _accessToken;
 
-        public GrupoApiClient(HttpClient http, IConfiguration config)
+        public GrupoApiClient(HttpClient http, IConfiguration config, IAuthService authService)
         {
             _http = http;
             _config = config;
+            _authService = authService;
 
             _baseUrl = $"{_config["Adm_Grupos:BaseUrl"]}/api/grupo";
-            _accessToken = _config["Adm_Grupos:AccessToken"] ?? string.Empty;
+        }
+
+
+        private string ObtenerTokenLimpio()
+        {
+            var sesion = _authService.ObtenerSesionActual();
+
+            if (sesion == null || string.IsNullOrWhiteSpace(sesion.AccessToken))
+                return string.Empty;
+
+            var token = sesion.AccessToken;
+
+            if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                token = token.Substring(7).Trim();
+
+            return token;
         }
 
         private void AplicarToken()
         {
-            if (!string.IsNullOrEmpty(_accessToken))
+            var token = ObtenerTokenLimpio();
+
+            if (!string.IsNullOrEmpty(token))
             {
                 _http.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", _accessToken);
+                    new AuthenticationHeaderValue("Bearer", token);
             }
         }
 
+    
         public async Task<IEnumerable<GrupoDto>> ObtenerTodosAsync()
         {
             AplicarToken();
@@ -48,6 +67,7 @@ namespace Avatar_Mod_Administración.Services
             return wrapper?.ResponseObject ?? new List<GrupoDto>();
         }
 
+        
         public async Task<GrupoDto?> ObtenerPorIdAsync(int id)
         {
             AplicarToken();
@@ -67,6 +87,7 @@ namespace Avatar_Mod_Administración.Services
             return wrapper?.ResponseObject;
         }
 
+      
         public async Task<bool> CrearAsync(GrupoDto grupo)
         {
             AplicarToken();
@@ -87,8 +108,7 @@ namespace Avatar_Mod_Administración.Services
         {
             AplicarToken();
 
-    
-            var response = await _http.PutAsJsonAsync(_baseUrl, grupo);
+            var response = await _http.PutAsJsonAsync($"{_baseUrl}/{grupo.IdGrupo}", grupo);
 
             if (!response.IsSuccessStatusCode)
             {
@@ -100,6 +120,7 @@ namespace Avatar_Mod_Administración.Services
             return true;
         }
 
+      
         public async Task<bool> EliminarAsync(int id)
         {
             AplicarToken();

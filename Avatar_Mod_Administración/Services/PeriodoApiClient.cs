@@ -8,27 +8,46 @@ namespace Avatar_Mod_Administración.Services
     {
         private readonly HttpClient _http;
         private readonly IConfiguration _config;
+        private readonly IAuthService _authService;
         private readonly string _baseUrl;
-        private readonly string _accessToken;
 
-        public PeriodoApiClient(HttpClient http, IConfiguration config)
+        public PeriodoApiClient(HttpClient http, IConfiguration config, IAuthService authService)
         {
             _http = http;
             _config = config;
+            _authService = authService;
 
             _baseUrl = $"{_config["Adm_Periodos:BaseUrl"]}/api/periodo";
-            _accessToken = _config["Adm_Periodos:AccessToken"] ?? string.Empty;
         }
 
+        private string ObtenerTokenLimpio()
+        {
+            var sesion = _authService.ObtenerSesionActual();
+
+            if (sesion == null || string.IsNullOrWhiteSpace(sesion.AccessToken))
+                return string.Empty;
+
+            var token = sesion.AccessToken;
+
+            if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                token = token.Substring(7).Trim();
+
+            return token;
+        }
+
+      
         private void AplicarToken()
         {
-            if (!string.IsNullOrEmpty(_accessToken))
+            var token = ObtenerTokenLimpio();
+
+            if (!string.IsNullOrEmpty(token))
             {
                 _http.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", _accessToken);
+                    new AuthenticationHeaderValue("Bearer", token);
             }
         }
 
+       
         public async Task<IEnumerable<PeriodoDto>> ObtenerTodosAsync()
         {
             AplicarToken();
@@ -67,6 +86,7 @@ namespace Avatar_Mod_Administración.Services
             return wrapper?.ResponseObject;
         }
 
+       
         public async Task<bool> CrearAsync(PeriodoDto periodo)
         {
             AplicarToken();
@@ -83,12 +103,12 @@ namespace Avatar_Mod_Administración.Services
             return true;
         }
 
+       
         public async Task<bool> ActualizarAsync(PeriodoDto periodo)
         {
             AplicarToken();
 
-         
-            var httpResponse = await _http.PutAsJsonAsync(_baseUrl, periodo);
+            var httpResponse = await _http.PutAsJsonAsync($"{_baseUrl}/{periodo.IdPeriodo}", periodo);
 
             if (!httpResponse.IsSuccessStatusCode)
             {
@@ -99,6 +119,7 @@ namespace Avatar_Mod_Administración.Services
 
             return true;
         }
+
 
         public async Task<bool> EliminarAsync(int id)
         {

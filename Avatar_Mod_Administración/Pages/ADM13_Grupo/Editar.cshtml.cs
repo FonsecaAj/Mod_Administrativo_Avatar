@@ -1,11 +1,10 @@
 using Avatar_Mod_Administración.Entities;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
 {
-    public class EditarModel : PageModel
+    public class EditarModel : BasePageModel
     {
         private readonly IGrupoApiClient _grupoApi;
         private readonly ICursoApiClient _cursosApi;
@@ -16,7 +15,11 @@ namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
             IGrupoApiClient grupoApi,
             ICursoApiClient cursosApi,
             IProfesorApiClient profesoresApi,
-            IPeriodoApiClient periodosApi)
+            IPeriodoApiClient periodosApi,
+            IAuthService auth,
+            IUsuarioService usuarioService,
+            ILogger<EditarModel> logger)
+            : base(auth, usuarioService, logger)
         {
             _grupoApi = grupoApi;
             _cursosApi = cursosApi;
@@ -36,6 +39,9 @@ namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
 
         public async Task<IActionResult> OnGetAsync(int id)
         {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
             var grupo = await _grupoApi.ObtenerPorIdAsync(id);
             if (grupo == null)
             {
@@ -51,23 +57,23 @@ namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
 
         public async Task<IActionResult> OnPostAsync()
         {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
             await CargarListasAsync();
 
             if (!ModelState.IsValid)
             {
-                MensajeError = "Hay errores de validación en el formulario.";
+                MensajeError = "Hay errores de validación.";
                 return Page();
             }
 
             var ok = await _grupoApi.ActualizarAsync(Grupo);
 
             if (ok)
-            {
-               
                 return RedirectToPage("Index");
-            }
 
-            MensajeError = "No se pudo actualizar el grupo. Revise número único por curso/periodo u otros errores.";
+            MensajeError = "No se pudo actualizar el grupo.";
             return Page();
         }
 

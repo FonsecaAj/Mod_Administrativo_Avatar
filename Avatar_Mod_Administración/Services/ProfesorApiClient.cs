@@ -1,7 +1,6 @@
-﻿
+﻿using Avatar_Mod_Administración.Entities;
 using System.Net.Http.Headers;
-
-using Avatar_Mod_Administración.Entities;
+using System.Net.Http.Json;
 
 namespace Avatar_Mod_Administración.Services
 {
@@ -9,46 +8,53 @@ namespace Avatar_Mod_Administración.Services
     {
         private readonly HttpClient _http;
         private readonly IConfiguration _config;
+        private readonly IAuthService _authService;
         private readonly string _baseUrl;
-        private readonly string _accessToken;
 
-        public ProfesorApiClient(HttpClient http, IConfiguration config)
+        public ProfesorApiClient(HttpClient http, IConfiguration config, IAuthService authService)
         {
             _http = http;
             _config = config;
+            _authService = authService;
+
+            _baseUrl = $"{_config["Adm_Profesores:BaseUrl"]}/api/profesor";
+        }
 
        
-            _baseUrl = $"{_config["Adm_Profesores:BaseUrl"]}/api/profesor";
-            _accessToken = _config["Adm_Profesores:AccessToken"] ?? string.Empty;
+        private string ObtenerTokenLimpio()
+        {
+            var sesion = _authService.ObtenerSesionActual();
+
+            if (sesion == null || string.IsNullOrWhiteSpace(sesion.AccessToken))
+                return string.Empty;
+
+            var token = sesion.AccessToken;
+
+            if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                token = token.Substring(7).Trim();
+
+            return token;
         }
 
         private void AplicarToken()
         {
-            if (!string.IsNullOrEmpty(_accessToken))
+            var token = ObtenerTokenLimpio();
+
+            if (!string.IsNullOrEmpty(token))
             {
                 _http.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", _accessToken);
+                    new AuthenticationHeaderValue("Bearer", token);
             }
         }
 
-    
+        
         public async Task<IEnumerable<ProfesorDto>> ObtenerTodosAsync()
         {
             AplicarToken();
 
-            var httpResponse = await _http.GetAsync(_baseUrl);
+            var response = await _http.GetFromJsonAsync<BusinessLogicResponse<IEnumerable<ProfesorDto>>>(_baseUrl);
 
-            if (!httpResponse.IsSuccessStatusCode)
-            {
-                var detalle = await httpResponse.Content.ReadAsStringAsync();
-                Console.WriteLine($"[ERROR API GET TODOS PROFESOR] Status: {httpResponse.StatusCode}, Detalle: {detalle}");
-                return new List<ProfesorDto>();
-            }
-
-            var wrapper = await httpResponse.Content
-                .ReadFromJsonAsync<BusinessLogicResponse<IEnumerable<ProfesorDto>>>();
-
-            return wrapper?.ResponseObject ?? new List<ProfesorDto>();
+            return response?.ResponseObject ?? new List<ProfesorDto>();
         }
 
      
@@ -56,70 +62,46 @@ namespace Avatar_Mod_Administración.Services
         {
             AplicarToken();
 
-            var httpResponse = await _http.GetAsync($"{_baseUrl}/{id}");
+            var response = await _http.GetFromJsonAsync<BusinessLogicResponse<ProfesorDto>>($"{_baseUrl}/{id}");
 
-            if (!httpResponse.IsSuccessStatusCode)
-            {
-                var detalle = await httpResponse.Content.ReadAsStringAsync();
-                Console.WriteLine($"[ERROR API GET PROFESOR/{id}] Status: {httpResponse.StatusCode}, Detalle: {detalle}");
-                return null;
-            }
-
-            var wrapper = await httpResponse.Content
-                .ReadFromJsonAsync<BusinessLogicResponse<ProfesorDto>>();
-
-            return wrapper?.ResponseObject;
+            return response?.ResponseObject;
         }
 
+      
         public async Task<bool> CrearAsync(ProfesorDto profesor)
         {
             AplicarToken();
 
-            var httpResponse = await _http.PostAsJsonAsync(_baseUrl, profesor);
+            var response = await _http.PostAsJsonAsync(_baseUrl, profesor);
 
-            if (!httpResponse.IsSuccessStatusCode)
-            {
-                var detalle = await httpResponse.Content.ReadAsStringAsync();
-                Console.WriteLine($"[ERROR API POST PROFESOR] Status: {httpResponse.StatusCode}, Detalle: {detalle}");
-                return false;
-            }
-
-            return true;
+            return response.IsSuccessStatusCode;
         }
 
+       
         public async Task<bool> ActualizarAsync(ProfesorDto profesor)
         {
             AplicarToken();
 
-          
-            var httpResponse = await _http.PutAsJsonAsync(_baseUrl, profesor);
+            var response = await _http.PutAsJsonAsync($"{_baseUrl}/{profesor.IdProfesor}", profesor);
 
-            if (!httpResponse.IsSuccessStatusCode)
+            if (!response.IsSuccessStatusCode)
             {
-                var detalle = await httpResponse.Content.ReadAsStringAsync();
-                Console.WriteLine($"[ERROR API PUT PROFESOR] Status: {httpResponse.StatusCode}, Detalle: {detalle}");
+                var detalle = await response.Content.ReadAsStringAsync();
+                Console.WriteLine($"[ERROR API PUT PROFESOR] Status: {response.StatusCode}, Detalle: {detalle}");
                 return false;
             }
 
             return true;
         }
 
-
-
+    
         public async Task<bool> EliminarAsync(int id)
         {
             AplicarToken();
 
-            var httpResponse = await _http.DeleteAsync($"{_baseUrl}/{id}");
+            var response = await _http.DeleteAsync($"{_baseUrl}/{id}");
 
-            if (!httpResponse.IsSuccessStatusCode)
-            {
-                var detalle = await httpResponse.Content.ReadAsStringAsync();
-                Console.WriteLine($"[ERROR API DELETE PROFESOR/{id}] Status: {httpResponse.StatusCode}, Detalle: {detalle}");
-                return false;
-            }
-
-            return true;
+            return response.IsSuccessStatusCode;
         }
     }
 }
