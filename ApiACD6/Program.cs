@@ -5,6 +5,9 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// SOLUCIÓN: Configurar puerto específico
+builder.WebHost.UseUrls("http://127.0.0.1:5002"); // Puerto diferente
+
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
@@ -45,10 +48,8 @@ builder.Services.AddHttpClient<BitacoraConsumer>(client =>
     client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 });
 
-
 builder.Services.AddHttpClient<IAutenticacionService, AutenticacionService>();
 builder.Services.AddHttpContextAccessor();
-
 
 var app = builder.Build();
 

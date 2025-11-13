@@ -1,4 +1,5 @@
 ﻿using Avatar_Mod_Administración.Entities;
+using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
@@ -20,7 +21,6 @@ namespace Avatar_Mod_Administración.Services
             _baseUrl = $"{_config["Adm_Profesores:BaseUrl"]}/api/profesor";
         }
 
-       
         private string ObtenerTokenLimpio()
         {
             var sesion = _authService.ObtenerSesionActual();
@@ -47,27 +47,48 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        
         public async Task<IEnumerable<ProfesorDto>> ObtenerTodosAsync()
         {
             AplicarToken();
+            try
+            {
+                var response = await _http.GetAsync(_baseUrl);
 
-            var response = await _http.GetFromJsonAsync<BusinessLogicResponse<IEnumerable<ProfesorDto>>>(_baseUrl);
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                    return new List<ProfesorDto>();
 
-            return response?.ResponseObject ?? new List<ProfesorDto>();
+                response.EnsureSuccessStatusCode();
+
+                var data = await response.Content.ReadFromJsonAsync<BusinessLogicResponse<IEnumerable<ProfesorDto>>>();
+                return data?.ResponseObject ?? new List<ProfesorDto>();
+            }
+            catch (HttpRequestException)
+            {
+                return new List<ProfesorDto>();
+            }
         }
 
-     
         public async Task<ProfesorDto?> ObtenerPorIdAsync(int id)
         {
             AplicarToken();
+            try
+            {
+                var response = await _http.GetAsync($"{_baseUrl}/{id}");
 
-            var response = await _http.GetFromJsonAsync<BusinessLogicResponse<ProfesorDto>>($"{_baseUrl}/{id}");
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                    return null;
 
-            return response?.ResponseObject;
+                response.EnsureSuccessStatusCode();
+
+                var data = await response.Content.ReadFromJsonAsync<BusinessLogicResponse<ProfesorDto>>();
+                return data?.ResponseObject;
+            }
+            catch (HttpRequestException)
+            {
+                return null;
+            }
         }
 
-      
         public async Task<bool> CrearAsync(ProfesorDto profesor)
         {
             AplicarToken();
@@ -77,7 +98,6 @@ namespace Avatar_Mod_Administración.Services
             return response.IsSuccessStatusCode;
         }
 
-       
         public async Task<bool> ActualizarAsync(ProfesorDto profesor)
         {
             AplicarToken();
@@ -94,7 +114,6 @@ namespace Avatar_Mod_Administración.Services
             return true;
         }
 
-    
         public async Task<bool> EliminarAsync(int id)
         {
             AplicarToken();
