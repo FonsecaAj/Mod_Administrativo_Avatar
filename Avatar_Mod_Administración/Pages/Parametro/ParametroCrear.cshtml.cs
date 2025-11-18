@@ -76,15 +76,17 @@ namespace Avatar_Mod_Administración.Pages.Parametro
                 Valor = Input.Valor.Trim()
             };
 
-            var resultado = await _parametroService.CrearAsync(dto, token);
+            // Usar mensajes dinámicos de la API
+            var (ok, status, message) = await _parametroService.CrearAsync(dto, token);
 
-            if (resultado)
+            if (ok)
             {
-                TempData["Mensaje"] = "Parámetro creado exitosamente";
+                TempData["Mensaje"] = message;  // Mensaje de la API
                 return RedirectToPage("/Parametro/Parametros");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al crear el parámetro. Verifique que el ID no esté registrado.");
+            // Mostrar mensaje de error de la API
+            ModelState.AddModelError(string.Empty, message ?? "Error al crear el parámetro");
             return Page();
         }
     }

@@ -76,15 +76,18 @@ namespace Avatar_Mod_Administración.Pages.Rol
 
             var token = ObtenerToken()!;
             var dto = new RolCrearDto { Nombre = Input.Nombre.Trim() };
-            var resultado = await _rolService.ActualizarAsync(Id, dto, token);
 
-            if (resultado)
+            // Usar mensajes dinámicos de la API
+            var (ok, status, message) = await _rolService.ActualizarAsync(Id, dto, token);
+
+            if (ok)
             {
-                TempData["Mensaje"] = "Rol actualizado exitosamente";
+                TempData["Mensaje"] = message;  // Mensaje de la API
                 return RedirectToPage("/Rol/Roles");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al actualizar el rol");
+            // Mostrar mensaje de error de la API
+            ModelState.AddModelError(string.Empty, message ?? "Error al actualizar el rol");
             return Page();
         }
     }

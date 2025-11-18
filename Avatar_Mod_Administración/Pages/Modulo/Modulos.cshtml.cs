@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administración.Services;
-using Avatar_Mod_Administración.Entities;
+ï»¿using Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_AdministraciÃ³n.Services;
+using Avatar_Mod_AdministraciÃ³n.Entities;
 
-namespace Avatar_Mod_Administración.Pages.Modulo
+namespace Avatar_Mod_AdministraciÃ³n.Pages.Modulo
 {
     public class ModulosModel : BasePageModel
     {
@@ -37,13 +37,14 @@ namespace Avatar_Mod_Administración.Pages.Modulo
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al cargar el listado de módulos");
-                TempData["Error"] = "Error al cargar el listado de módulos";
+                _logger.LogError(ex, "Error al cargar el listado de mÃ³dulos");
+                TempData["Error"] = "Error al cargar el listado de mÃ³dulos";
                 Modulos = new List<Entities.Modulo>();
                 return Page();
             }
         }
 
+        // Usar el mensaje que devuelve la API
         public async Task<IActionResult> OnPostEliminarAsync(int id)
         {
             var result = await InicializarSesionAsync();
@@ -51,27 +52,14 @@ namespace Avatar_Mod_Administración.Pages.Modulo
 
             var token = ObtenerToken()!;
 
-            try
-            {
-                var modulo = await _moduloService.ObtenerPorIdAsync(id, token);
-                var nombreModulo = modulo?.Nombre ?? $"ID {id}";
+            // Recibir (ok, status, message) 
+            var (ok, status, message) = await _moduloService.EliminarAsync(id, token);
 
-                var (exito, mensajeError) = await _moduloService.EliminarAsync(id, token);
-
-                if (exito)
-                {
-                    TempData["Mensaje"] = $"Módulo '{nombreModulo}' eliminado exitosamente";
-                }
-                else
-                {
-                    TempData["Error"] = mensajeError ?? $"No se pudo eliminar el módulo '{nombreModulo}'";
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al eliminar el módulo {Id}", id);
-                TempData["Error"] = "Ocurrió un error al eliminar el módulo. Intente nuevamente.";
-            }
+            // Usar el mensaje que viene de la API
+            if (ok)
+                TempData["Mensaje"] = message;  // "MÃ³dulo eliminado exitosamente"
+            else
+                TempData["Error"] = message;    // "MÃ³dulo no encontrado" o mensaje de error
 
             return RedirectToPage();
         }

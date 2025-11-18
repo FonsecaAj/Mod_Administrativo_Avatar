@@ -158,10 +158,10 @@
 
     <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/notificaciones.js" asp-append-version="true"></script>
-    <script src="~/js/common.js" asp-append-version="true"></script>
-    <script src="~/js/menu-dinamico.js" asp-append-version="true"></script>
-    <script src="~/js/bitacora-client.js" asp-append-version="true"></script>
+    <script src="~/js/common.js" defer></script>
+    <script src="~/js/notificaciones.js" defer></script>
+    <script src="~/js/menu-dinamico.js" defer></script>
+    <script src="~/js/bitacora-client.js" defer></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

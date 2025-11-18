@@ -75,15 +75,18 @@ namespace Avatar_Mod_Administración.Pages.Institucion
             {
                 var token = ObtenerToken()!;
                 var dto = new InstitucionCrearDto { Nombre = Input.Nombre.Trim() };
-                var institucionCreada = await _institucionService.CrearAsync(dto, token);
 
-                if (institucionCreada != null)
+                // Usar mensajes dinámicos de la API
+                var (ok, status, message) = await _institucionService.CrearAsync(dto, token);
+
+                if (ok)
                 {
-                    TempData["Mensaje"] = $"Institución '{institucionCreada.Nombre}' creada exitosamente";
+                    TempData["Mensaje"] = message;  // Mensaje de la API
                     return RedirectToPage("/Institucion/Instituciones");
                 }
 
-                ModelState.AddModelError(string.Empty, "Error al crear la institución.");
+                // Mostrar mensaje de error de la API
+                ModelState.AddModelError(string.Empty, message ?? "Error al crear la institución");
                 return Page();
             }
             catch (Exception)

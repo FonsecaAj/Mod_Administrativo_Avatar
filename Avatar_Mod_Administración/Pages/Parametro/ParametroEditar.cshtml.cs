@@ -91,15 +91,17 @@ namespace Avatar_Mod_Administración.Pages.Parametro
                 Valor = Input.Valor.Trim()
             };
 
-            var resultado = await _parametroService.ActualizarAsync(Id, dto, token);
+            //  Usar mensajes dinámicos de la API
+            var (ok, status, message) = await _parametroService.ActualizarAsync(Id, dto, token);
 
-            if (resultado)
+            if (ok)
             {
-                TempData["Mensaje"] = "Parámetro actualizado exitosamente";
+                TempData["Mensaje"] = message;  // Mensaje de la API
                 return RedirectToPage("/Parametro/Parametros");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al actualizar el parámetro");
+            // Mostrar mensaje de error de la API
+            ModelState.AddModelError(string.Empty, message ?? "Error al actualizar el parámetro");
             return Page();
         }
     }

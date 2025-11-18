@@ -76,7 +76,7 @@
         let container = document.getElementById('toastContainer');
 
         if (!container) {
-            console.warn('⚠️ Container #toastContainer no encontrado, creando uno nuevo...');
+            console.warn('Container #toastContainer no encontrado, creando uno nuevo...');
             container = document.createElement('div');
             container.id = 'toastContainer';
             container.className = 'toast-container position-fixed top-0 end-0 p-3';

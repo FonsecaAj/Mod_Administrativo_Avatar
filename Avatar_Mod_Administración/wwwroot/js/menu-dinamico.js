@@ -39,98 +39,138 @@
         return datosUsuarioCache;
     }
 
-    async function verificarSesion() {
-        try {
-            const response = await fetch('/api/sesion/verificar', { method: 'GET', credentials: 'include' });
-            if (!response.ok) { window.location.href = '/Login'; return false; }
-            return true;
-        } catch (error) { return false; }
-    }
-
     async function cargarModulosPorRol(rolId, token) {
         try {
+            const cacheKey = `modulos_rol_${rolId}`;
+            const cached = sessionStorage.getItem(cacheKey);
+
+            if (cached) {
+                console.log('Módulos cargados desde caché');
+                try {
+                    return JSON.parse(cached);
+                } catch (e) {
+                    sessionStorage.removeItem(cacheKey);
+                }
+            }
+
             const rolIdNum = parseInt(rolId);
             if (!rolIdNum || rolIdNum === 0) return [];
+
             const response = await fetch(`/api/rol/${rolIdNum}/modulos`, {
-                method: 'GET', headers: { 'Content-Type': 'application/json', 'Authorization': token }, credentials: 'include'
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': token
+                },
+                credentials: 'include'
             });
-            if (!response.ok) { if (response.status === 401) window.location.href = '/Login'; return []; }
-            return await response.json();
-        } catch (error) { return []; }
+
+            if (!response.ok) {
+                if (response.status === 401) window.location.href = '/Login';
+                return [];
+            }
+
+            const modulos = await response.json();
+            sessionStorage.setItem(cacheKey, JSON.stringify(modulos));
+            setTimeout(() => sessionStorage.removeItem(cacheKey), 10 * 60 * 1000);
+
+            return modulos;
+        } catch (error) {
+            console.error('Error al cargar módulos:', error);
+            return [];
+        }
     }
 
     async function cargarMenuDinamico() {
         const loader = document.getElementById('menu-loader');
         try {
-            const sesionValida = await verificarSesion();
-            if (!sesionValida) return;
             const datosUsuario = obtenerDatosUsuario();
-            if (!datosUsuario?.token) { mostrarMenuPorDefecto(); return; }
+            if (!datosUsuario?.token) {
+                mostrarMenuPorDefecto();
+                return;
+            }
+
             const rolIdNum = parseInt(datosUsuario.rolId);
-            if (!rolIdNum || rolIdNum === 0) { mostrarMenuPorDefecto(); return; }
+            if (!rolIdNum || rolIdNum === 0) {
+                mostrarMenuPorDefecto();
+                return;
+            }
+
             const modulos = await cargarModulosPorRol(datosUsuario.rolId, datosUsuario.token);
-            if (!modulos || modulos.length === 0) { mostrarMenuPorDefecto(); return; }
+
+            if (!modulos || modulos.length === 0) {
+                mostrarMenuPorDefecto();
+                return;
+            }
+
             modulosCargados = modulos;
             if (loader) loader.remove();
             construirMenu(modulos);
             actualizarBreadcrumbs();
-        } catch (error) { mostrarMenuPorDefecto(); }
+        } catch (error) {
+            console.error('Error al cargar menú:', error);
+            mostrarMenuPorDefecto();
+        }
     }
 
     function construirMenu(modulos) {
         const sidebarNav = document.querySelector('.sidebar-nav');
         if (!sidebarNav) return;
-        sidebarNav.innerHTML = '';
+
+        const fragment = document.createDocumentFragment();
         const grupos = agruparModulos(modulos);
-        agregarDashboard(sidebarNav);
+
+        const dashboardItem = document.createElement('div');
+        dashboardItem.className = 'nav-item';
+        dashboardItem.innerHTML = '<a href="/" class="nav-link"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>';
+        fragment.appendChild(dashboardItem);
+
         Object.keys(grupos).sort().forEach(nombreGrupo => {
             const modulosGrupo = grupos[nombreGrupo];
+
             const tituloSeccion = document.createElement('div');
             tituloSeccion.className = 'nav-section-title';
             tituloSeccion.textContent = nombreGrupo;
-            sidebarNav.appendChild(tituloSeccion);
+            fragment.appendChild(tituloSeccion);
+
             modulosGrupo.forEach(modulo => {
                 const config = MODULOS_CONFIG[modulo.nombreModulo];
-                if (config && modulo.moduloActivo) agregarItemMenu(sidebarNav, modulo.nombreModulo, config);
+                if (config && modulo.moduloActivo) {
+                    const navItem = document.createElement('div');
+                    navItem.className = 'nav-item';
+                    navItem.innerHTML = `<a href="${config.url}" class="nav-link"><i class="bi ${config.icono}"></i><span>${modulo.nombreModulo}</span></a>`;
+                    fragment.appendChild(navItem);
+                }
             });
         });
+
+        sidebarNav.innerHTML = '';
+        sidebarNav.appendChild(fragment);
         marcarRutaActiva();
     }
 
     function agruparModulos(modulos) {
-        const grupos = {};
-        modulos.forEach(modulo => {
+        return modulos.reduce((grupos, modulo) => {
             const config = MODULOS_CONFIG[modulo.nombreModulo];
             if (config) {
                 if (!grupos[config.grupo]) grupos[config.grupo] = [];
                 grupos[config.grupo].push(modulo);
             }
-        });
-        return grupos;
-    }
-
-    function agregarDashboard(container) {
-        const navItem = document.createElement('div');
-        navItem.className = 'nav-item';
-        navItem.innerHTML = '<a href="/" class="nav-link"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a>';
-        container.appendChild(navItem);
-    }
-
-    function agregarItemMenu(container, nombre, config) {
-        const navItem = document.createElement('div');
-        navItem.className = 'nav-item';
-        navItem.innerHTML = '<a href="' + config.url + '" class="nav-link"><i class="bi ' + config.icono + '"></i><span>' + nombre + '</span></a>';
-        container.appendChild(navItem);
+            return grupos;
+        }, {});
     }
 
     function marcarRutaActiva() {
         const rutaActual = window.location.pathname;
         const links = document.querySelectorAll('.sidebar-nav .nav-link');
+
         let mejorCoincidencia = null;
         let longitudCoincidencia = 0;
+
         links.forEach(function (link) {
             link.classList.remove('active');
             const href = link.getAttribute('href');
+
             if (rutaActual === href) {
                 mejorCoincidencia = link;
                 longitudCoincidencia = href.length;
@@ -139,6 +179,7 @@
                 longitudCoincidencia = href.length;
             }
         });
+
         if (mejorCoincidencia) mejorCoincidencia.classList.add('active');
     }
 
@@ -169,14 +210,14 @@
             return;
         }
 
-        html += '<li class="breadcrumb-item">' + moduloMatch.grupo + '</li>';
+        html += `<li class="breadcrumb-item">${moduloMatch.grupo}</li>`;
 
         if (ruta === moduloMatch.url) {
-            html += '<li class="breadcrumb-item active" aria-current="page">' + moduloMatch.nombre + '</li>';
+            html += `<li class="breadcrumb-item active" aria-current="page">${moduloMatch.nombre}</li>`;
         } else {
-            html += '<li class="breadcrumb-item"><a href="' + moduloMatch.url + '">' + moduloMatch.nombre + '</a></li>';
+            html += `<li class="breadcrumb-item"><a href="${moduloMatch.url}">${moduloMatch.nombre}</a></li>`;
             const subpagina = obtenerNombreSubpagina(ruta);
-            html += '<li class="breadcrumb-item active" aria-current="page">' + subpagina + '</li>';
+            html += `<li class="breadcrumb-item active" aria-current="page">${subpagina}</li>`;
         }
 
         breadcrumbOl.innerHTML = html;
@@ -185,29 +226,28 @@
     function obtenerNombreSubpagina(ruta) {
         const r = ruta.toLowerCase();
 
-        if (r.includes('institucioncrear')) return 'Crear Institución';
-        if (r.includes('institucioneditar')) return 'Editar Institución';
+        const mapSubpaginas = {
+            'institucioncrear': 'Crear Institución',
+            'institucioneditar': 'Editar Institución',
+            'usuariocrear': 'Crear Usuario',
+            'usuarioeditar': 'Editar Usuario',
+            'carreracrear': 'Crear Carrera',
+            'carreraeditar': 'Editar Carrera',
+            'cursocrear': 'Crear Curso',
+            'cursoeditar': 'Editar Curso',
+            'rolcrear': 'Crear Rol',
+            'roleditar': 'Editar Rol',
+            'grupocrear': 'Crear Grupo',
+            'grupoeditar': 'Editar Grupo',
+            'parametrocrear': 'Crear Parámetro',
+            'parametroeditar': 'Editar Parámetro',
+            'modulocrear': 'Crear Módulo',
+            'moduloeditar': 'Editar Módulo'
+        };
 
-        if (r.includes('usuariocrear')) return 'Crear Usuario';
-        if (r.includes('usuarioeditar')) return 'Editar Usuario';
-
-        if (r.includes('carreracrear')) return 'Crear Carrera';
-        if (r.includes('carreraeditar')) return 'Editar Carrera';
-
-        if (r.includes('cursocrear')) return 'Crear Curso';
-        if (r.includes('cursoeditar')) return 'Editar Curso';
-
-        if (r.includes('rolcrear')) return 'Crear Rol';
-        if (r.includes('roleditar')) return 'Editar Rol';
-
-        if (r.includes('grupocrear')) return 'Crear Grupo';
-        if (r.includes('grupoeditar')) return 'Editar Grupo';
-
-        if (r.includes('parametrocrear')) return 'Crear Parámetro';
-        if (r.includes('parametroeditar')) return 'Editar Parámetro';
-
-        if (r.includes('modulocrear')) return 'Crear Módulo';
-        if (r.includes('moduloeditar')) return 'Editar Módulo';
+        for (const key in mapSubpaginas) {
+            if (r.includes(key)) return mapSubpaginas[key];
+        }
 
         if (r.includes('crear')) return 'Crear';
         if (r.includes('editar')) return 'Editar';
@@ -219,10 +259,12 @@
     function mostrarMenuPorDefecto() {
         const sidebarNav = document.querySelector('.sidebar-nav');
         if (!sidebarNav) return;
+
         const loader = document.getElementById('menu-loader');
         if (loader) loader.remove();
-        sidebarNav.innerHTML = '';
-        agregarDashboard(sidebarNav);
+
+        sidebarNav.innerHTML = '<div class="nav-item"><a href="/" class="nav-link"><i class="bi bi-speedometer2"></i><span>Dashboard</span></a></div>';
+
         marcarRutaActiva();
         actualizarBreadcrumbs();
     }
@@ -231,6 +273,7 @@
         const btnCollapse = document.querySelector('.btn-collapse');
         const btnMenuToggle = document.querySelector('.btn-menu-toggle');
         const sidebar = document.querySelector('.sidebar');
+
         if (btnCollapse) {
             btnCollapse.addEventListener('click', function () {
                 if (sidebar) {
@@ -239,11 +282,13 @@
                 }
             });
         }
+
         if (btnMenuToggle) {
             btnMenuToggle.addEventListener('click', function () {
                 if (sidebar) sidebar.classList.toggle('mobile-open');
             });
         }
+
         const estaColapsado = localStorage.getItem('sidebarCollapsed') === 'true';
         if (estaColapsado && sidebar) sidebar.classList.add('collapsed');
     }
@@ -260,18 +305,35 @@
         init();
     }
 
-    window.addEventListener('popstate', function () {
-        marcarRutaActiva();
-        actualizarBreadcrumbs();
-    });
-
     let ultimaRuta = window.location.pathname;
-    setInterval(function () {
+
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+
+    history.pushState = function () {
+        originalPushState.apply(this, arguments);
         if (window.location.pathname !== ultimaRuta) {
             ultimaRuta = window.location.pathname;
             marcarRutaActiva();
             actualizarBreadcrumbs();
         }
-    }, 200);
+    };
+
+    history.replaceState = function () {
+        originalReplaceState.apply(this, arguments);
+        if (window.location.pathname !== ultimaRuta) {
+            ultimaRuta = window.location.pathname;
+            marcarRutaActiva();
+            actualizarBreadcrumbs();
+        }
+    };
+
+    window.addEventListener('popstate', function () {
+        if (window.location.pathname !== ultimaRuta) {
+            ultimaRuta = window.location.pathname;
+            marcarRutaActiva();
+            actualizarBreadcrumbs();
+        }
+    });
 
 })();

@@ -33,17 +33,17 @@ app.MapPost("/parametro", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var validacion = ValidarParametro(dto.IdParametro, dto.Valor);
     if (!validacion.esValido)
-        return Results.BadRequest(new { error = validacion.mensaje });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = validacion.mensaje }, statusCode: 400);
 
     var parametroExistente = await repository.ObtenerPorIdAsync(dto.IdParametro.Trim().ToUpper());
     if (parametroExistente != null)
-        return Results.BadRequest(new { error = "El parámetro ya existe" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "El parámetro ya existe" }, statusCode: 400);
 
     var parametro = new Parametro
     {
@@ -68,7 +68,13 @@ app.MapPost("/parametro", async (
         "INSERT"
     );
 
-    return Results.Created($"/parametro/{parametroCreado.IdParametro}", parametroCreado);
+    // Devolver BusinessLogicResponse
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 201,
+        Message = $"Parámetro creado correctamente: {parametroCreado.IdParametro}",
+        ResponseObject = parametroCreado
+    }, statusCode: 201);
 })
 .WithName("CrearParametro")
 .WithOpenApi();
@@ -83,20 +89,20 @@ app.MapPut("/parametro/{id}", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var validacion = ValidarParametro(dto.IdParametro, dto.Valor);
     if (!validacion.esValido)
-        return Results.BadRequest(new { error = validacion.mensaje });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = validacion.mensaje }, statusCode: 400);
 
     if (id.ToUpper() != dto.IdParametro.Trim().ToUpper())
-        return Results.BadRequest(new { error = "El ID del parámetro no coincide" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "El ID del parámetro no coincide" }, statusCode: 400);
 
     var parametroExistente = await repository.ObtenerPorIdAsync(id.ToUpper());
     if (parametroExistente == null)
-        return Results.NotFound(new { error = "Parámetro no encontrado" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Parámetro no encontrado" }, statusCode: 404);
 
     var registroAnterior = new
     {
@@ -135,7 +141,13 @@ app.MapPut("/parametro/{id}", async (
         "UPDATE"
     );
 
-    return Results.Ok(parametroActualizado);
+    // Devolver BusinessLogicResponse
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 200,
+        Message = "Parámetro actualizado correctamente",
+        ResponseObject = parametroActualizado
+    }, statusCode: 200);
 })
 .WithName("ActualizarParametro")
 .WithOpenApi();
@@ -149,13 +161,13 @@ app.MapDelete("/parametro/{id}", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var parametro = await repository.ObtenerPorIdAsync(id.ToUpper());
     if (parametro == null)
-        return Results.NotFound(new { error = "Parámetro no encontrado" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Parámetro no encontrado" }, statusCode: 404);
 
     var registroEliminado = new
     {
@@ -173,7 +185,12 @@ app.MapDelete("/parametro/{id}", async (
         "DELETE"
     );
 
-    return Results.NoContent();
+    // Devolver BusinessLogicResponse en lugar de NoContent()
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 200,
+        Message = "Parámetro eliminado exitosamente"
+    }, statusCode: 200);
 })
 .WithName("EliminarParametro")
 .WithOpenApi();

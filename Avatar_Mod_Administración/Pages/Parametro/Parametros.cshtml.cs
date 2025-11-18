@@ -47,18 +47,22 @@ namespace Avatar_Mod_Administración.Pages.Parametro
             return Page();
         }
 
+        //  Mensajes dinámicos de la API
         public async Task<IActionResult> OnPostEliminarAsync(string id)
         {
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
             var token = ObtenerToken()!;
-            var resultado = await _parametroService.EliminarAsync(id, token);
 
-            if (resultado)
-                TempData["Mensaje"] = "Parámetro eliminado exitosamente";
+            //  Recibir (ok, status, message)
+            var (ok, status, message) = await _parametroService.EliminarAsync(id, token);
+
+            // Usar el mensaje que viene de la API
+            if (ok)
+                TempData["Mensaje"] = message;  // "Parámetro ............"
             else
-                TempData["Error"] = "No se pudo eliminar el parámetro";
+                TempData["Error"] = message;    // "Parámetro no encontrado" o mensaje de error
 
             return RedirectToPage();
         }

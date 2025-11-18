@@ -24,34 +24,49 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddHttpClient<IUsuarioService, UsuarioService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddHttpClient<IRolService, RolService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddHttpClient<IParametroService, ParametroService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddHttpClient<IInstitucionService, InstitucionService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddHttpClient<IModuloService, ModuloService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
+});
+
+// Agregar compresión de respuestas
+builder.Services.AddResponseCompression(options =>
+{
+    options.EnableForHttps = true;
 });
 
 var app = builder.Build();
+
+// Usar compresión
+app.UseResponseCompression();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -108,7 +123,8 @@ app.MapGet("/api/rol/{idRol}/modulos", async (
             token = $"Bearer {token}";
         }
 
-        log.LogDebug("Token: {Token}", token.Substring(0, Math.Min(40, token.Length)) + "...");
+        // Eliminar substring innecesario
+        log.LogDebug("Token obtenido correctamente");
 
         var modulos = await rolService.ObtenerModulosPorRolAsync(idRol, token);
 
@@ -200,7 +216,7 @@ app.MapPost("/api/bitacora", async (
         using var reader = new StreamReader(context.Request.Body);
         var bodyOriginal = await reader.ReadToEndAsync();
 
-        log.LogDebug("Body recibido: {Body}", bodyOriginal);
+        log.LogDebug("Body recibido");
 
         using var httpClient = new HttpClient();
         httpClient.Timeout = TimeSpan.FromSeconds(5);
@@ -227,7 +243,7 @@ app.MapPost("/api/bitacora", async (
 
             var jsonGEN1 = System.Text.Json.JsonSerializer.Serialize(payloadGEN1);
 
-            log.LogDebug("Enviando a GEN1: {Json}", jsonGEN1);
+            log.LogDebug("Enviando a GEN1");
 
             var request = new HttpRequestMessage(HttpMethod.Post, $"{gen1Url}/api/bitacora");
             request.Content = new StringContent(jsonGEN1, System.Text.Encoding.UTF8, "application/json");
@@ -247,7 +263,7 @@ app.MapPost("/api/bitacora", async (
         }
         catch (System.Text.Json.JsonException ex)
         {
-            log.LogError(ex, "Error al parsear JSON: {Body}", bodyOriginal);
+            log.LogError(ex, "Error al parsear JSON");
             return Results.BadRequest(new { error = "JSON inválido" });
         }
     }

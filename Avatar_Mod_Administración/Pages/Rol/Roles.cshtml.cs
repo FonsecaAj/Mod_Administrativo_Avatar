@@ -30,18 +30,22 @@ namespace Avatar_Mod_Administración.Pages.Rol
             return Page();
         }
 
+        // Usar mensajes dinámicos de la API
         public async Task<IActionResult> OnPostEliminarAsync(int id)
         {
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
             var token = ObtenerToken()!;
-            var resultado = await _rolService.EliminarAsync(id, token);
 
-            if (resultado)
-                TempData["Mensaje"] = "Rol eliminado exitosamente";
+            // Recibir (ok, status, message)
+            var (ok, status, message) = await _rolService.EliminarAsync(id, token);
+
+            // Usar el mensaje que viene de la API
+            if (ok)
+                TempData["Mensaje"] = message;  // "Rol ......."
             else
-                TempData["Error"] = "No se pudo eliminar el rol. Verifique dependencias.";
+                TempData["Error"] = message;    // "Rol no encontrado" o mensaje de error
 
             return RedirectToPage();
         }

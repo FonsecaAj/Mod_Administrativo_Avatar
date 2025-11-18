@@ -33,17 +33,17 @@ app.MapPost("/modulo", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var validacion = ValidarModulo(dto.Nombre);
     if (!validacion.esValido)
-        return Results.BadRequest(new { error = validacion.mensaje });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = validacion.mensaje }, statusCode: 400);
 
     var moduloExistente = await repository.ObtenerPorNombreAsync(dto.Nombre.Trim());
     if (moduloExistente != null)
-        return Results.BadRequest(new { error = "Ya existe un módulo con ese nombre" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "Ya existe un módulo con ese nombre" }, statusCode: 400);
 
     var modulo = new Modulo
     {
@@ -55,6 +55,9 @@ app.MapPost("/modulo", async (
     var id = await repository.CrearAsync(modulo);
 
     var moduloCreado = await repository.ObtenerPorIdAsync(id);
+
+    if (moduloCreado == null)
+        return Results.Json(new BusinessLogicResponse { StatusCode = 500, Message = "Error al recuperar el módulo creado" }, statusCode: 500);
 
     var nuevoRegistro = new
     {
@@ -72,7 +75,13 @@ app.MapPost("/modulo", async (
         "INSERT"
     );
 
-    return Results.Created($"/modulo/{id}", moduloCreado);
+    // Devolver el módulo directamente en ResponseObject (igual que Created antes)
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 201,
+        Message = $"Módulo '{moduloCreado.Nombre}' creado correctamente",
+        ResponseObject = moduloCreado
+    }, statusCode: 201);
 })
 .WithName("CrearModulo")
 .WithOpenApi();
@@ -87,27 +96,28 @@ app.MapPut("/modulo/{id}", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var validacion = ValidarModulo(dto.Nombre);
     if (!validacion.esValido)
-        return Results.BadRequest(new { error = validacion.mensaje });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = validacion.mensaje }, statusCode: 400);
 
     var moduloExistente = await repository.ObtenerPorIdAsync(id);
     if (moduloExistente == null)
-        return Results.NotFound(new { error = "Módulo no encontrado" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Módulo no encontrado" }, statusCode: 404);
 
     var moduloDuplicado = await repository.ObtenerPorNombreAsync(dto.Nombre.Trim());
     if (moduloDuplicado != null && moduloDuplicado.IdModulo != id)
-        return Results.BadRequest(new { error = "Ya existe un módulo con ese nombre" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "Ya existe un módulo con ese nombre" }, statusCode: 400);
 
     var registroAnterior = new
     {
         moduloExistente.IdModulo,
         moduloExistente.Nombre,
         moduloExistente.Activo,
+        moduloExistente.Orden,
         moduloExistente.FechaCreacion,
         moduloExistente.FechaModificacion
     };
@@ -124,11 +134,15 @@ app.MapPut("/modulo/{id}", async (
 
     var moduloActualizado = await repository.ObtenerPorIdAsync(id);
 
+    if (moduloActualizado == null)
+        return Results.Json(new BusinessLogicResponse { StatusCode = 500, Message = "Error al recuperar el módulo actualizado" }, statusCode: 500);
+
     var registroActual = new
     {
         moduloActualizado.IdModulo,
         moduloActualizado.Nombre,
         moduloActualizado.Activo,
+        moduloActualizado.Orden,
         moduloActualizado.FechaCreacion,
         moduloActualizado.FechaModificacion
     };
@@ -145,7 +159,13 @@ app.MapPut("/modulo/{id}", async (
         "UPDATE"
     );
 
-    return Results.Ok(moduloActualizado);
+    // Devolver el módulo directamente en ResponseObject
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 200,
+        Message = "Módulo actualizado correctamente",
+        ResponseObject = moduloActualizado
+    }, statusCode: 200);
 })
 .WithName("ActualizarModulo")
 .WithOpenApi();
@@ -160,13 +180,13 @@ app.MapDelete("/modulo/{id}", async (
     IConfiguration configuration) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var modulo = await repository.ObtenerPorIdAsync(id);
     if (modulo == null)
-        return Results.NotFound(new { error = "Módulo no encontrado" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Módulo no encontrado" }, statusCode: 404);
 
     // Validar si el módulo está asignado a algún rol
     try
@@ -187,10 +207,11 @@ app.MapDelete("/modulo/{id}", async (
             if (validacion.TryGetProperty("estaAsignado", out var estaAsignado) &&
                 estaAsignado.GetBoolean())
             {
-                return Results.BadRequest(new
+                return Results.Json(new BusinessLogicResponse
                 {
-                    error = "No se puede eliminar el módulo porque está asignado a uno o más roles"
-                });
+                    StatusCode = 400,
+                    Message = "No se puede eliminar el módulo porque está asignado a uno o más roles"
+                }, statusCode: 400);
             }
         }
     }
@@ -204,6 +225,7 @@ app.MapDelete("/modulo/{id}", async (
         modulo.IdModulo,
         modulo.Nombre,
         modulo.Activo,
+        modulo.Orden,
         modulo.FechaCreacion,
         modulo.FechaModificacion
     };
@@ -216,7 +238,11 @@ app.MapDelete("/modulo/{id}", async (
         "DELETE"
     );
 
-    return Results.NoContent();
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 200,
+        Message = "Módulo eliminado exitosamente"
+    }, statusCode: 200);
 })
 .WithName("EliminarModulo")
 .WithOpenApi();
@@ -229,7 +255,7 @@ app.MapGet("/modulo", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
@@ -247,7 +273,14 @@ app.MapGet("/modulo", async (
         "SELECT"
     );
 
-    return Results.Ok(modulos);
+    // Devolver los módulos DIRECTAMENTE
+    // El menú dinámico espera un array de módulos
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 200,
+        Message = "Módulos obtenidos correctamente",
+        ResponseObject = modulos
+    }, statusCode: 200);
 })
 .WithName("ObtenerTodosModulos")
 .WithOpenApi();
@@ -261,20 +294,21 @@ app.MapGet("/modulo/{id}", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var modulo = await repository.ObtenerPorIdAsync(id);
 
     if (modulo == null)
-        return Results.NotFound(new { error = "Módulo no encontrado" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Módulo no encontrado" }, statusCode: 404);
 
     var registroConsultado = new
     {
         modulo.IdModulo,
         modulo.Nombre,
         modulo.Activo,
+        modulo.Orden,
         modulo.FechaCreacion,
         modulo.FechaModificacion
     };
@@ -285,7 +319,13 @@ app.MapGet("/modulo/{id}", async (
         "SELECT"
     );
 
-    return Results.Ok(modulo);
+    // Devolver el módulo directamente en ResponseObject
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 200,
+        Message = "Módulo obtenido correctamente",
+        ResponseObject = modulo
+    }, statusCode: 200);
 })
 .WithName("ObtenerModuloPorId")
 .WithOpenApi();

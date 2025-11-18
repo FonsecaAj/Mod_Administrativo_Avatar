@@ -96,15 +96,17 @@ namespace Avatar_Mod_Administración.Pages.Usuario
                 RolDeseado = Input.RolDeseado
             };
 
-            var resultado = await _usuarioService.CrearAsync(dto, token);
+            // Usar mensajes dinámicos de la API
+            var (ok, status, message) = await _usuarioService.CrearAsync(dto, token);
 
-            if (resultado)
+            if (ok)
             {
-                TempData["Mensaje"] = "Usuario creado exitosamente";
+                TempData["Mensaje"] = message;  // Mensaje de la API
                 return RedirectToPage("/Usuario/Usuarios");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al crear el usuario. Verifique que el email no esté registrado.");
+            // Mostrar mensaje de error de la API
+            ModelState.AddModelError(string.Empty, message ?? "Error al crear el usuario");
             await CargarCatalogosAsync(token);
             return Page();
         }

@@ -144,7 +144,8 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        public async Task<bool> CrearAsync(ParametroCrearDto dto, string token)
+        // Se devuelve (ok, status, message)
+        public async Task<(bool ok, int statusCode, string? message)> CrearAsync(ParametroCrearDto dto, string token)
         {
             try
             {
@@ -160,18 +161,39 @@ namespace Avatar_Mod_Administración.Services
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     _logger.LogError("Error al crear parámetro: {Status}, {Content}", response.StatusCode, errorContent);
+
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(errorContent);
+                        int status = doc.RootElement.GetProperty("statusCode").GetInt32();
+                        string message = doc.RootElement.GetProperty("message").GetString() ?? "Error al crear parámetro";
+                        return (false, status, message);
+                    }
+                    catch
+                    {
+                        return (false, (int)response.StatusCode, "Error al crear parámetro");
+                    }
                 }
 
-                return response.IsSuccessStatusCode;
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                using var payload = await JsonDocument.ParseAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)));
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Parámetro creado exitosamente";
+
+                _logger.LogInformation("Parámetro creado. Estado {Status}: {Mensaje}", statusCode, msg);
+
+                return (statusCode == 201, statusCode, msg);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear parámetro");
-                return false;
+                return (false, 500, $"Error procesando respuesta: {ex.Message}");
             }
         }
 
-        public async Task<bool> ActualizarAsync(string id, ParametroCrearDto dto, string token)
+        // Se devuelve (ok, status, message)
+        public async Task<(bool ok, int statusCode, string? message)> ActualizarAsync(string id, ParametroCrearDto dto, string token)
         {
             try
             {
@@ -187,18 +209,39 @@ namespace Avatar_Mod_Administración.Services
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     _logger.LogError("Error al actualizar parámetro: {Status}, {Content}", response.StatusCode, errorContent);
+
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(errorContent);
+                        int status = doc.RootElement.GetProperty("statusCode").GetInt32();
+                        string message = doc.RootElement.GetProperty("message").GetString() ?? "Error al actualizar parámetro";
+                        return (false, status, message);
+                    }
+                    catch
+                    {
+                        return (false, (int)response.StatusCode, "Error al actualizar parámetro");
+                    }
                 }
 
-                return response.IsSuccessStatusCode;
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                using var payload = await JsonDocument.ParseAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)));
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Parámetro actualizado exitosamente";
+
+                _logger.LogInformation("Parámetro {Id} actualizado. Estado {Status}: {Mensaje}", id, statusCode, msg);
+
+                return (statusCode == 200, statusCode, msg);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar parámetro");
-                return false;
+                return (false, 500, $"Error procesando respuesta: {ex.Message}");
             }
         }
 
-        public async Task<bool> EliminarAsync(string id, string token)
+        // Se devuelve (ok, status, message)
+        public async Task<(bool ok, int statusCode, string? message)> EliminarAsync(string id, string token)
         {
             try
             {
@@ -213,14 +256,34 @@ namespace Avatar_Mod_Administración.Services
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
                     _logger.LogError("Error al eliminar parámetro: {Status}, {Content}", response.StatusCode, errorContent);
+
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(errorContent);
+                        int status = doc.RootElement.GetProperty("statusCode").GetInt32();
+                        string message = doc.RootElement.GetProperty("message").GetString() ?? "Error al eliminar parámetro";
+                        return (false, status, message);
+                    }
+                    catch
+                    {
+                        return (false, (int)response.StatusCode, "Error al eliminar parámetro");
+                    }
                 }
 
-                return response.IsSuccessStatusCode;
+                var responseContent = await response.Content.ReadAsStringAsync();
+
+                using var payload = await JsonDocument.ParseAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)));
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Parámetro eliminado exitosamente";
+
+                _logger.LogInformation("Parámetro {Id} eliminado. Estado {Status}: {Mensaje}", id, statusCode, msg);
+
+                return (statusCode == 200, statusCode, msg);
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar parámetro");
-                return false;
+                return (false, 500, $"Error procesando respuesta: {ex.Message}");
             }
         }
     }
