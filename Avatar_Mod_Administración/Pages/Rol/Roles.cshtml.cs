@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administración.Services;
-using Avatar_Mod_Administración.Entities;
+ï»¿using Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_AdministraciÃ³n.Services;
+using Avatar_Mod_AdministraciÃ³n.Entities;
 
-namespace Avatar_Mod_Administración.Pages.Rol
+namespace Avatar_Mod_AdministraciÃ³n.Pages.Rol
 {
     public class RolesModel : BasePageModel
     {
@@ -30,7 +30,7 @@ namespace Avatar_Mod_Administración.Pages.Rol
             return Page();
         }
 
-        // Usar mensajes dinámicos de la API
+        // Usar mensajes dinÃ¡micos de la API
         public async Task<IActionResult> OnPostEliminarAsync(int id)
         {
             var result = await InicializarSesionAsync();
@@ -43,7 +43,7 @@ namespace Avatar_Mod_Administración.Pages.Rol
 
             // Usar el mensaje que viene de la API
             if (ok)
-                TempData["Mensaje"] = message;  // "Rol ......."
+                TempData["Mensaje"] = message;  // "Rol eliminado exitosamente"
             else
                 TempData["Error"] = message;    // "Rol no encontrado" o mensaje de error
 

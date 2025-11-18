@@ -123,7 +123,7 @@ namespace Avatar_Mod_Administración.Pages.Usuario
 
             var token = ObtenerToken()!;
 
-            // Recibir (ok, status, message) igual que en Factura
+            // Recibir (ok, status, message)
             var (ok, status, message) = await _usuarioService.EliminarAsync(email, token);
 
             // Usar el mensaje que viene de la API

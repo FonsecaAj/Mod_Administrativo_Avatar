@@ -183,7 +183,7 @@ app.MapDelete("/rol/{id}", async (
         "DELETE"
     );
 
-    // Devolver BusinessLogicResponse en lugar de NoContent()
+    // Devolver BusinessLogicResponse
     return Results.Json(new BusinessLogicResponse
     {
         StatusCode = 200,

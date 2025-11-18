@@ -65,75 +65,33 @@ WHERE ID_Factura = @ID_Factura";
             }
         }
 
-        public async Task<int> ReversarPagoAsync(int idPago, string detalle)
+        public async Task<int> ReversarPagoAsync(int idPago)
         {
-            using var connection = _dbconnection.CreateConnection();
+            using var conn = _dbconnection.CreateConnection();
+            conn.Open();
 
- 
-            if (connection is SqlConnection sqlConn)
-                await sqlConn.OpenAsync();
-            else
-                connection.Open();
+            // Obtener el ID_Factura asociado a ese pago
+            var sqlSelect = @"SELECT ID_Factura FROM Pago WHERE ID_Pago = @ID;";
+            var idFactura = await conn.ExecuteScalarAsync<int?>(sqlSelect, new { ID = idPago });
 
-            using var transaction = connection.BeginTransaction();
+            if (idFactura == null)
+                throw new InvalidOperationException($"No se encontró una factura asociada al pago {idPago}.");
 
-            try
+            //Reversar el pago
+            var sqlUpdatePago = @"UPDATE Pago SET Estado = 'Reversado' WHERE ID_Pago = @ID;";
+            var filasAfectadas = await conn.ExecuteAsync(sqlUpdatePago, new { ID = idPago });
+
+            // Actualizar la factura en la otra base (Modulo_Matricula)
+            using (var con2 = new SqlConnection(_dbConexionFactura))
             {
-                // Obtener la factura asociada
-                var idFactura = await connection.ExecuteScalarAsync<int?>(
-                    "SELECT ID_Factura FROM Pago WHERE ID_Pago = @ID",
-                    new { ID = idPago }, transaction);
-
-                if (idFactura == null)
-                    throw new InvalidOperationException($"No existe una factura asociada al pago {idPago}.");
-
-                //  Reversar el pago
-                var sqlPago = @"
-                    UPDATE Pago 
-                    SET Estado = 'Reversado'
-                    WHERE ID_Pago = @ID;";
-                await connection.ExecuteAsync(sqlPago, new { ID = idPago }, transaction);
-
-                // Actualizar detalle del pago agregando motivo
-                var sqlDetalle = @"
-                    UPDATE Pago_Detalle 
-                    SET Detalle = CONCAT(
-                        COALESCE(Descripcion, ''), 
-                        CHAR(13) + CHAR(10) + ' [REVERSIÓN] Motivo: ', @Detalle
-                    )
-                    WHERE ID_Pago = @ID;";
-                int filas = await connection.ExecuteAsync(sqlDetalle, new { Detalle = detalle, ID = idPago }, transaction);
-
-                //  Actualizar factura en otra base
-                using (var con2 = new SqlConnection(_dbConexionFactura))
-                {
-                    await con2.OpenAsync();
-
-                    var sqlFactura = @"
-                        UPDATE Factura 
-                        SET Estado = 'Pendiente'
-                        WHERE ID_Factura = @ID_Factura;";
-                    await con2.ExecuteAsync(sqlFactura, new { ID_Factura = idFactura });
-
-                    // Agregar motivo en Factura_Detalle también
-                    var sqlDetFactura = @"
-                        UPDATE Factura_Detalle 
-                        SET Detalle = CONCAT(
-                            COALESCE(Descripcion, ''), 
-                            CHAR(13) + CHAR(10) + ' [REVERSIÓN DE PAGO] Motivo: ', @Detalle
-                        )
-                        WHERE ID_Factura = @ID_Factura;";
-                    await con2.ExecuteAsync(sqlDetFactura, new { ID_Factura = idFactura, Detalle = detalle });
-                }
-
-                transaction.Commit();
-                return filas;
+                await con2.OpenAsync();
+                var sqlActualizarFactura = @"
+UPDATE Factura SET Estado = 'Pendiente'
+WHERE ID_Factura = @ID_Factura";
+                await con2.ExecuteAsync(sqlActualizarFactura, new { ID_Factura = idFactura });
             }
-            catch (Exception ex)
-            {
-                transaction.Rollback();
-                throw new InvalidOperationException("Error al reversar el pago", ex);
-            }
+
+            return filasAfectadas;
         }
 
         public async Task<Pago?> ObtenerPagoAsync(int idPago)

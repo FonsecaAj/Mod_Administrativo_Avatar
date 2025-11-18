@@ -121,7 +121,7 @@ namespace Avatar_Mod_Administración.Pages.Modulo
                     Orden = Input.Orden
                 };
 
-                // Usar mensajes dinámicos de la API 
+                // Usar mensajes dinámicos de la API
                 var (ok, status, message) = await _moduloService.ActualizarAsync(Id, dto, token);
 
                 if (ok)

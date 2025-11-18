@@ -75,7 +75,7 @@ app.MapPost("/modulo", async (
         "INSERT"
     );
 
-    // Devolver el módulo directamente en ResponseObject (igual que Created antes)
+    // Devolver el módulo directamente en ResponseObject
     return Results.Json(new BusinessLogicResponse
     {
         StatusCode = 201,

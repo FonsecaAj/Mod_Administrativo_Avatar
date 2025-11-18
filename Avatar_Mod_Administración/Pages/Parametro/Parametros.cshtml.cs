@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administración.Services;
-using Avatar_Mod_Administración.Entities;
+ï»¿using Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_AdministraciÃ³n.Services;
+using Avatar_Mod_AdministraciÃ³n.Entities;
 
-namespace Avatar_Mod_Administración.Pages.Parametro
+namespace Avatar_Mod_AdministraciÃ³n.Pages.Parametro
 {
     public class ParametrosModel : BasePageModel
     {
@@ -47,7 +47,7 @@ namespace Avatar_Mod_Administración.Pages.Parametro
             return Page();
         }
 
-        //  Mensajes dinámicos de la API
+        // Usar mensajes dinÃ¡micos de la API
         public async Task<IActionResult> OnPostEliminarAsync(string id)
         {
             var result = await InicializarSesionAsync();
@@ -55,14 +55,14 @@ namespace Avatar_Mod_Administración.Pages.Parametro
 
             var token = ObtenerToken()!;
 
-            //  Recibir (ok, status, message)
+            // Recibir (ok, status, message)
             var (ok, status, message) = await _parametroService.EliminarAsync(id, token);
 
             // Usar el mensaje que viene de la API
             if (ok)
-                TempData["Mensaje"] = message;  // "Parámetro ............"
+                TempData["Mensaje"] = message;  // "ParÃ¡metro eliminado exitosamente"
             else
-                TempData["Error"] = message;    // "Parámetro no encontrado" o mensaje de error
+                TempData["Error"] = message;    // "ParÃ¡metro no encontrado" o mensaje de error
 
             return RedirectToPage();
         }

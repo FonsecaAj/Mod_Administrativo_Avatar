@@ -62,7 +62,7 @@ namespace ADM_Pagos.Services
         }
 
 
-        public async Task<BusinessLogicResponse> ReversarPagoAsync(int idPago, string detalle, string? token)
+        public async Task<BusinessLogicResponse> ReversarPagoAsync(int idPago, string? token)
         {
             if (!await _auth.ValidarTokenAsync(token))
                 return new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" };
@@ -76,16 +76,16 @@ namespace ADM_Pagos.Services
             if (string.Equals(pago.Estado, "Reversado", StringComparison.OrdinalIgnoreCase))
                 return new BusinessLogicResponse { StatusCode = 400, Message = "El pago ya se encuentra reversado." };
 
-            var filas = await _pagoRepository.ReversarPagoAsync(idPago, detalle);
+            var filas = await _pagoRepository.ReversarPagoAsync(idPago);
 
+            // (Opcional) reabrir la factura como "Pendiente"
             await _facturas.MarcarFacturaPendienteAsync(pago.ID_Factura, token);
 
             await _bitacora.RegistrarAsync(usuario, "UPDATE", new
             {
                 accion = "ReversarPago",
                 pago = idPago,
-                factura = pago.ID_Factura,
-                motivo = detalle
+                factura = pago.ID_Factura
             });
 
             return new BusinessLogicResponse

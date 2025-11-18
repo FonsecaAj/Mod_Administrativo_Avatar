@@ -1,5 +1,4 @@
 ﻿using Microsoft.Data.SqlClient;
-
 using System.Data;
 
 namespace ADM_Pagos.Repository

@@ -1,8 +1,8 @@
-using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administración.Services;
-using UsuarioEntity = Avatar_Mod_Administración.Entities.Usuario;
+ï»¿using Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_AdministraciÃ³n.Services;
+using UsuarioEntity = Avatar_Mod_AdministraciÃ³n.Entities.Usuario;
 
-namespace Avatar_Mod_Administración.Pages.Usuario
+namespace Avatar_Mod_AdministraciÃ³n.Pages.Usuario
 {
     public class UsuarioDetalleModel : BasePageModel
     {
@@ -35,7 +35,7 @@ namespace Avatar_Mod_Administración.Pages.Usuario
             return Page();
         }
 
-        // Usar mensajes dinámicos de la API
+        // Usar mensajes dinÃ¡micos de la API
         public async Task<IActionResult> OnPostEliminarAsync(string email)
         {
             var result = await InicializarSesionAsync();
@@ -43,7 +43,7 @@ namespace Avatar_Mod_Administración.Pages.Usuario
 
             var token = ObtenerToken()!;
 
-            // Recibir (ok, status, message) igual que en Factura
+            // Recibir (ok, status, message)
             var (ok, status, message) = await _usuarioService.EliminarAsync(email, token);
 
             // Usar el mensaje que viene de la API

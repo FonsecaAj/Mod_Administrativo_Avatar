@@ -1,11 +1,11 @@
-using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci髇.Services;
+锘縰sing Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_Administraci贸n.Services;
 using System.ComponentModel.DataAnnotations;
-using TipoIdentificacionEntity = Avatar_Mod_Administraci髇.Entities.TipoIdentificacion;
-using RolEntity = Avatar_Mod_Administraci髇.Entities.Rol;
-using UsuarioCrearDto = Avatar_Mod_Administraci髇.Entities.UsuarioCrearDto;
+using TipoIdentificacionEntity = Avatar_Mod_Administraci贸n.Entities.TipoIdentificacion;
+using RolEntity = Avatar_Mod_Administraci贸n.Entities.Rol;
+using UsuarioCrearDto = Avatar_Mod_Administraci贸n.Entities.UsuarioCrearDto;
 
-namespace Avatar_Mod_Administraci髇.Pages.Usuario
+namespace Avatar_Mod_Administraci贸n.Pages.Usuario
 {
     public class UsuarioCrearModel : BasePageModel
     {
@@ -42,10 +42,10 @@ namespace Avatar_Mod_Administraci髇.Pages.Usuario
 
             var token = ObtenerToken()!;
 
-            // Validaci髇 manual del nombre (no vac韔 ni solo espacios)
+            // Validaci贸n manual del nombre (no vac铆o ni solo espacios)
             if (string.IsNullOrWhiteSpace(Input.Nombre))
             {
-                ModelState.AddModelError("Input.Nombre", "El nombre no puede estar vac韔 o contener solo espacios");
+                ModelState.AddModelError("Input.Nombre", "El nombre no puede estar vac铆o o contener solo espacios");
             }
 
             if (!ModelState.IsValid)
@@ -63,7 +63,7 @@ namespace Avatar_Mod_Administraci髇.Pages.Usuario
                 return Page();
             }
 
-            // Validar y asignar rol seg鷑 dominioa
+            // Validar y asignar rol seg煤n dominio
             if (email.EndsWith("@cuc.cr"))
             {
                 Input.RolDeseado = "estudiante";
@@ -96,7 +96,7 @@ namespace Avatar_Mod_Administraci髇.Pages.Usuario
                 RolDeseado = Input.RolDeseado
             };
 
-            // Usar mensajes din醡icos de la API
+            // Usar mensajes din谩micos de la API
             var (ok, status, message) = await _usuarioService.CrearAsync(dto, token);
 
             if (ok)
@@ -121,21 +121,21 @@ namespace Avatar_Mod_Administraci髇.Pages.Usuario
     public class UsuarioInputDto
     {
         [Required(ErrorMessage = "El email es requerido")]
-        [EmailAddress(ErrorMessage = "Formato de email inv醠ido")]
+        [EmailAddress(ErrorMessage = "Formato de email inv谩lido")]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El tipo de identificaci髇 es requerido")]
-        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un tipo de identificaci髇")]
+        [Required(ErrorMessage = "El tipo de identificaci贸n es requerido")]
+        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un tipo de identificaci贸n")]
         public int IdTipoIdentificacion { get; set; }
 
-        [Required(ErrorMessage = "La identificaci髇 es requerida")]
+        [Required(ErrorMessage = "La identificaci贸n es requerida")]
         public string Identificacion { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El nombre es requerido")]
         public string Nombre { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "La contrase馻 es requerida")]
-        [MinLength(6, ErrorMessage = "La contrase馻 debe tener al menos 6 caracteres")]
+        [Required(ErrorMessage = "La contrase帽a es requerida")]
+        [MinLength(6, ErrorMessage = "La contrase帽a debe tener al menos 6 caracteres")]
         public string Contrasenna { get; set; } = string.Empty;
 
         public string? RolDeseado { get; set; }

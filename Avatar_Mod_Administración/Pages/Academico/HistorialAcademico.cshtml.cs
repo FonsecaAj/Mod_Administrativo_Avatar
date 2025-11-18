@@ -5,17 +5,17 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Avatar_Mod_Administración.Pages.Academico
 {
-    public class HistorialAcademicoModel : BasePageModel
+    public class HistorialAcademicoModel : PageModel
     {
-        private readonly IHistorialAcademicoApiClient _api;
-        private readonly IAuthService _authService;
-        private readonly ILogger<HistorialAcademicoModel> _logger;
 
-        public HistorialAcademicoModel(IHistorialAcademicoApiClient api, IAuthService authService, IUsuarioService usuarioService, ILogger<HistorialAcademicoModel> logger)
-            : base(authService, usuarioService, logger)
+        private readonly IHistorialAcademicoApiClient _api;
+
+
+        public HistorialAcademicoModel(IHistorialAcademicoApiClient api)
         {
             _api = api;
         }
+
 
         [BindProperty(SupportsGet = true)]
         public string? Tipo { get; set; }
@@ -27,36 +27,26 @@ namespace Avatar_Mod_Administración.Pages.Academico
         public string? Message { get; set; }
         public string? ErrorMessage { get; set; }
 
-        public async Task<IActionResult> OnGetAsync()
+        public async Task OnGetAsync()
         {
-            //  Inicializar sesión y verificar token
-            var result = await InicializarSesionAsync();
-            if (result != null) return result;
-
-            var token = ObtenerToken();
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                ErrorMessage = "Token no disponible, vuelva a iniciar sesión.";
-                return Page();
-            }
-
             if (string.IsNullOrWhiteSpace(Tipo) || string.IsNullOrWhiteSpace(Identificacion))
             {
                 Message = "Ingrese el tipo y la identificación del estudiante para consultar el historial.";
-                return Page();
+                return;
             }
 
-            var (ok, status, msg, data) = await _api.ObtenerHistorialAsync(Tipo, Identificacion, token);
+            var (ok, status, msg, data) = await _api.ObtenerHistorialAsync(Tipo, Identificacion);
 
             if (!ok)
             {
                 ErrorMessage = msg ?? $"Error {status}: No se pudo obtener el historial académico.";
-                return Page();
+                return;
             }
 
             Historial = data;
             Message = msg;
-            return Page();
         }
+
+
     }
 }

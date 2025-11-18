@@ -7,7 +7,7 @@ namespace Avatar_Mod_Administración.Services
         Task<List<Modulo>> ObtenerTodosAsync(string token, string? nombre = null);
         Task<Modulo?> ObtenerPorIdAsync(int id, string token);
 
-        // Se devuelven (ok, statusCode, message) 
+        // Todas las operaciones CUD devuelven (ok, statusCode, message)
         Task<(bool ok, int statusCode, string? message)> CrearAsync(ModuloCrearDto dto, string token);
         Task<(bool ok, int statusCode, string? message)> ActualizarAsync(int id, ModuloCrearDto dto, string token);
         Task<(bool ok, int statusCode, string? message)> EliminarAsync(int id, string token);

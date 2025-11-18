@@ -45,33 +45,25 @@ else if (Model.Message != null)
         <div><strong>Total cursos:</strong> @Model.Historial.Count()</div>
     </div>
 
-    <div class="table-responsive">
-        <table id="tablaHistorial" class="table table-striped shadow-sm">
-            <thead class="table-dark">
+    <table id="tablaHistorial" class="table table-striped shadow-sm">
+        <thead class="table-dark">
+            <tr>
+                <th>Código del Curso</th>
+                <th>Nombre del Curso</th>
+                <th>Promedio</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Model.Historial)
+            {
                 <tr>
-                    <th onclick="ordenarPor(0)">Código del Curso ⬍</th>
-                    <th onclick="ordenarPor(1)">Nombre del Curso ⬍</th>
-                    <th onclick="ordenarPor(2)">Promedio ⬍</th>
+                    <td>@item.Codigo_Curso</td>
+                    <td>@item.Nombre_Curso</td>
+                    <td>@item.Promedio</td>
                 </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.Historial)
-                {
-                    <tr>
-                        <td>@item.Codigo_Curso</td>
-                        <td>@item.Nombre_Curso</td>
-                        <td>@item.Promedio</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    <nav class="d-flex justify-content-between align-items-center mt-3">
-        <button id="btnAnterior" class="btn btn-outline-secondary btn-sm">← Anterior</button>
-        <span id="paginaInfo" class="fw-semibold"></span>
-        <button id="btnSiguiente" class="btn btn-outline-secondary btn-sm">Siguiente →</button>
-    </nav>
+            }
+        </tbody>
+    </table>
 }
 else if (Model.Tipo != null && Model.Identificacion != null)
 {
@@ -79,86 +71,23 @@ else if (Model.Tipo != null && Model.Identificacion != null)
 }
 
 @section Scripts {
+    <!-- jsPDF desde CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
         // ============================
-        // Paginación y Ordenamiento
+        //  Exportar CSV
         // ============================
-
-        let paginaActual = 1;
-        const filasPorPagina = 10;
-        let ordenColumna = -1;
-        let ordenAsc = true;
-
-        document.addEventListener("DOMContentLoaded", () => {
-            mostrarPagina();
-            document.getElementById("btnAnterior").addEventListener("click", anteriorPagina);
-            document.getElementById("btnSiguiente").addEventListener("click", siguientePagina);
-        });
-
-        function mostrarPagina() {
-            const filas = document.querySelectorAll("#tablaHistorial tbody tr");
-            const totalFilas = filas.length;
-            const totalPaginas = Math.ceil(totalFilas / filasPorPagina);
-
-            filas.forEach((fila, i) => {
-                fila.style.display = (i >= (paginaActual - 1) * filasPorPagina && i < paginaActual * filasPorPagina)
-                    ? "" : "none";
-            });
-
-            document.getElementById("paginaInfo").innerText = `Página ${paginaActual} de ${totalPaginas}`;
-            document.getElementById("btnAnterior").disabled = paginaActual === 1;
-            document.getElementById("btnSiguiente").disabled = paginaActual === totalPaginas;
-        }
-
-        function siguientePagina() {
-            const filas = document.querySelectorAll("#tablaHistorial tbody tr");
-            const totalPaginas = Math.ceil(filas.length / filasPorPagina);
-            if (paginaActual < totalPaginas) {
-                paginaActual++;
-                mostrarPagina();
-            }
-        }
-
-        function anteriorPagina() {
-            if (paginaActual > 1) {
-                paginaActual--;
-                mostrarPagina();
-            }
-        }
-
-        function ordenarPor(indice) {
-            const tabla = document.getElementById("tablaHistorial");
-            const filas = Array.from(tabla.querySelectorAll("tbody tr"));
-            const multiplicador = (ordenColumna === indice && ordenAsc) ? -1 : 1;
-            ordenColumna = indice;
-            ordenAsc = multiplicador === 1;
-
-            filas.sort((a, b) => {
-                const valorA = a.children[indice].innerText.toLowerCase();
-                const valorB = b.children[indice].innerText.toLowerCase();
-                return valorA.localeCompare(valorB, 'es') * multiplicador;
-            });
-
-            const cuerpo = tabla.querySelector("tbody");
-            cuerpo.innerHTML = "";
-            filas.forEach(f => cuerpo.appendChild(f));
-
-            paginaActual = 1;
-            mostrarPagina();
-        }
-
-        // ============================
-        // Exportar CSV
-        // ============================
-        function exportarCSV() {
+                function exportarCSV() {
             const rows = [['Código del Curso', 'Nombre del Curso', 'Promedio']];
             document.querySelectorAll('#tablaHistorial tbody tr').forEach(tr => {
                 const cols = [...tr.children].map(td => td.innerText);
                 rows.push(cols);
             });
+
+            // Unir todo con comas, con BOM UTF-8 al inicio
             const csvContent = '\uFEFF' + rows.map(r => r.map(v => `"${v}"`).join(',')).join('\r\n');
+
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -167,79 +96,41 @@ else if (Model.Tipo != null && Model.Identificacion != null)
         }
 
         // ============================
-        // Exportar PDF
+        //  Exportar PDF
         // ============================
-                async function exportarPDF() {
+        async function exportarPDF() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF("p", "mm", "a4");
+            const doc = new jsPDF();
 
-            // ====== ENCABEZADO ======
-            doc.setFontSize(18);
-            doc.setFont("helvetica", "bold");
+            // Título
+            doc.setFontSize(16);
             doc.text('Historial Académico', 14, 15);
-
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "normal");
-            doc.text('Promedios por Estudiante', 14, 23);
-            doc.setDrawColor(0);
-            doc.line(14, 25, 196, 25);
-
-            // ====== DATOS GENERALES ======
-            const tipo = document.querySelector('select[name="Tipo"]').value || 'No especificado';
-            const identificacion = document.querySelector('input[name="Identificacion"]').value || 'No ingresada';
-            const totalCursos = document.querySelectorAll('#tablaHistorial tbody tr').length;
-            const fecha = new Date().toLocaleString('es-CR');
-
-            let infoY = 33;
             doc.setFontSize(11);
-            doc.setFont("helvetica", "bold");
-            doc.text("Tipo de Identificación:", 14, infoY);
-            doc.text("Identificación:", 14, infoY + 7);
-            doc.text("Total de Cursos:", 14, infoY + 14);
-            doc.text("Fecha de Generación:", 14, infoY + 21);
+            doc.text('Promedios por Estudiante', 14, 22);
 
-            doc.setFont("helvetica", "normal");
-            doc.text(tipo.charAt(0).toUpperCase() + tipo.slice(1), 70, infoY);
-            doc.text(identificacion, 70, infoY + 7);
-            doc.text(String(totalCursos), 70, infoY + 14);
-            doc.text(fecha, 70, infoY + 21);
-
-            doc.line(14, infoY + 25, 196, infoY + 25);
-
-            // ====== TABLA ======
-            const startY = infoY + 33;
+            // Encabezados
+            const startY = 30;
             const headers = ['Código del Curso', 'Nombre del Curso', 'Promedio'];
-            const colWidths = [40, 120, 25];
+            const colWidths = [50, 100, 30];
             let y = startY;
 
-            doc.setFont("helvetica", "bold");
+            doc.setFont(undefined, 'bold');
             headers.forEach((h, i) => doc.text(h, 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
-            doc.setFont("helvetica", "normal");
+            doc.setFont(undefined, 'normal');
             y += 7;
 
-            const filas = document.querySelectorAll('#tablaHistorial tbody tr');
-            filas.forEach((tr, idx) => {
+            // Filas de datos
+            document.querySelectorAll('#tablaHistorial tbody tr').forEach(tr => {
                 const cols = [...tr.children].map(td => td.innerText);
                 cols.forEach((c, i) => doc.text(String(c), 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
                 y += 7;
-
-                // salto de página
-                if (y > 270 && idx < filas.length - 1) {
+                if (y > 270) { // salto de página
                     doc.addPage();
                     y = 20;
                 }
             });
 
-            // ====== PIE DE PÁGINA ======
-            const totalPages = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= totalPages; i++) {
-                doc.setPage(i);
-                doc.setFontSize(9);
-                doc.setTextColor(100);
-                doc.text(`Página ${i} de ${totalPages}`, 105, 290, { align: "center" });
-            }
-
-            doc.save(`Historial_${identificacion}.pdf`);
+            doc.save('HistorialAcademico.pdf');
         }
     </script>
 }

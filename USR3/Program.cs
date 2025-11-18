@@ -1,4 +1,4 @@
-using USR3.Entities;
+Ôªøusing USR3.Entities;
 using USR3.Repository;
 using USR3.Services;
 using Microsoft.AspNetCore.Mvc;
@@ -24,7 +24,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// POST /parametro - Crear par·metro
+// POST /parametro - Crear par√°metro
 app.MapPost("/parametro", async (
     [FromHeader(Name = "Authorization")] string? authorization,
     [FromBody] ParametroDto dto,
@@ -43,7 +43,7 @@ app.MapPost("/parametro", async (
 
     var parametroExistente = await repository.ObtenerPorIdAsync(dto.IdParametro.Trim().ToUpper());
     if (parametroExistente != null)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "El par·metro ya existe" }, statusCode: 400);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "El par√°metro ya existe" }, statusCode: 400);
 
     var parametro = new Parametro
     {
@@ -68,18 +68,18 @@ app.MapPost("/parametro", async (
         "INSERT"
     );
 
-    // Devolver BusinessLogicResponse
+    // ‚úÖ CAMBIO: Devolver BusinessLogicResponse
     return Results.Json(new BusinessLogicResponse
     {
         StatusCode = 201,
-        Message = $"Par·metro creado correctamente: {parametroCreado.IdParametro}",
+        Message = $"Par√°metro creado correctamente: {parametroCreado.IdParametro}",
         ResponseObject = parametroCreado
     }, statusCode: 201);
 })
 .WithName("CrearParametro")
 .WithOpenApi();
 
-// PUT /parametro/{id} - Modificar par·metro
+// PUT /parametro/{id} - Modificar par√°metro
 app.MapPut("/parametro/{id}", async (
     string id,
     [FromHeader(Name = "Authorization")] string? authorization,
@@ -98,11 +98,11 @@ app.MapPut("/parametro/{id}", async (
         return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = validacion.mensaje }, statusCode: 400);
 
     if (id.ToUpper() != dto.IdParametro.Trim().ToUpper())
-        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "El ID del par·metro no coincide" }, statusCode: 400);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "El ID del par√°metro no coincide" }, statusCode: 400);
 
     var parametroExistente = await repository.ObtenerPorIdAsync(id.ToUpper());
     if (parametroExistente == null)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Par·metro no encontrado" }, statusCode: 404);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Par√°metro no encontrado" }, statusCode: 404);
 
     var registroAnterior = new
     {
@@ -145,14 +145,14 @@ app.MapPut("/parametro/{id}", async (
     return Results.Json(new BusinessLogicResponse
     {
         StatusCode = 200,
-        Message = "Par·metro actualizado correctamente",
+        Message = "Par√°metro actualizado correctamente",
         ResponseObject = parametroActualizado
     }, statusCode: 200);
 })
 .WithName("ActualizarParametro")
 .WithOpenApi();
 
-// DELETE /parametro/{id} - Eliminar par·metro
+// DELETE /parametro/{id} - Eliminar par√°metro
 app.MapDelete("/parametro/{id}", async (
     string id,
     [FromHeader(Name = "Authorization")] string? authorization,
@@ -167,7 +167,7 @@ app.MapDelete("/parametro/{id}", async (
 
     var parametro = await repository.ObtenerPorIdAsync(id.ToUpper());
     if (parametro == null)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Par·metro no encontrado" }, statusCode: 404);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Par√°metro no encontrado" }, statusCode: 404);
 
     var registroEliminado = new
     {
@@ -189,13 +189,13 @@ app.MapDelete("/parametro/{id}", async (
     return Results.Json(new BusinessLogicResponse
     {
         StatusCode = 200,
-        Message = "Par·metro eliminado exitosamente"
+        Message = "Par√°metro eliminado exitosamente"
     }, statusCode: 200);
 })
 .WithName("EliminarParametro")
 .WithOpenApi();
 
-// GET /parametro - Obtener todos los par·metros CON PAGINACI”N
+// GET /parametro - Obtener todos los par√°metros CON PAGINACI√ìN
 app.MapGet("/parametro", async (
     [FromHeader(Name = "Authorization")] string? authorization,
     IParametroRepository repository,
@@ -239,7 +239,7 @@ app.MapGet("/parametro", async (
 .WithName("ObtenerTodosParametros")
 .WithOpenApi();
 
-// GET /parametro/{id} - Obtener par·metro por ID
+// GET /parametro/{id} - Obtener par√°metro por ID
 app.MapGet("/parametro/{id}", async (
     string id,
     [FromHeader(Name = "Authorization")] string? authorization,
@@ -255,7 +255,7 @@ app.MapGet("/parametro/{id}", async (
     var parametro = await repository.ObtenerPorIdAsync(id.ToUpper());
 
     if (parametro == null)
-        return Results.NotFound(new { error = "Par·metro no encontrado" });
+        return Results.NotFound(new { error = "Par√°metro no encontrado" });
 
     var registroConsultado = new
     {
@@ -276,7 +276,7 @@ app.MapGet("/parametro/{id}", async (
 .WithName("ObtenerParametroPorId")
 .WithOpenApi();
 
-// GET /parametro/public/{id} - Endpoint p˙blico
+// GET /parametro/public/{id} - Endpoint p√∫blico
 app.MapGet("/parametro/public/{id}", async (
     string id,
     IParametroRepository repository) =>
@@ -285,39 +285,39 @@ app.MapGet("/parametro/public/{id}", async (
 
     var idUpper = id.ToUpper();
     if (!parametrosPermitidos.Contains(idUpper))
-        return Results.NotFound(new { error = "Par·metro no disponible p˙blicamente" });
+        return Results.NotFound(new { error = "Par√°metro no disponible p√∫blicamente" });
 
     var parametro = await repository.ObtenerPorIdAsync(idUpper);
 
     if (parametro == null)
-        return Results.NotFound(new { error = "Par·metro no encontrado" });
+        return Results.NotFound(new { error = "Par√°metro no encontrado" });
 
     return Results.Ok(parametro);
 })
 .WithName("ObtenerParametroPublico")
 .WithOpenApi()
-.WithTags("P˙blico");
+.WithTags("P√∫blico");
 
 app.Run();
 
 static (bool esValido, string mensaje) ValidarParametro(string idParametro, string valor)
 {
     if (string.IsNullOrWhiteSpace(idParametro))
-        return (false, "El identificador del par·metro es requerido");
+        return (false, "El identificador del par√°metro es requerido");
 
     if (string.IsNullOrWhiteSpace(valor))
-        return (false, "El valor del par·metro es requerido");
+        return (false, "El valor del par√°metro es requerido");
 
     var idTrimmed = idParametro.Trim();
 
     if (idTrimmed.Length > 10)
-        return (false, "El identificador del par·metro no puede exceder 10 caracteres");
+        return (false, "El identificador del par√°metro no puede exceder 10 caracteres");
 
     if (!Regex.IsMatch(idTrimmed, @"^[A-Z_]+$"))
-        return (false, "El identificador del par·metro solo puede contener letras en may˙scula y guiones bajos");
+        return (false, "El identificador del par√°metro solo puede contener letras en may√∫scula y guiones bajos");
 
     if (valor.Trim().Length > 500)
-        return (false, "El valor del par·metro no puede exceder 500 caracteres");
+        return (false, "El valor del par√°metro no puede exceder 500 caracteres");
 
     return (true, string.Empty);
 }

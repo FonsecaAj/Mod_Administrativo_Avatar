@@ -7,7 +7,6 @@ namespace Avatar_Mod_Administración.Services
         Task<List<RolApi>> ObtenerTodosAsync(string token);
         Task<RolApi?> ObtenerPorIdAsync(int id, string token);
 
-        // Devolver (ok, statusCode, message)
         Task<(bool ok, int statusCode, string? message)> CrearAsync(RolCrearDto dto, string token);
         Task<(bool ok, int statusCode, string? message)> ActualizarAsync(int id, RolCrearDto dto, string token);
         Task<(bool ok, int statusCode, string? message)> EliminarAsync(int id, string token);
