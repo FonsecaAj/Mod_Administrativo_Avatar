@@ -52,7 +52,7 @@ namespace Avatar_Mod_Administración.Pages.Modulo
 
             var token = ObtenerToken()!;
 
-            // Recibir (ok, status, message)
+            // Recibir (ok, status, message) 
             var (ok, status, message) = await _moduloService.EliminarAsync(id, token);
 
             // Usar el mensaje que viene de la API

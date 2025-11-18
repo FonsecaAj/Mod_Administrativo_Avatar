@@ -224,7 +224,7 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        // Los métodos de consulta (GET) no cambian
+
         public async Task<List<RolModuloDetalleDto>> ObtenerModulosPorRolAsync(int idRol, string token)
         {
             try

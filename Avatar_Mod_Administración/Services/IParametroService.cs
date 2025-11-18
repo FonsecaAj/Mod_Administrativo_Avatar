@@ -8,7 +8,7 @@ namespace Avatar_Mod_Administración.Services
         Task<int> ObtenerTotalAsync(string token);
         Task<ParametroApi?> ObtenerPorIdAsync(string id, string token);
 
-        // Devolver (ok, statusCode, message)
+        // Devuelve (ok, statusCode, message)
         Task<(bool ok, int statusCode, string? message)> CrearAsync(ParametroCrearDto dto, string token);
         Task<(bool ok, int statusCode, string? message)> ActualizarAsync(string id, ParametroCrearDto dto, string token);
         Task<(bool ok, int statusCode, string? message)> EliminarAsync(string id, string token);

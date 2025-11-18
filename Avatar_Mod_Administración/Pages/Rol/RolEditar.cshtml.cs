@@ -1,10 +1,10 @@
-锘縰sing Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci贸n.Services;
-using Avatar_Mod_Administraci贸n.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_Administraci髇.Services;
+using Avatar_Mod_Administraci髇.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace Avatar_Mod_Administraci贸n.Pages.Rol
+namespace Avatar_Mod_Administraci髇.Pages.Rol
 {
     public class RolEditarModel : BasePageModel
     {
@@ -64,7 +64,7 @@ namespace Avatar_Mod_Administraci贸n.Pages.Rol
             {
                 ModelState.AddModelError("Input.Nombre", "El nombre del rol es requerido");
             }
-            else if (!Regex.IsMatch(Input.Nombre.Trim(), @"^[a-zA-Z谩茅铆贸煤脕脡脥脫脷帽脩\s]+$"))
+            else if (!Regex.IsMatch(Input.Nombre.Trim(), @"^[a-zA-Z衢眢赏于裱\s]+$"))
             {
                 ModelState.AddModelError("Input.Nombre", "El nombre del rol solo puede contener letras y espacios");
             }
@@ -77,7 +77,7 @@ namespace Avatar_Mod_Administraci贸n.Pages.Rol
             var token = ObtenerToken()!;
             var dto = new RolCrearDto { Nombre = Input.Nombre.Trim() };
 
-            // Usar mensajes din谩micos de la API
+            // Usar mensajes din醡icos de la API
             var (ok, status, message) = await _rolService.ActualizarAsync(Id, dto, token);
 
             if (ok)

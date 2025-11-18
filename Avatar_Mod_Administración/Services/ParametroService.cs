@@ -144,7 +144,7 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        // Devolver (ok, status, message)
+        // Se devuelve (ok, status, message)
         public async Task<(bool ok, int statusCode, string? message)> CrearAsync(ParametroCrearDto dto, string token)
         {
             try
@@ -192,7 +192,7 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        // Devolver (ok, status, message)
+        // Se devuelve (ok, status, message)
         public async Task<(bool ok, int statusCode, string? message)> ActualizarAsync(string id, ParametroCrearDto dto, string token)
         {
             try
@@ -240,7 +240,7 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        // Devolver (ok, status, message)
+        // Se devuelve (ok, status, message)
         public async Task<(bool ok, int statusCode, string? message)> EliminarAsync(string id, string token)
         {
             try

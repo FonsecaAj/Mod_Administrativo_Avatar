@@ -1,4 +1,5 @@
 ﻿using Adm_Facturacion.Entities;
+using Microsoft.Data.SqlClient;
 using Dapper;
 
 namespace Adm_Facturacion.Repository
@@ -44,12 +45,45 @@ namespace Adm_Facturacion.Repository
         }
 
         // Reversar factura
-        public async Task<int> ReversarFacturaAsync(int idFactura)
+        public async Task<int> ReversarFacturaAsync(int idFactura, string detalle)
         {
             using var connection = _dbConnectionFactory.CreateConnection();
-            var sql = "UPDATE Factura SET Estado = 'Anulada' WHERE ID_Factura = @ID;";
-            return await connection.ExecuteAsync(sql, new { ID = idFactura });
+
+            // Abrimos la conexión antes de usarla
+            if (connection is Microsoft.Data.SqlClient.SqlConnection sqlConn)
+                await sqlConn.OpenAsync();
+            else
+                connection.Open();
+
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                var sqlFactura = @"
+            UPDATE Factura 
+            SET Estado = 'Anulada'
+            WHERE ID_Factura = @ID;";
+                await connection.ExecuteAsync(sqlFactura, new { ID = idFactura }, transaction);
+
+                var sqlDetalle = @"
+            UPDATE Factura_Detalle 
+            SET Detalle = CONCAT(
+                COALESCE(Descripcion, ''), 
+                CHAR(13) + CHAR(10) + ' [REVERSIÓN] Motivo: ', @Detalle
+            )
+            WHERE ID_Factura = @ID;";
+                int filas = await connection.ExecuteAsync(sqlDetalle, new { Detalle = detalle, ID = idFactura }, transaction);
+
+                transaction.Commit();
+                return filas;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw new InvalidOperationException("Error al reversar la factura", ex);
+            }
         }
+
 
         // Obtener factura individual
         public async Task<Factura?> ObtenerFacturaAsync(int idFactura)
