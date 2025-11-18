@@ -1,0 +1,78 @@
+using Avatar_Mod_Administración.Entities;
+using Avatar_Mod_Administración.Services;
+using Microsoft.AspNetCore.Mvc;
+
+namespace Avatar_Mod_Administración.Pages.ADM13_Grupo
+{
+    public class CrearModel : BasePageModel
+    {
+        private readonly IGrupoApiClient _grupoApi;
+        private readonly ICursoApiClient _cursosApi;
+        private readonly IProfesorApiClient _profesoresApi;
+        private readonly IPeriodoApiClient _periodosApi;
+
+        public CrearModel(
+            IGrupoApiClient grupoApi,
+            ICursoApiClient cursosApi,
+            IProfesorApiClient profesoresApi,
+            IPeriodoApiClient periodosApi,
+            IAuthService auth,
+            IUsuarioService usuarioService,
+            ILogger<CrearModel> logger)
+            : base(auth, usuarioService, logger)
+        {
+            _grupoApi = grupoApi;
+            _cursosApi = cursosApi;
+            _profesoresApi = profesoresApi;
+            _periodosApi = periodosApi;
+        }
+
+        [BindProperty]
+        public GrupoDto Grupo { get; set; } = new();
+
+        public List<CursoDto> Cursos { get; set; } = new();
+        public List<ProfesorDto> Profesores { get; set; } = new();
+        public List<PeriodoDto> Periodos { get; set; } = new();
+
+        [TempData] public string? Mensaje { get; set; }
+        [TempData] public string? MensajeError { get; set; }
+
+        public async Task<IActionResult> OnGetAsync()
+        {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
+            await CargarListasAsync();
+            return Page();
+        }
+
+        public async Task<IActionResult> OnPostAsync()
+        {
+            var redirect = await InicializarSesionAsync();
+            if (redirect != null) return redirect;
+
+            await CargarListasAsync();
+
+            if (!ModelState.IsValid)
+            {
+                MensajeError = "Hay errores de validación en el formulario.";
+                return Page();
+            }
+
+            var ok = await _grupoApi.CrearAsync(Grupo);
+
+            if (ok)
+                return RedirectToPage("Index");
+
+            MensajeError = "No se pudo crear el grupo.";
+            return Page();
+        }
+
+        private async Task CargarListasAsync()
+        {
+            Cursos = (await _cursosApi.ObtenerTodosAsync()).ToList();
+            Profesores = (await _profesoresApi.ObtenerTodosAsync()).ToList();
+            Periodos = (await _periodosApi.ObtenerTodosAsync()).ToList();
+        }
+    }
+}

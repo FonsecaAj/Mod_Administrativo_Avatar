@@ -23,12 +23,12 @@ namespace Adm_Facturacion
             group.MapPut("/{idFactura}/reversar", async (
                 [FromHeader(Name = "Authorization")] string? token,
                 int idFactura,
+                [FromBody] string detalle,
                 [FromServices] IFacturaService service) =>
-            {
-                var response = await service.ReversarFacturaAsync(idFactura, token);
+                        {
+                var response = await service.ReversarFacturaAsync(idFactura, detalle, token);
                 return Results.Json(response, statusCode: response.StatusCode);
             });
-
             // Obtener factura individual
             group.MapGet("/{idFactura}", async (
                 [FromHeader(Name = "Authorization")] string? token,

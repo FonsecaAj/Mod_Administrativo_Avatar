@@ -1,0 +1,58 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.ADM13_Grupo.IndexModel
+@{
+    ViewData["Title"] = "Administrar Grupos";
+}
+
+<h1 class="mb-4">Administrar Grupos</h1>
+
+@if (!string.IsNullOrEmpty(Model.Mensaje))
+{
+    <div class="alert alert-success">@Model.Mensaje</div>
+}
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alert alert-danger">@Model.MensajeError</div>
+}
+
+<div class="mb-3">
+    <a asp-page="Crear" class="btn btn-success">Nuevo grupo</a>
+</div>
+
+@if (Model.Grupos.Any())
+{
+    <table class="table table-striped table-sm align-middle">
+        <thead>
+            <tr>
+                <th>@Html.DisplayNameFor(m => m.Grupos[0].NumeroGrupo)</th>
+                <th>@Html.DisplayNameFor(m => m.Grupos[0].CursoNombre)</th>
+                <th>@Html.DisplayNameFor(m => m.Grupos[0].ProfesorNombre)</th>
+                <th>@Html.DisplayNameFor(m => m.Grupos[0].Horario)</th>
+                <th>@Html.DisplayNameFor(m => m.Grupos[0].PeriodoNombre)</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var g in Model.Grupos)
+            {
+                <tr>
+                    <td>@g.NumeroGrupo</td>
+                    <td>@(g.CursoNombre ?? g.IdCurso.ToString())</td>
+                    <td>@(g.ProfesorNombre ?? g.IdProfesor.ToString())</td>
+                    <td>@g.Horario</td>
+                    <td>@(g.PeriodoNombre ?? g.IdPeriodo.ToString())</td>
+                    <td>
+                        <a asp-page="Editar" asp-route-id="@g.IdGrupo"
+                           class="btn btn-sm btn-warning me-1">Editar</a>
+                        <a asp-page="Eliminar" asp-route-id="@g.IdGrupo"
+                           class="btn btn-sm btn-danger">Eliminar</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else
+{
+    <div class="alert alert-info">No hay grupos registrados.</div>
+}
