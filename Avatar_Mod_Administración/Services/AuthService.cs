@@ -18,7 +18,7 @@ namespace Avatar_Mod_Administración.Services
         {
             _httpClient = httpClient;
             _httpContextAccessor = httpContextAccessor;
-            _apiUrl = configuration["USR5ApiUrl"] ?? "http://localhost:5233";
+            _apiUrl = configuration["ApiUrls:USR5"] ?? "http://localhost:5233";
             _logger = logger;
         }
 
