@@ -286,84 +286,84 @@ app.MapGet("/api/sesion/verificar", async (
 .WithName("VerificarSesion")
 .WithTags("Sesion");
 
-//// POST /api/bitacora
-//app.MapPost("/api/bitacora", async (
-//    HttpContext context,
-//    IAuthService authService,
-//    ILogger<Program> log) =>
-//{
-//    try
-//    {
-//        var sesion = authService.ObtenerSesionActual();
-//        if (sesion == null)
-//        {
-//            log.LogWarning("No hay sesión para registrar bitácora");
-//            return Results.StatusCode(401);
+////// POST /api/bitacora
+////app.MapPost("/api/bitacora", async (
+////    HttpContext context,
+////    IAuthService authService,
+////    ILogger<Program> log) =>
+////{
+////    try
+////    {
+////        var sesion = authService.ObtenerSesionActual();
+////        if (sesion == null)
+////        {
+////            log.LogWarning("No hay sesión para registrar bitácora");
+////            return Results.StatusCode(401);
+////        }
+
+////        using var reader = new StreamReader(context.Request.Body);
+////        var bodyOriginal = await reader.ReadToEndAsync();
+
+//        log.LogDebug("Body recibido");
+
+////        using var httpClient = new HttpClient();
+////        httpClient.Timeout = TimeSpan.FromSeconds(5);
+////        var gen1Url = builder.Configuration["GEN1ApiUrl"] ?? "http://localhost:5155";
+
+////        try
+////        {
+////            var jsonDoc = System.Text.Json.JsonDocument.Parse(bodyOriginal);
+////            var root = jsonDoc.RootElement;
+
+////            var usuario = root.TryGetProperty("usuario", out var usuarioElem)
+////                ? usuarioElem.GetString()
+////                : sesion.UsuarioID;
+
+////            var descripcion = root.TryGetProperty("descripcion", out var descElem)
+////                ? descElem.GetString()
+////                : "{\"accion\":\"Sin descripción\"}";
+
+////            var payloadGEN1 = new
+////            {
+////                usuario = usuario,
+////                descripcion = descripcion
+////            };
+
+////            var jsonGEN1 = System.Text.Json.JsonSerializer.Serialize(payloadGEN1);
+
+
+//            log.LogDebug("Enviando a GEN1");
+
+////            var request = new HttpRequestMessage(HttpMethod.Post, $"{gen1Url}/api/bitacora");
+////            request.Content = new StringContent(jsonGEN1, System.Text.Encoding.UTF8, "application/json");
+
+////            var response = await httpClient.SendAsync(request);
+
+////            if (response.IsSuccessStatusCode)
+////            {
+////                log.LogDebug("Bitacora registrada");
+////                return Results.StatusCode(201);
+////            }
+
+//            var errorContent = await response.Content.ReadAsStringAsync();
+//            log.LogWarning("Error de GEN1: {StatusCode} - {Error}",
+//                response.StatusCode, errorContent);
+//            return Results.StatusCode((int)response.StatusCode);
 //        }
-
-//        using var reader = new StreamReader(context.Request.Body);
-//        var bodyOriginal = await reader.ReadToEndAsync();
-
-        log.LogDebug("Body recibido");
-
-//        using var httpClient = new HttpClient();
-//        httpClient.Timeout = TimeSpan.FromSeconds(5);
-//        var gen1Url = builder.Configuration["GEN1ApiUrl"] ?? "http://localhost:5155";
-
-//        try
+//        catch (System.Text.Json.JsonException ex)
 //        {
-//            var jsonDoc = System.Text.Json.JsonDocument.Parse(bodyOriginal);
-//            var root = jsonDoc.RootElement;
-
-//            var usuario = root.TryGetProperty("usuario", out var usuarioElem)
-//                ? usuarioElem.GetString()
-//                : sesion.UsuarioID;
-
-//            var descripcion = root.TryGetProperty("descripcion", out var descElem)
-//                ? descElem.GetString()
-//                : "{\"accion\":\"Sin descripción\"}";
-
-//            var payloadGEN1 = new
-//            {
-//                usuario = usuario,
-//                descripcion = descripcion
-//            };
-
-//            var jsonGEN1 = System.Text.Json.JsonSerializer.Serialize(payloadGEN1);
-
-
-            log.LogDebug("Enviando a GEN1");
-
-//            var request = new HttpRequestMessage(HttpMethod.Post, $"{gen1Url}/api/bitacora");
-//            request.Content = new StringContent(jsonGEN1, System.Text.Encoding.UTF8, "application/json");
-
-//            var response = await httpClient.SendAsync(request);
-
-//            if (response.IsSuccessStatusCode)
-//            {
-//                log.LogDebug("Bitacora registrada");
-//                return Results.StatusCode(201);
-//            }
-
-            var errorContent = await response.Content.ReadAsStringAsync();
-            log.LogWarning("Error de GEN1: {StatusCode} - {Error}",
-                response.StatusCode, errorContent);
-            return Results.StatusCode((int)response.StatusCode);
-        }
-        catch (System.Text.Json.JsonException ex)
-        {
-            log.LogError(ex, "Error al parsear JSON");
-            return Results.BadRequest(new { error = "JSON inválido" });
-        }
-    }
-    catch (Exception ex)
-    {
-        log.LogError(ex, "Error al registrar bitácora");
-        return Results.StatusCode(500);
-    }
-})
-.WithName("RegistrarBitacora")
-.WithTags("Bitacora");
+//            log.LogError(ex, "Error al parsear JSON");
+//            return Results.BadRequest(new { error = "JSON inválido" });
+//        }
+//    }
+//    catch (Exception ex)
+//    {
+//        log.LogError(ex, "Error al registrar bitácora");
+//        return Results.StatusCode(500);
+//    }
+//})
+//.WithName("RegistrarBitacora")
+//.WithTags("Bitacora");
 
 
 // GET /api/modulos

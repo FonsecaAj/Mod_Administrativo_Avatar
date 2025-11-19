@@ -1,0 +1,75 @@
+[
+  {
+    "Name": "Nuevo perfil",
+    "Projects": [
+      {
+        "Path": "Avatar_Mod_Administración\\Avatar_Mod_Administración.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "USR1\\USR1.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Modulo_General\\Modulo_General.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ApiOfertaAcademica\\ApiACD3.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ApiACD4\\ApiACD4.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ApiACD5\\ApiACD5.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ApiACD6\\ApiACD6.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ApiMAT1\\ApiMAT1.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Proyecto1\\USR2.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "USR5\\USR5.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "USR3\\USR3.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "USR4\\USR4.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Adm_Notas\\Adm_Notas.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Mod_Academico\\Mod_Academico.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Estudiantes_Matriculados\\Estudiantes_Matriculados.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "Adm_Facturacion\\Adm_Facturacion.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ADM_Pagos\\Adm_Pagos.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]
