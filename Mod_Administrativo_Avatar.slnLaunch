@@ -69,6 +69,14 @@
       {
         "Path": "ADM_Pagos\\Adm_Pagos.csproj",
         "Action": "Start"
+      },
+      {
+        "Path": "ACD1\\ACD1.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "ACD2\\ACD2.csproj",
+        "Action": "Start"
       }
     ]
   }
