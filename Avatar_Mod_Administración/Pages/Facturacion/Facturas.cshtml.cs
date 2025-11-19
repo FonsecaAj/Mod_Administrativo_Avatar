@@ -39,10 +39,10 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
             if (result != null) return result;
 
             // Ejecutar listado inicial
-            return await OnPostListarAsync();
+            return await OnPostListarAsync(esListadoSecundario: true);
         }
 
-        public async Task<IActionResult> OnPostListarAsync()
+        public async Task<IActionResult> OnPostListarAsync(bool esListadoSecundario = false)
         {
             var result = await InicializarSesionAsync();
             if (result != null) return result;
@@ -55,23 +55,27 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
 
             var token = ObtenerToken();
 
-            // ⭐ APLICAR LÓGICA DE FILTRADO DE ESTADO:
-            // Si el valor es nulo o vacío (lo que ocurre cuando se selecciona "TODOS"),
-            // forzamos el valor a null para que el API Client pueda omitir el parámetro de consulta.
             var estadoParaApi = string.IsNullOrWhiteSpace(EstadoFiltro) ? null : EstadoFiltro;
 
             var (ok, status, msg, facturas) = await _api.ListarFacturasAsync(
                 FechaInicio,
                 FechaFin,
-                estadoParaApi, // Usamos el valor ajustado
+                estadoParaApi,
                 token);
 
-            Message = ok ? msg : null;
-            ErrorMessage = !ok ? msg : null;
+            // Siempre asignamos 'ErrorMessage' si no es exitoso.
+            if (ok && !esListadoSecundario)
+            {
+                Message = msg;
+            }
+            else if (!ok)
+            {
+                ErrorMessage = msg;
+            }
+
             FacturasListado = facturas;
 
-            // Mantener el detalle de la factura consultada anteriormente (si existe)
-            // Si Factura es null, se anula la variable Factura, lo cual está bien.
+            // Mantenemos el detalle de la factura consultada anteriormente (si existe)
 
             return Page();
         }
@@ -90,11 +94,11 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
             var token = ObtenerToken();
             var (ok, status, msg, idFactura) = await _api.CrearFacturaAsync(Identificacion, token);
 
+            // Mensaje de éxito
             Message = ok ? msg : null;
             ErrorMessage = !ok ? msg : null;
 
-            // ⭐ Volvemos a listar después de la operación para actualizar la tabla
-            await OnPostListarAsync();
+            await OnPostListarAsync(esListadoSecundario: true);
 
             return Page();
         }
@@ -107,23 +111,26 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
             if (ID_Factura <= 0)
             {
                 ErrorMessage = "Debe ingresar un ID válido.";
+                
                 return Page();
             }
 
             if (string.IsNullOrWhiteSpace(Motivo))
             {
                 ErrorMessage = "Debe indicar un motivo de reversión.";
+                
                 return Page();
             }
 
             var token = ObtenerToken();
             var (ok, status, msg) = await _api.ReversarFacturaAsync(ID_Factura, Motivo!, token);
 
+            // Mensaje de éxito
             Message = ok ? msg : null;
             ErrorMessage = !ok ? msg : null;
 
-            // ⭐ Volvemos a listar después de la operación para actualizar la tabla
-            await OnPostListarAsync();
+            // el mensaje de la reversión.
+            await OnPostListarAsync(esListadoSecundario: true);
 
             return Page();
         }
@@ -136,18 +143,21 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
             if (ID_Factura <= 0)
             {
                 ErrorMessage = "Debe ingresar un ID válido.";
+                
                 return Page();
             }
 
             var token = ObtenerToken();
             var (ok, status, msg, factura) = await _api.ObtenerFacturaAsync(ID_Factura, token);
 
+            // Se asigna el mensaje de éxito de la CONSULTA
             Message = ok ? msg : null;
             ErrorMessage = !ok ? msg : null;
             Factura = factura;
 
-            // ⭐ Volvemos a listar después de la operación para mantener la tabla de listado cargada
-            await OnPostListarAsync();
+            // el mensaje de la consulta.
+            // Usamos 'esListadoSecundario: true'
+            await OnPostListarAsync(esListadoSecundario: true);
 
             // Aseguramos que la Factura individual quede cargada al final
             Factura = factura;
