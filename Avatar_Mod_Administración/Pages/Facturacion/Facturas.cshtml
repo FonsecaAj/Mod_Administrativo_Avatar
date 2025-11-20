@@ -37,10 +37,97 @@ else if (Model.Message != null)
                     <label class="form-label">ID Factura</label>
                     <input asp-for="ID_Factura" type="number" class="form-control" placeholder="Ej: 5" />
                 </div>
-                <button type="submit" class="btn btn-danger">Reversar</button>
+                <button type="button" class="btn btn-danger" onclick="abrirModalReversar()">Reversar</button>
+                <input type="hidden" asp-for="Motivo" id="inputMotivo" />
             </form>
         </div>
     </div>
+</div>
+
+<hr class="my-4" />
+
+<div class="card p-4 shadow-sm mb-4">
+    <h5>📄 Listado de Facturas por Periodo y Estado</h5>
+    <form method="post" asp-page-handler="Listar" id="formListarFacturas">
+        <div class="row g-3 align-items-end">
+            <div class="col-md-3">
+                <label asp-for="FechaInicio" class="form-label">Fecha Inicio</label>
+                <input asp-for="FechaInicio" type="date" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="FechaFin" class="form-label">Fecha Fin</label>
+                <input asp-for="FechaFin" type="date" class="form-control" />
+            </div>
+            <div class="col-md-3">
+                <label asp-for="EstadoFiltro" class="form-label">Estado</label>
+                <select asp-for="EstadoFiltro" class="form-select">
+                    <option value="">TODOS</option>
+                    <option value="Pendiente">Pendiente</option>
+                    <option value="Pagada">Pagada</option>
+                    <option value="Anulada">Anulada</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-info w-100">Filtrar</button>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.FacturasListado != null && Model.FacturasListado.Any())
+    {
+        <h6 class="mt-4">Resultados (<span id="totalFilas">@Model.FacturasListado.Count()</span>)</h6>
+        <div class="table-responsive">
+            <table class="table table-sm table-hover mt-2" id="tablaFacturas">
+                <thead class="table-dark">
+                    <tr>
+                        <th onclick="ordenarPor(0)">ID ⬍</th>
+                        <th onclick="ordenarPor(1)">Identificación ⬍</th>
+                        <th onclick="ordenarPor(2)">Fecha ⬍</th>
+                        <th onclick="ordenarPor(3)">Total ⬍</th>
+                        <th onclick="ordenarPor(4)">Estado ⬍</th>
+                        <th>Acción</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var f in Model.FacturasListado)
+                    {
+                        <tr>
+                            <td>@f.ID_Factura</td>
+                            <td>@f.Identificacion_Estudiante</td>
+                            <td>@f.Fecha_Emision.ToString("dd/MM/yyyy HH:mm")</td> @* Agregado HH:mm para ordenamiento por tiempo *@
+                            <td>@f.Total.ToString("C")</td>
+                            <td>
+                                <span class="badge @(f.Estado == "Pagada" ? "bg-success" : f.Estado == "Anulada" ? "bg-danger" : "bg-warning text-dark")">
+                                    @f.Estado
+                                </span>
+                            </td>
+                            <td>
+                                <form method="post" asp-page-handler="Consultar" class="d-inline">
+                                    <input type="hidden" asp-for="FechaInicio" />
+                                    <input type="hidden" asp-for="FechaFin" />
+                                    <input type="hidden" asp-for="EstadoFiltro" />
+
+                                    <input type="hidden" asp-for="ID_Factura" value="@f.ID_Factura" />
+                                    <button type="submit" class="btn btn-sm btn-outline-secondary">Ver Detalle</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <nav class="d-flex justify-content-between align-items-center mt-3">
+            <button id="btnAnterior" type="button" class="btn btn-outline-secondary btn-sm">← Anterior</button>
+            <span id="paginaInfo" class="fw-semibold"></span>
+            <button id="btnSiguiente" type="button" class="btn btn-outline-secondary btn-sm">Siguiente →</button>
+        </nav>
+
+    }
+    else if (Model.FacturasListado != null && !string.IsNullOrEmpty(Model.FechaInicio.ToString()) && !string.IsNullOrEmpty(Model.FechaFin.ToString()))
+    {
+        <div class="alert alert-info mt-3">No se encontraron facturas con los filtros seleccionados.</div>
+    }
 </div>
 
 <hr class="my-4" />
@@ -89,3 +176,185 @@ else if (Model.Message != null)
         </table>
     }
 </div>
+
+<div class="modal fade" id="modalReversar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmar reversión</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Estás a punto de <strong>reversar la factura</strong>. Esta acción no se puede deshacer.</p>
+                <div class="mb-3">
+                    <label for="motivo" class="form-label fw-semibold">Motivo de reversión</label>
+                    <textarea id="motivo" class="form-control" rows="3" placeholder="Describa brevemente el motivo..." required></textarea>
+                </div>
+                <div id="errorModalMsg" class="text-danger small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarReversion()">Confirmar Reversión</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modal;
+        // ⭐ Variables para Paginación y Ordenamiento (Adaptadas)
+        let paginaActual = 1;
+        const filasPorPagina = 10;
+        let ordenColumna = -1;
+        let ordenAsc = true;
+        const tablaID = "tablaFacturas"; // ID de la tabla de facturas
+
+        document.addEventListener("DOMContentLoaded", () => {
+            modal = new bootstrap.Modal(document.getElementById("modalReversar"));
+
+            // Inicializar campos de fecha al valor de las propiedades del modelo si están vacíos
+            const today = new Date().toISOString().split('T')[0];
+            const defaultStart = new Date();
+            defaultStart.setDate(defaultStart.getDate() - 30);
+            const defaultStartISO = defaultStart.toISOString().split('T')[0];
+
+            if (!document.getElementById("FechaInicio").value) {
+                document.getElementById("FechaInicio").value = defaultStartISO;
+            }
+            if (!document.getElementById("FechaFin").value) {
+                document.getElementById("FechaFin").value = today;
+            }
+
+            // Iniciar Paginación si la tabla existe
+            if (document.getElementById(tablaID)) {
+                mostrarPagina();
+                document.getElementById("btnAnterior").addEventListener("click", anteriorPagina);
+                document.getElementById("btnSiguiente").addEventListener("click", siguientePagina);
+            }
+        });
+
+        // ============================
+        // Paginación y Ordenamiento
+        // ============================
+
+        function mostrarPagina() {
+            const filas = document.querySelectorAll(`#${tablaID} tbody tr`);
+            const totalFilas = filas.length;
+            const totalPaginas = Math.ceil(totalFilas / filasPorPagina);
+
+            // Actualizar el total de resultados mostrado
+            const totalFilasSpan = document.getElementById("totalFilas");
+            if (totalFilasSpan) {
+                totalFilasSpan.innerText = totalFilas;
+            }
+
+            filas.forEach((fila, i) => {
+                fila.style.display = (i >= (paginaActual - 1) * filasPorPagina && i < paginaActual * filasPorPagina)
+                    ? "" : "none";
+            });
+
+            const infoSpan = document.getElementById("paginaInfo");
+            if (infoSpan) {
+                 infoSpan.innerText = `Página ${paginaActual} de ${totalPaginas}`;
+            }
+
+            const btnAnt = document.getElementById("btnAnterior");
+            const btnSig = document.getElementById("btnSiguiente");
+
+            if (btnAnt) btnAnt.disabled = paginaActual === 1;
+            if (btnSig) btnSig.disabled = paginaActual === totalPaginas || totalPaginas === 0;
+        }
+
+        function siguientePagina() {
+            const filas = document.querySelectorAll(`#${tablaID} tbody tr`);
+            const totalPaginas = Math.ceil(filas.length / filasPorPagina);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                mostrarPagina();
+            }
+        }
+
+        function anteriorPagina() {
+            if (paginaActual > 1) {
+                paginaActual--;
+                mostrarPagina();
+            }
+        }
+
+        function ordenarPor(indice) {
+            const tabla = document.getElementById(tablaID);
+            const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+
+            // Lógica de ordenamiento: Cambiar dirección si se hace clic en la misma columna
+            const multiplicador = (ordenColumna === indice && ordenAsc) ? -1 : 1;
+            ordenColumna = indice;
+            ordenAsc = multiplicador === 1;
+
+            filas.sort((a, b) => {
+                // Se usa innerText para obtener el valor de la celda
+                const valorA = a.children[indice].innerText.toLowerCase();
+                const valorB = b.children[indice].innerText.toLowerCase();
+
+                // Intenta convertir a número para ordenar por valor numérico (útil para ID y Monto)
+                // Se limpia el string de caracteres no numéricos excepto el punto decimal y la coma
+                const numA = parseFloat(valorA.replace(/[^0-9.,]/g, '').replace(',', '.'));
+                const numB = parseFloat(valorB.replace(/[^0-9.,]/g, '').replace(',', '.'));
+
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return (numA - numB) * multiplicador;
+                }
+
+                // Para ordenar fechas o cadenas
+                return valorA.localeCompare(valorB, 'es') * multiplicador;
+            });
+
+            const cuerpo = tabla.querySelector("tbody");
+            cuerpo.innerHTML = "";
+            filas.forEach(f => cuerpo.appendChild(f));
+
+            paginaActual = 1;
+            mostrarPagina();
+        }
+
+        // ============================
+        // Funciones de Reversión (Modal)
+        // ============================
+
+        function abrirModalReversar() {
+            const id = document.querySelector("#ID_Factura").value;
+            if (!id || parseInt(id) <= 0) {
+                alert("Debe ingresar un ID de factura válido antes de continuar.");
+                return;
+            }
+            // Limpiar campos y mensajes de error
+            document.getElementById("motivo").value = "";
+            document.getElementById("errorModalMsg").innerText = "";
+            modal.show();
+        }
+
+        function confirmarReversion() {
+            const motivo = document.getElementById("motivo").value.trim();
+            if (!motivo) {
+                document.getElementById("errorModalMsg").innerText = "Por favor, indique un motivo antes de continuar.";
+                return;
+            }
+
+            const form = document.getElementById("formReversar");
+            let hiddenMotivo = document.getElementById("inputMotivo");
+
+            if (!hiddenMotivo) {
+                hiddenMotivo = document.createElement("input");
+                hiddenMotivo.type = "hidden";
+                hiddenMotivo.name = "Motivo";
+                hiddenMotivo.id = "inputMotivo";
+                form.appendChild(hiddenMotivo);
+            }
+
+            hiddenMotivo.value = motivo;
+
+            modal.hide();
+            form.submit();
+        }
+    </script>
+}

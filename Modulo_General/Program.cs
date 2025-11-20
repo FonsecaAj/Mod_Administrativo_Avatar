@@ -15,14 +15,17 @@ builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<BitacoraRepository>();
 builder.Services.AddScoped<IBitacoraService, BitacoraService>();
 
+
 var app = builder.Build();
 
+app.UseSwagger();
+app.UseSwaggerUI();
+
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//if (app.Environment.IsDevelopment())
+//{
+
+//}
 
 
 

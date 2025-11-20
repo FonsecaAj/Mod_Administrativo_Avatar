@@ -8,8 +8,18 @@ namespace Avatar_Mod_Administración.Pages.Pagos
     public class PagosModel : PageModel
     {
         private readonly IPagoApiClient _api;
-        public PagosModel(IPagoApiClient api) => _api = api;
+            
+        public PagosModel(
+            IPagoApiClient api,
+            IAuthService authService,
+            IUsuarioService usuarioService,
+            ILogger<PagosModel> logger)
+            : base(authService, usuarioService, logger)
+        {
+            _api = api;
+        }
 
+        // --- Propiedades para Registrar, Reversar y Consultar por ID ---
         [BindProperty] public int ID_Factura { get; set; }
         [BindProperty] public int ID_Pago { get; set; }
         [BindProperty] public string MetodoPago { get; set; } = "Tarjeta";
@@ -18,6 +28,24 @@ namespace Avatar_Mod_Administración.Pages.Pagos
         public string? Message { get; set; }
         public string? ErrorMessage { get; set; }
 
+        // --- Listar por Período ---
+        [BindProperty] public DateTime FechaInicio { get; set; } = DateTime.Today.AddMonths(-1);
+        [BindProperty] public DateTime FechaFin { get; set; } = DateTime.Today;
+        public IEnumerable<PagoDto>? PagosListado { get; set; } = Enumerable.Empty<PagoDto>();
+
+
+        public async Task<IActionResult> OnGetAsync()
+        {
+            // Llama a la inicialización de sesión que verifica/renueva el token 
+            // y carga los datos de usuario (nombre, rol) en ViewData.
+            var result = await InicializarSesionAsync();
+
+            // Si la sesión expiró o es inválida, redirige a Login.
+            if (result != null) return result;
+
+            // Retorna la página.
+            return Page();
+        }
         public async Task<IActionResult> OnPostRegistrarAsync()
         {
             if (ID_Factura <= 0)
