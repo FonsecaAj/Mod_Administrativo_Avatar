@@ -27,12 +27,37 @@ namespace Avatar_Mod_Administración.Pages.Usuario
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
-            Usuario = await _usuarioService.ObtenerPorEmailAsync(Email, ObtenerToken()!);
+            try
+            {
+                Usuario = await _usuarioService.ObtenerPorEmailAsync(Email, ObtenerToken()!);
 
-            if (Usuario == null)
-                return NotFound();
+                if (Usuario == null)
+                    return NotFound();
 
-            return Page();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToPage("/Usuario/Usuarios");
+            }
+        }
+
+        public async Task<IActionResult> OnPostEliminarAsync(string email)
+        {
+            var result = await InicializarSesionAsync();
+            if (result != null) return result;
+
+            var token = ObtenerToken()!;
+
+            var (ok, status, message) = await _usuarioService.EliminarAsync(email, token);
+
+            if (ok)
+                TempData["Mensaje"] = message;
+            else
+                TempData["Error"] = message;
+
+            return RedirectToPage("/Usuario/Usuarios");
         }
     }
 }

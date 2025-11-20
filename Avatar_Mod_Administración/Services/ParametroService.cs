@@ -15,7 +15,7 @@ namespace Avatar_Mod_Administración.Services
             ILogger<ParametroService> logger)
         {
             _httpClient = httpClient;
-            _apiUrl = configuration["USR3ApiUrl"] ?? "http://localhost:5279";
+            _apiUrl = configuration["USR3ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR3/";
             _logger = logger;
         }
 
@@ -23,24 +23,26 @@ namespace Avatar_Mod_Administración.Services
         {
             try
             {
-                _logger.LogInformation("Obteniendo parámetros - Página: {Pagina}, PorPágina: {PorPagina}", pagina, porPagina);
-
                 var request = new HttpRequestMessage(HttpMethod.Get,
                     $"{_apiUrl}/parametro?pagina={pagina}&porPagina={porPagina}");
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Error al obtener parámetros: {Status}, {Content}", response.StatusCode, errorContent);
-                    return new List<ParametroApi>();
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(content);
+                        string msg = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                        throw new Exception(msg);
+                    }
+                    catch (JsonException)
+                    {
+                        throw new Exception($"Error {response.StatusCode}");
+                    }
                 }
-
-                var content = await response.Content.ReadAsStringAsync();
-
-                _logger.LogInformation("Respuesta recibida: {Content}", content.Substring(0, Math.Min(200, content.Length)));
 
                 var options = new JsonSerializerOptions
                 {
@@ -49,26 +51,12 @@ namespace Avatar_Mod_Administración.Services
 
                 var respuesta = JsonSerializer.Deserialize<RespuestaPaginada<ParametroApi>>(content, options);
 
-                if (respuesta?.Datos == null)
-                {
-                    _logger.LogWarning("La respuesta no contiene datos o es nula");
-                    return new List<ParametroApi>();
-                }
-
-                _logger.LogInformation("Parámetros obtenidos: {Count} de {Total}",
-                    respuesta.Datos.Count, respuesta.Paginacion?.TotalRegistros ?? 0);
-
-                return respuesta.Datos;
+                return respuesta?.Datos ?? new List<ParametroApi>();
             }
-            catch (JsonException jsonEx)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(jsonEx, "Error al deserializar la respuesta JSON");
-                return new List<ParametroApi>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener parámetros");
-                return new List<ParametroApi>();
+                _logger.LogError(ex, "Error de conexión al obtener parámetros");
+                throw new Exception("Error de conexión con el servidor");
             }
         }
 
@@ -76,21 +64,26 @@ namespace Avatar_Mod_Administración.Services
         {
             try
             {
-                _logger.LogInformation("Obteniendo total de parámetros");
-
                 var request = new HttpRequestMessage(HttpMethod.Get,
                     $"{_apiUrl}/parametro?pagina=1&porPagina=1");
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError("Error al obtener total de parámetros: {Status}", response.StatusCode);
-                    return 0;
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(content);
+                        string msg = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                        throw new Exception(msg);
+                    }
+                    catch (JsonException)
+                    {
+                        throw new Exception($"Error {response.StatusCode}");
+                    }
                 }
-
-                var content = await response.Content.ReadAsStringAsync();
 
                 var options = new JsonSerializerOptions
                 {
@@ -99,15 +92,12 @@ namespace Avatar_Mod_Administración.Services
 
                 var respuesta = JsonSerializer.Deserialize<RespuestaPaginada<ParametroApi>>(content, options);
 
-                var total = respuesta?.Paginacion?.TotalRegistros ?? 0;
-                _logger.LogInformation("Total de parámetros: {Total}", total);
-
-                return total;
+                return respuesta?.Paginacion?.TotalRegistros ?? 0;
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al obtener total de parámetros");
-                return 0;
+                _logger.LogError(ex, "Error de conexión al obtener total de parámetros");
+                throw new Exception("Error de conexión con el servidor");
             }
         }
 
@@ -115,20 +105,25 @@ namespace Avatar_Mod_Administración.Services
         {
             try
             {
-                _logger.LogInformation("Obteniendo parámetro {Id}", id);
-
                 var request = new HttpRequestMessage(HttpMethod.Get, $"{_apiUrl}/parametro/{id}");
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError("Error al obtener parámetro: {Status}", response.StatusCode);
-                    return null;
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(content);
+                        string msg = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                        throw new Exception(msg);
+                    }
+                    catch (JsonException)
+                    {
+                        throw new Exception($"Error {response.StatusCode}");
+                    }
                 }
-
-                var content = await response.Content.ReadAsStringAsync();
 
                 var options = new JsonSerializerOptions
                 {
@@ -137,90 +132,96 @@ namespace Avatar_Mod_Administración.Services
 
                 return JsonSerializer.Deserialize<ParametroApi>(content, options);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al obtener parámetro");
-                return null;
+                _logger.LogError(ex, "Error de conexión al obtener parámetro {Id}", id);
+                throw new Exception("Error de conexión con el servidor");
             }
         }
 
-        public async Task<bool> CrearAsync(ParametroCrearDto dto, string token)
+        public async Task<(bool ok, int statusCode, string? message)> CrearAsync(ParametroCrearDto dto, string token)
         {
             try
             {
-                _logger.LogInformation("Creando parámetro {IdParametro}", dto.IdParametro);
-
                 var request = new HttpRequestMessage(HttpMethod.Post, $"{_apiUrl}/parametro");
                 request.Headers.Add("Authorization", token);
                 request.Content = JsonContent.Create(new { idParametro = dto.IdParametro, valor = dto.Valor });
 
                 var response = await _httpClient.SendAsync(request);
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Error al crear parámetro: {Status}, {Content}", response.StatusCode, errorContent);
-                }
+                using var payload = JsonDocument.Parse(responseContent);
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? string.Empty;
 
-                return response.IsSuccessStatusCode;
+                return (response.IsSuccessStatusCode, statusCode, msg);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al crear parámetro");
-                return false;
+                _logger.LogError(ex, "Error de conexión al crear parámetro");
+                return (false, 500, "Error de conexión con el servidor");
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error al parsear respuesta");
+                return (false, 500, "Error al procesar respuesta del servidor");
             }
         }
 
-        public async Task<bool> ActualizarAsync(string id, ParametroCrearDto dto, string token)
+        public async Task<(bool ok, int statusCode, string? message)> ActualizarAsync(string id, ParametroCrearDto dto, string token)
         {
             try
             {
-                _logger.LogInformation("Actualizando parámetro {Id}", id);
-
                 var request = new HttpRequestMessage(HttpMethod.Put, $"{_apiUrl}/parametro/{id}");
                 request.Headers.Add("Authorization", token);
                 request.Content = JsonContent.Create(new { idParametro = dto.IdParametro, valor = dto.Valor });
 
                 var response = await _httpClient.SendAsync(request);
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Error al actualizar parámetro: {Status}, {Content}", response.StatusCode, errorContent);
-                }
+                using var payload = JsonDocument.Parse(responseContent);
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? string.Empty;
 
-                return response.IsSuccessStatusCode;
+                return (response.IsSuccessStatusCode, statusCode, msg);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al actualizar parámetro");
-                return false;
+                _logger.LogError(ex, "Error de conexión al actualizar parámetro {Id}", id);
+                return (false, 500, "Error de conexión con el servidor");
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error al parsear respuesta");
+                return (false, 500, "Error al procesar respuesta del servidor");
             }
         }
 
-        public async Task<bool> EliminarAsync(string id, string token)
+        public async Task<(bool ok, int statusCode, string? message)> EliminarAsync(string id, string token)
         {
             try
             {
-                _logger.LogInformation("Eliminando parámetro {Id}", id);
-
                 var request = new HttpRequestMessage(HttpMethod.Delete, $"{_apiUrl}/parametro/{id}");
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Error al eliminar parámetro: {Status}, {Content}", response.StatusCode, errorContent);
-                }
+                using var payload = JsonDocument.Parse(responseContent);
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? string.Empty;
 
-                return response.IsSuccessStatusCode;
+                return (response.IsSuccessStatusCode, statusCode, msg);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al eliminar parámetro");
-                return false;
+                _logger.LogError(ex, "Error de conexión al eliminar parámetro {Id}", id);
+                return (false, 500, "Error de conexión con el servidor");
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error al parsear respuesta");
+                return (false, 500, "Error al procesar respuesta del servidor");
             }
         }
     }

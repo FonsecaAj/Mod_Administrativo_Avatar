@@ -16,7 +16,7 @@ namespace Avatar_Mod_Administración.Services
             ILogger<RolService> logger)
         {
             _httpClient = httpClient;
-            _usr2ApiUrl = configuration["USR2ApiUrl"] ?? "http://localhost:5009";
+            _usr2ApiUrl = configuration["USR2ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR2/";
             _logger = logger;
         }
 
@@ -27,29 +27,34 @@ namespace Avatar_Mod_Administración.Services
                 var request = new HttpRequestMessage(HttpMethod.Get, $"{_usr2ApiUrl}/rol");
                 request.Headers.Add("Authorization", token);
 
-                _logger.LogDebug("Solicitando roles a: {Url}", $"{_usr2ApiUrl}/rol");
-
                 var response = await _httpClient.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogWarning("Error al obtener roles: {StatusCode}", response.StatusCode);
-                    return new List<RolApi>();
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(content);
+                        string msg = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                        throw new Exception(msg);
+                    }
+                    catch (JsonException)
+                    {
+                        throw new Exception($"Error {response.StatusCode}");
+                    }
                 }
 
-                var content = await response.Content.ReadAsStringAsync();
                 var roles = JsonSerializer.Deserialize<List<RolApi>>(content, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 }) ?? new List<RolApi>();
 
-                _logger.LogInformation("Obtenidos {Count} roles", roles.Count);
                 return roles;
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al obtener roles");
-                return new List<RolApi>();
+                _logger.LogError(ex, "Error de conexión al obtener roles");
+                throw new Exception("Error de conexión con el servidor");
             }
         }
 
@@ -61,27 +66,35 @@ namespace Avatar_Mod_Administración.Services
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogWarning("Error al obtener rol {Id}: {StatusCode}", id, response.StatusCode);
-                    return null;
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(content);
+                        string msg = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                        throw new Exception(msg);
+                    }
+                    catch (JsonException)
+                    {
+                        throw new Exception($"Error {response.StatusCode}");
+                    }
                 }
 
-                var content = await response.Content.ReadAsStringAsync();
                 return JsonSerializer.Deserialize<RolApi>(content, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al obtener rol {Id}", id);
-                return null;
+                _logger.LogError(ex, "Error de conexión al obtener rol {Id}", id);
+                throw new Exception("Error de conexión con el servidor");
             }
         }
 
-        public async Task<bool> CrearAsync(RolCrearDto dto, string token)
+        public async Task<(bool ok, int statusCode, string? message)> CrearAsync(RolCrearDto dto, string token)
         {
             try
             {
@@ -93,23 +106,27 @@ namespace Avatar_Mod_Administración.Services
                 request.Content = content;
 
                 var response = await _httpClient.SendAsync(request);
-                var exito = response.IsSuccessStatusCode;
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                if (exito)
-                    _logger.LogInformation("Rol creado: {Nombre}", dto.Nombre);
-                else
-                    _logger.LogWarning("Error al crear rol: {StatusCode}", response.StatusCode);
+                using var payload = JsonDocument.Parse(responseContent);
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? string.Empty;
 
-                return exito;
+                return (response.IsSuccessStatusCode, statusCode, msg);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al crear rol");
-                return false;
+                _logger.LogError(ex, "Error de conexión al crear rol");
+                return (false, 500, "Error de conexión con el servidor");
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error al parsear respuesta");
+                return (false, 500, "Error al procesar respuesta del servidor");
             }
         }
 
-        public async Task<bool> ActualizarAsync(int id, RolCrearDto dto, string token)
+        public async Task<(bool ok, int statusCode, string? message)> ActualizarAsync(int id, RolCrearDto dto, string token)
         {
             try
             {
@@ -121,23 +138,27 @@ namespace Avatar_Mod_Administración.Services
                 request.Content = content;
 
                 var response = await _httpClient.SendAsync(request);
-                var exito = response.IsSuccessStatusCode;
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                if (exito)
-                    _logger.LogInformation("Rol actualizado: {Id} - {Nombre}", id, dto.Nombre);
-                else
-                    _logger.LogWarning("Error al actualizar rol {Id}: {StatusCode}", id, response.StatusCode);
+                using var payload = JsonDocument.Parse(responseContent);
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? string.Empty;
 
-                return exito;
+                return (response.IsSuccessStatusCode, statusCode, msg);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al actualizar rol {Id}", id);
-                return false;
+                _logger.LogError(ex, "Error de conexión al actualizar rol {Id}", id);
+                return (false, 500, "Error de conexión con el servidor");
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error al parsear respuesta");
+                return (false, 500, "Error al procesar respuesta del servidor");
             }
         }
 
-        public async Task<bool> EliminarAsync(int id, string token)
+        public async Task<(bool ok, int statusCode, string? message)> EliminarAsync(int id, string token)
         {
             try
             {
@@ -145,23 +166,25 @@ namespace Avatar_Mod_Administración.Services
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
-                var exito = response.IsSuccessStatusCode;
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                if (exito)
-                    _logger.LogInformation("Rol eliminado: {Id}", id);
-                else
-                    _logger.LogWarning("Error al eliminar rol {Id}: {StatusCode}", id, response.StatusCode);
+                using var payload = JsonDocument.Parse(responseContent);
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? string.Empty;
 
-                return exito;
+                return (response.IsSuccessStatusCode, statusCode, msg);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al eliminar rol {Id}", id);
-                return false;
+                _logger.LogError(ex, "Error de conexión al eliminar rol {Id}", id);
+                return (false, 500, "Error de conexión con el servidor");
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error al parsear respuesta");
+                return (false, 500, "Error al procesar respuesta del servidor");
             }
         }
-
-        // permisos
 
         public async Task<List<RolModuloDetalleDto>> ObtenerModulosPorRolAsync(int idRol, string token)
         {
@@ -169,54 +192,43 @@ namespace Avatar_Mod_Administración.Services
             {
                 var url = $"{_usr2ApiUrl}/rol/{idRol}/modulos";
 
-                _logger.LogInformation("Solicitando módulos para rol {IdRol} a: {Url}", idRol, url);
-
                 var authToken = token;
                 if (!string.IsNullOrEmpty(token) && !token.StartsWith("Bearer "))
                 {
                     authToken = $"Bearer {token}";
-                    _logger.LogDebug("Se agrego prefijo 'Bearer ' al token");
                 }
-
-                _logger.LogDebug("Token enviado: {Token}",
-                    authToken.Substring(0, Math.Min(40, authToken.Length)) + "...");
 
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
                 request.Headers.Add("Authorization", authToken);
 
                 var response = await _httpClient.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogWarning("Error al obtener módulos del rol {IdRol}: {StatusCode} - {Error}",
-                        idRol, response.StatusCode, errorContent);
-
-                    return new List<RolModuloDetalleDto>();
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(content);
+                        string msg = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                        throw new Exception(msg);
+                    }
+                    catch (JsonException)
+                    {
+                        throw new Exception($"Error {response.StatusCode}");
+                    }
                 }
-
-                var content = await response.Content.ReadAsStringAsync();
-                _logger.LogDebug("Respuesta de USR2: {Content}",
-                    content.Substring(0, Math.Min(200, content.Length)));
 
                 var modulos = JsonSerializer.Deserialize<List<RolModuloDetalleDto>>(content, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 }) ?? new List<RolModuloDetalleDto>();
 
-                _logger.LogInformation("Obtenidos {Count} módulos para rol {IdRol}", modulos.Count, idRol);
-
                 return modulos;
             }
-            catch (HttpRequestException httpEx)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(httpEx, "Error de conexión al obtener módulos del rol {IdRol}", idRol);
-                return new List<RolModuloDetalleDto>();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Excepción al obtener módulos del rol {IdRol}", idRol);
-                return new List<RolModuloDetalleDto>();
+                _logger.LogError(ex, "Error de conexión al obtener módulos del rol {IdRol}", idRol);
+                throw new Exception("Error de conexión con el servidor");
             }
         }
 
@@ -228,30 +240,33 @@ namespace Avatar_Mod_Administración.Services
                 var json = JsonSerializer.Serialize(dto);
                 var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                _logger.LogInformation("Asignando {Count} módulos al rol {IdRol}", idsModulos.Count, idRol);
-
                 var request = new HttpRequestMessage(HttpMethod.Post, $"{_usr2ApiUrl}/rol/{idRol}/modulos");
                 request.Headers.Add("Authorization", token);
                 request.Content = content;
 
                 var response = await _httpClient.SendAsync(request);
-                var exito = response.IsSuccessStatusCode;
 
-                if (exito)
-                    _logger.LogInformation("Modulos asignados exitosamente al rol {IdRol}", idRol);
-                else
+                if (!response.IsSuccessStatusCode)
                 {
                     var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogWarning("Error al asignar módulos: {StatusCode} - {Error}",
-                        response.StatusCode, errorContent);
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(errorContent);
+                        string msg = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                        throw new Exception(msg);
+                    }
+                    catch (JsonException)
+                    {
+                        throw new Exception($"Error {response.StatusCode}");
+                    }
                 }
 
-                return exito;
+                return true;
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al asignar módulos al rol {IdRol}", idRol);
-                return false;
+                _logger.LogError(ex, "Error de conexión al asignar módulos al rol {IdRol}", idRol);
+                throw new Exception("Error de conexión con el servidor");
             }
         }
 
@@ -262,30 +277,32 @@ namespace Avatar_Mod_Administración.Services
                 var request = new HttpRequestMessage(HttpMethod.Get, $"{_usr2ApiUrl}/rol/{idRol}/menu");
                 request.Headers.Add("Authorization", token);
 
-                _logger.LogDebug("Solicitando menú para rol {IdRol}", idRol);
-
                 var response = await _httpClient.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogWarning("Error al obtener menú del rol {IdRol}: {StatusCode}",
-                        idRol, response.StatusCode);
-                    return null;
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(content);
+                        string msg = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                        throw new Exception(msg);
+                    }
+                    catch (JsonException)
+                    {
+                        throw new Exception($"Error {response.StatusCode}");
+                    }
                 }
 
-                var content = await response.Content.ReadAsStringAsync();
-                var menu = JsonSerializer.Deserialize<MenuDto>(content, new JsonSerializerOptions
+                return JsonSerializer.Deserialize<MenuDto>(content, new JsonSerializerOptions
                 {
                     PropertyNameCaseInsensitive = true
                 });
-
-                _logger.LogInformation("Menú obtenido para rol {IdRol}", idRol);
-                return menu;
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al obtener menú del rol {IdRol}", idRol);
-                return null;
+                _logger.LogError(ex, "Error de conexión al obtener menú del rol {IdRol}", idRol);
+                throw new Exception("Error de conexión con el servidor");
             }
         }
     }

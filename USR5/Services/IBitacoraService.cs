@@ -20,28 +20,35 @@
 
         public async Task RegistrarAsync(string usuario, string descripcion, string? tipoAccion = null)
         {
-            try
+            // Fire-and-forget para no bloquear
+            _ = Task.Run(async () =>
             {
-                var request = new
+                try
                 {
-                    usuario,
-                    descripcion,
-                    tipo_Accion = tipoAccion
-                };
+                    var request = new
+                    {
+                        usuario,
+                        descripcion,
+                        tipo_Accion = tipoAccion
+                    };
 
-                var response = await _httpClient.PostAsJsonAsync($"{_gen1ApiUrl}/api/bitacora", request);
+                    var response = await _httpClient.PostAsJsonAsync($"{_gen1ApiUrl}/api/bitacora", request);
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var content = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Error al registrar bitácora. Status: {StatusCode}, Response: {Content}",
-                        response.StatusCode, content);
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        _logger.LogError("Error al registrar bitácora. Status: {StatusCode}, Response: {Content}",
+                            response.StatusCode, content);
+                    }
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Excepción al registrar bitácora en {Url}", $"{_gen1ApiUrl}/api/bitacora");
-            }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Excepción al registrar bitácora en {Url}", $"{_gen1ApiUrl}/api/bitacora");
+                }
+            });
+
+            // Retornar inmediatamente sin esperar
+            await Task.CompletedTask;
         }
     }
 }

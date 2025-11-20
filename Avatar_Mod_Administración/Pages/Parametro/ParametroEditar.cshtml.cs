@@ -31,27 +31,36 @@ namespace Avatar_Mod_Administración.Pages.Parametro
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
-            var token = ObtenerToken()!;
-
-            var parametro = await _parametroService.ObtenerPorIdAsync(Id, token);
-            if (parametro == null)
-                return NotFound();
-
-            Input = new ParametroEditarDto
+            try
             {
-                IdParametro = parametro.IdParametro,
-                Valor = parametro.Valor
-            };
+                var token = ObtenerToken()!;
 
-            return Page();
+                var parametro = await _parametroService.ObtenerPorIdAsync(Id, token);
+                if (parametro == null)
+                {
+                    TempData["Error"] = "El parámetro solicitado no existe";
+                    return RedirectToPage("/Parametro/Parametros");
+                }
+
+                Input = new ParametroEditarDto
+                {
+                    IdParametro = parametro.IdParametro,
+                    Valor = parametro.Valor
+                };
+
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToPage("/Parametro/Parametros");
+            }
         }
 
         public async Task<IActionResult> OnPostAsync()
         {
             var result = await InicializarSesionAsync();
             if (result != null) return result;
-
-            var token = ObtenerToken()!;
 
             if (string.IsNullOrWhiteSpace(Input.IdParametro))
             {
@@ -85,21 +94,22 @@ namespace Avatar_Mod_Administración.Pages.Parametro
                 return Page();
             }
 
+            var token = ObtenerToken()!;
             var dto = new ParametroCrearDto
             {
                 IdParametro = Input.IdParametro.Trim().ToUpper(),
                 Valor = Input.Valor.Trim()
             };
 
-            var resultado = await _parametroService.ActualizarAsync(Id, dto, token);
+            var (ok, status, message) = await _parametroService.ActualizarAsync(Id, dto, token);
 
-            if (resultado)
+            if (ok)
             {
-                TempData["Mensaje"] = "Parámetro actualizado exitosamente";
+                TempData["Mensaje"] = message;
                 return RedirectToPage("/Parametro/Parametros");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al actualizar el parámetro");
+            ModelState.AddModelError(string.Empty, message ?? "Error al actualizar el parámetro");
             return Page();
         }
     }

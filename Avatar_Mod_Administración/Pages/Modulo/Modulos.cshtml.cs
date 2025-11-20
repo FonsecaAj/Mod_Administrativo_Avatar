@@ -28,18 +28,15 @@ namespace Avatar_Mod_Administración.Pages.Modulo
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
-            var token = ObtenerToken()!;
-
             try
             {
+                var token = ObtenerToken()!;
                 Modulos = await _moduloService.ObtenerTodosAsync(token, NombreBusqueda?.Trim());
                 return Page();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al cargar el listado de módulos");
-                TempData["Error"] = "Error al cargar el listado de módulos";
-                Modulos = new List<Entities.Modulo>();
+                TempData["Error"] = ex.Message;
                 return Page();
             }
         }
@@ -51,27 +48,12 @@ namespace Avatar_Mod_Administración.Pages.Modulo
 
             var token = ObtenerToken()!;
 
-            try
-            {
-                var modulo = await _moduloService.ObtenerPorIdAsync(id, token);
-                var nombreModulo = modulo?.Nombre ?? $"ID {id}";
+            var (ok, status, message) = await _moduloService.EliminarAsync(id, token);
 
-                var (exito, mensajeError) = await _moduloService.EliminarAsync(id, token);
-
-                if (exito)
-                {
-                    TempData["Mensaje"] = $"Módulo '{nombreModulo}' eliminado exitosamente";
-                }
-                else
-                {
-                    TempData["Error"] = mensajeError ?? $"No se pudo eliminar el módulo '{nombreModulo}'";
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al eliminar el módulo {Id}", id);
-                TempData["Error"] = "Ocurrió un error al eliminar el módulo. Intente nuevamente.";
-            }
+            if (ok)
+                TempData["Mensaje"] = message;
+            else
+                TempData["Error"] = message;
 
             return RedirectToPage();
         }

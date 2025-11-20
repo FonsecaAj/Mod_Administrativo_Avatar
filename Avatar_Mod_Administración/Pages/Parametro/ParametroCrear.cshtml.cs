@@ -36,8 +36,6 @@ namespace Avatar_Mod_Administración.Pages.Parametro
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
-            var token = ObtenerToken()!;
-
             if (string.IsNullOrWhiteSpace(Input.IdParametro))
             {
                 ModelState.AddModelError("Input.IdParametro", "El ID del parámetro es requerido");
@@ -70,21 +68,22 @@ namespace Avatar_Mod_Administración.Pages.Parametro
                 return Page();
             }
 
+            var token = ObtenerToken()!;
             var dto = new ParametroCrearDto
             {
                 IdParametro = Input.IdParametro.Trim().ToUpper(),
                 Valor = Input.Valor.Trim()
             };
 
-            var resultado = await _parametroService.CrearAsync(dto, token);
+            var (ok, status, message) = await _parametroService.CrearAsync(dto, token);
 
-            if (resultado)
+            if (ok)
             {
-                TempData["Mensaje"] = "Parámetro creado exitosamente";
+                TempData["Mensaje"] = message;
                 return RedirectToPage("/Parametro/Parametros");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al crear el parámetro. Verifique que el ID no esté registrado.");
+            ModelState.AddModelError(string.Empty, message ?? "Error al crear el parámetro");
             return Page();
         }
     }

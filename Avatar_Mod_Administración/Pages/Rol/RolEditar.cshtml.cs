@@ -37,6 +37,7 @@ namespace Avatar_Mod_Administración.Pages.Rol
             {
                 var token = ObtenerToken()!;
                 var rol = await _rolService.ObtenerPorIdAsync(Id, token);
+
                 if (rol == null)
                 {
                     TempData["Error"] = "El rol solicitado no existe";
@@ -48,9 +49,9 @@ namespace Avatar_Mod_Administración.Pages.Rol
 
                 return Page();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                TempData["Error"] = "Error al cargar el rol";
+                TempData["Error"] = ex.Message;
                 return RedirectToPage("/Rol/Roles");
             }
         }
@@ -76,15 +77,16 @@ namespace Avatar_Mod_Administración.Pages.Rol
 
             var token = ObtenerToken()!;
             var dto = new RolCrearDto { Nombre = Input.Nombre.Trim() };
-            var resultado = await _rolService.ActualizarAsync(Id, dto, token);
 
-            if (resultado)
+            var (ok, status, message) = await _rolService.ActualizarAsync(Id, dto, token);
+
+            if (ok)
             {
-                TempData["Mensaje"] = "Rol actualizado exitosamente";
+                TempData["Mensaje"] = message;
                 return RedirectToPage("/Rol/Roles");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al actualizar el rol");
+            ModelState.AddModelError(string.Empty, message ?? "Error al actualizar el rol");
             return Page();
         }
     }

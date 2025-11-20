@@ -16,7 +16,7 @@ namespace Avatar_Mod_Administración.Services
             ILogger<ModuloService> logger)
         {
             _httpClient = httpClient;
-            _usr4ApiUrl = configuration.GetValue<string>("USR4ApiUrl") ?? "http://localhost:5290";
+            _usr4ApiUrl = configuration.GetValue<string>("USR4ApiUrl") ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR4/";
             _logger = logger;
         }
 
@@ -34,25 +34,40 @@ namespace Avatar_Mod_Administración.Services
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
+                var content = await response.Content.ReadAsStringAsync();
+
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogWarning("Error al obtener módulos: {StatusCode}", response.StatusCode);
-                    return new List<Modulo>();
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(content);
+                        string msg = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                        throw new Exception(msg);
+                    }
+                    catch (JsonException)
+                    {
+                        throw new Exception($"Error {response.StatusCode}");
+                    }
                 }
 
-                var content = await response.Content.ReadAsStringAsync();
-                var modulos = JsonSerializer.Deserialize<List<Modulo>>(content, new JsonSerializerOptions
+                // Parsear BusinessLogicResponse y extraer responseObject
+                using var document = JsonDocument.Parse(content);
+                if (document.RootElement.TryGetProperty("responseObject", out var responseObj))
                 {
-                    PropertyNameCaseInsensitive = true
-                }) ?? new List<Modulo>();
+                    var modulos = JsonSerializer.Deserialize<List<Modulo>>(responseObj.GetRawText(), new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }) ?? new List<Modulo>();
 
-                _logger.LogInformation("Obtenidos {Count} módulos", modulos.Count);
-                return modulos;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener módulos");
+                    return modulos;
+                }
+
                 return new List<Modulo>();
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Error de conexión al obtener módulos");
+                throw new Exception("Error de conexión con el servidor");
             }
         }
 
@@ -64,23 +79,42 @@ namespace Avatar_Mod_Administración.Services
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
-                if (!response.IsSuccessStatusCode)
-                    return null;
-
                 var content = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<Modulo>(content, new JsonSerializerOptions
+
+                if (!response.IsSuccessStatusCode)
                 {
-                    PropertyNameCaseInsensitive = true
-                });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener módulo {Id}", id);
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(content);
+                        string msg = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                        throw new Exception(msg);
+                    }
+                    catch (JsonException)
+                    {
+                        throw new Exception($"Error {response.StatusCode}");
+                    }
+                }
+
+                // Parsear BusinessLogicResponse
+                using var document = JsonDocument.Parse(content);
+                if (document.RootElement.TryGetProperty("responseObject", out var responseObj))
+                {
+                    return JsonSerializer.Deserialize<Modulo>(responseObj.GetRawText(), new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+                }
+
                 return null;
+            }
+            catch (HttpRequestException ex)
+            {
+                _logger.LogError(ex, "Error de conexión al obtener módulo {Id}", id);
+                throw new Exception("Error de conexión con el servidor");
             }
         }
 
-        public async Task<Modulo?> CrearAsync(ModuloCrearDto dto, string token)
+        public async Task<(bool ok, int statusCode, string? message)> CrearAsync(ModuloCrearDto dto, string token)
         {
             try
             {
@@ -92,26 +126,27 @@ namespace Avatar_Mod_Administración.Services
                 request.Content = content;
 
                 var response = await _httpClient.SendAsync(request);
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogWarning("Error al crear módulo: {StatusCode}", response.StatusCode);
-                    return null;
-                }
-
                 var responseContent = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<Modulo>(responseContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+
+                using var payload = JsonDocument.Parse(responseContent);
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? string.Empty;
+
+                return (response.IsSuccessStatusCode, statusCode, msg);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al crear módulo");
-                return null;
+                _logger.LogError(ex, "Error de conexión al crear módulo");
+                return (false, 500, "Error de conexión con el servidor");
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error al parsear respuesta");
+                return (false, 500, "Error al procesar respuesta del servidor");
             }
         }
 
-        public async Task<Modulo?> ActualizarAsync(int id, ModuloCrearDto dto, string token)
+        public async Task<(bool ok, int statusCode, string? message)> ActualizarAsync(int id, ModuloCrearDto dto, string token)
         {
             try
             {
@@ -123,26 +158,27 @@ namespace Avatar_Mod_Administración.Services
                 request.Content = content;
 
                 var response = await _httpClient.SendAsync(request);
-                if (!response.IsSuccessStatusCode)
-                {
-                    _logger.LogWarning("Error al actualizar módulo: {StatusCode}", response.StatusCode);
-                    return null;
-                }
-
                 var responseContent = await response.Content.ReadAsStringAsync();
-                return JsonSerializer.Deserialize<Modulo>(responseContent, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+
+                using var payload = JsonDocument.Parse(responseContent);
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? string.Empty;
+
+                return (response.IsSuccessStatusCode, statusCode, msg);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al actualizar módulo {Id}", id);
-                return null;
+                _logger.LogError(ex, "Error de conexión al actualizar módulo {Id}", id);
+                return (false, 500, "Error de conexión con el servidor");
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error al parsear respuesta");
+                return (false, 500, "Error al procesar respuesta del servidor");
             }
         }
 
-        public async Task<(bool exito, string? mensajeError)> EliminarAsync(int id, string token)
+        public async Task<(bool ok, int statusCode, string? message)> EliminarAsync(int id, string token)
         {
             try
             {
@@ -150,34 +186,23 @@ namespace Avatar_Mod_Administración.Services
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
+                var responseContent = await response.Content.ReadAsStringAsync();
 
-                if (response.IsSuccessStatusCode)
-                {
-                    return (true, null);
-                }
+                using var payload = JsonDocument.Parse(responseContent);
+                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? string.Empty;
 
-                var errorContent = await response.Content.ReadAsStringAsync();
-
-                if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
-                {
-                    try
-                    {
-                        var errorObj = JsonSerializer.Deserialize<JsonElement>(errorContent);
-                        if (errorObj.TryGetProperty("error", out var errorMsg))
-                        {
-                            return (false, errorMsg.GetString());
-                        }
-                    }
-                    catch { }
-                    return (false, "No se puede eliminar el módulo porque está asignado a uno o más roles");
-                }
-
-                return (false, $"Error al eliminar: {response.StatusCode}");
+                return (response.IsSuccessStatusCode, statusCode, msg);
             }
-            catch (Exception ex)
+            catch (HttpRequestException ex)
             {
-                _logger.LogError(ex, "Error al eliminar módulo {Id}", id);
-                return (false, "Error de conexión al intentar eliminar el módulo");
+                _logger.LogError(ex, "Error de conexión al eliminar módulo {Id}", id);
+                return (false, 500, "Error de conexión con el servidor");
+            }
+            catch (JsonException ex)
+            {
+                _logger.LogError(ex, "Error al parsear respuesta");
+                return (false, 500, "Error al procesar respuesta del servidor");
             }
         }
     }

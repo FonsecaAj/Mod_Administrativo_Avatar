@@ -25,9 +25,17 @@ namespace Avatar_Mod_Administración.Pages.Rol
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
-            var token = ObtenerToken()!;
-            Roles = await _rolService.ObtenerTodosAsync(token);
-            return Page();
+            try
+            {
+                var token = ObtenerToken()!;
+                Roles = await _rolService.ObtenerTodosAsync(token);
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostEliminarAsync(int id)
@@ -36,12 +44,13 @@ namespace Avatar_Mod_Administración.Pages.Rol
             if (result != null) return result;
 
             var token = ObtenerToken()!;
-            var resultado = await _rolService.EliminarAsync(id, token);
 
-            if (resultado)
-                TempData["Mensaje"] = "Rol eliminado exitosamente";
+            var (ok, status, message) = await _rolService.EliminarAsync(id, token);
+
+            if (ok)
+                TempData["Mensaje"] = message;
             else
-                TempData["Error"] = "No se pudo eliminar el rol. Verifique dependencias.";
+                TempData["Error"] = message;
 
             return RedirectToPage();
         }

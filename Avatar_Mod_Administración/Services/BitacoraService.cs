@@ -16,7 +16,7 @@ namespace Avatar_Mod_Administración.Services
         {
             _httpClient = httpClient;
             // URL del servicio GEN1
-            _apiUrl = configuration["GEN1ApiUrl"] ?? "http://localhost:5000";
+            _apiUrl = configuration["GEN1ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral/";
             _logger = logger;
         }
 

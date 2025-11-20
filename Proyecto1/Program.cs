@@ -20,11 +20,10 @@ builder.Services.AddHttpClient<IModuloApiService, ModuloApiService>();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.UseHttpsRedirection();
 
@@ -38,17 +37,17 @@ app.MapPost("/rol", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var validacion = ValidarRol(dto.Nombre);
     if (!validacion.esValido)
-        return Results.BadRequest(new { error = validacion.mensaje });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = validacion.mensaje }, statusCode: 400);
 
     var rolExistente = await repository.ObtenerPorNombreAsync(dto.Nombre.Trim());
     if (rolExistente != null)
-        return Results.BadRequest(new { error = "Ya existe un rol con ese nombre" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "Ya existe un rol con ese nombre" }, statusCode: 400);
 
     var rol = new Rol { Nombre = dto.Nombre.Trim() };
     var id = await repository.CrearAsync(rol);
@@ -69,7 +68,13 @@ app.MapPost("/rol", async (
         "INSERT"
     );
 
-    return Results.Created($"/rol/{id}", rolCreado);
+    // Devolver BusinessLogicResponse
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 201,
+        Message = $"Rol creado correctamente con ID {id}",
+        ResponseObject = rolCreado
+    }, statusCode: 201);
 })
 .WithName("CrearRol")
 .WithOpenApi();
@@ -84,21 +89,21 @@ app.MapPut("/rol/{id}", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var validacion = ValidarRol(dto.Nombre);
     if (!validacion.esValido)
-        return Results.BadRequest(new { error = validacion.mensaje });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = validacion.mensaje }, statusCode: 400);
 
     var rolExistente = await repository.ObtenerPorIdAsync(id);
     if (rolExistente == null)
-        return Results.NotFound(new { error = "Rol no encontrado" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Rol no encontrado" }, statusCode: 404);
 
     var rolDuplicado = await repository.ObtenerPorNombreAsync(dto.Nombre.Trim());
     if (rolDuplicado != null && rolDuplicado.IdRol != id)
-        return Results.BadRequest(new { error = "Ya existe un rol con ese nombre" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "Ya existe un rol con ese nombre" }, statusCode: 400);
 
     var registroAnterior = new
     {
@@ -133,7 +138,13 @@ app.MapPut("/rol/{id}", async (
         "UPDATE"
     );
 
-    return Results.Ok(rolActualizado);
+    // Devolver BusinessLogicResponse
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 200,
+        Message = "Rol actualizado correctamente",
+        ResponseObject = rolActualizado
+    }, statusCode: 200);
 })
 .WithName("ActualizarRol")
 .WithOpenApi();
@@ -147,13 +158,13 @@ app.MapDelete("/rol/{id}", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var rol = await repository.ObtenerPorIdAsync(id);
     if (rol == null)
-        return Results.NotFound(new { error = "Rol no encontrado" });
+        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Rol no encontrado" }, statusCode: 404);
 
     var registroEliminado = new
     {
@@ -171,7 +182,12 @@ app.MapDelete("/rol/{id}", async (
         "DELETE"
     );
 
-    return Results.NoContent();
+    // Devolver BusinessLogicResponse
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 200,
+        Message = "Rol eliminado exitosamente"
+    }, statusCode: 200);
 })
 .WithName("EliminarRol")
 .WithOpenApi();
