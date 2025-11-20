@@ -60,25 +60,33 @@ namespace Avatar_Mod_Administración.Pages.Usuario
 
             var token = ObtenerToken()!;
 
-            // Cargar catálogos
-            TiposIdentificacion = await _usuarioService.ObtenerTiposIdentificacionAsync(token);
-            Roles = await _usuarioService.ObtenerRolesAsync(token);
+            try
+            {
+                // Cargar catálogos
+                TiposIdentificacion = await _usuarioService.ObtenerTiposIdentificacionAsync(token);
+                Roles = await _usuarioService.ObtenerRolesAsync(token);
 
-            // Aplicar filtros
-            var usuariosFiltrados = await AplicarFiltrosAsync(token);
+                // Aplicar filtros
+                var usuariosFiltrados = await AplicarFiltrosAsync(token);
 
-            // Ordenar
-            usuariosFiltrados = OrdenarUsuarios(usuariosFiltrados);
+                // Ordenar
+                usuariosFiltrados = OrdenarUsuarios(usuariosFiltrados);
 
-            // Paginar
-            TotalRegistros = usuariosFiltrados.Count;
-            TotalPaginas = (int)Math.Ceiling(TotalRegistros / (double)ElementosPorPagina);
-            PaginaActual = Math.Max(1, Math.Min(PaginaActual, TotalPaginas == 0 ? 1 : TotalPaginas));
+                // Paginar
+                TotalRegistros = usuariosFiltrados.Count;
+                TotalPaginas = (int)Math.Ceiling(TotalRegistros / (double)ElementosPorPagina);
+                PaginaActual = Math.Max(1, Math.Min(PaginaActual, TotalPaginas == 0 ? 1 : TotalPaginas));
 
-            Usuarios = usuariosFiltrados
-                .Skip((PaginaActual - 1) * ElementosPorPagina)
-                .Take(ElementosPorPagina)
-                .ToList();
+                Usuarios = usuariosFiltrados
+                    .Skip((PaginaActual - 1) * ElementosPorPagina)
+                    .Take(ElementosPorPagina)
+                    .ToList();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                Usuarios = new List<UsuarioEntity>();
+            }
 
             return Page();
         }
@@ -121,12 +129,13 @@ namespace Avatar_Mod_Administración.Pages.Usuario
             if (result != null) return result;
 
             var token = ObtenerToken()!;
-            var resultado = await _usuarioService.EliminarAsync(email, token);
 
-            if (resultado)
-                TempData["Mensaje"] = "Usuario eliminado exitosamente";
+            var (ok, status, message) = await _usuarioService.EliminarAsync(email, token);
+
+            if (ok)
+                TempData["Mensaje"] = message;
             else
-                TempData["Error"] = "No se pudo eliminar el usuario. Verifique dependencias.";
+                TempData["Error"] = message;
 
             return RedirectToPage();
         }

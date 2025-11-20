@@ -36,22 +36,30 @@ namespace Avatar_Mod_Administración.Pages.Usuario
 
             var token = ObtenerToken()!;
 
-            await CargarCatalogosAsync(token);
-
-            var usuario = await _usuarioService.ObtenerPorEmailAsync(Email, token);
-            if (usuario == null)
-                return NotFound();
-
-            Input = new UsuarioEditarDto
+            try
             {
-                Email = usuario.Email,
-                IdTipoIdentificacion = usuario.IdTipoIdentificacion,
-                Identificacion = usuario.Identificacion,
-                Nombre = usuario.Nombre,
-                RolDeseado = usuario.RolNombre
-            };
+                await CargarCatalogosAsync(token);
 
-            return Page();
+                var usuario = await _usuarioService.ObtenerPorEmailAsync(Email, token);
+                if (usuario == null)
+                    return NotFound();
+
+                Input = new UsuarioEditarDto
+                {
+                    Email = usuario.Email,
+                    IdTipoIdentificacion = usuario.IdTipoIdentificacion,
+                    Identificacion = usuario.Identificacion,
+                    Nombre = usuario.Nombre,
+                    RolDeseado = usuario.RolNombre
+                };
+
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return RedirectToPage("/Usuario/Usuarios");
+            }
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -61,7 +69,6 @@ namespace Avatar_Mod_Administración.Pages.Usuario
 
             var token = ObtenerToken()!;
 
-            // Validación manual del nombre
             if (string.IsNullOrWhiteSpace(Input.Nombre))
             {
                 ModelState.AddModelError("Input.Nombre", "El nombre no puede estar vacío o contener solo espacios");
@@ -73,7 +80,6 @@ namespace Avatar_Mod_Administración.Pages.Usuario
                 return Page();
             }
 
-            // Validar dominio
             var emailNuevo = Input.Email.Trim().ToLower();
             if (!emailNuevo.EndsWith("@cuc.cr") && !emailNuevo.EndsWith("@cuc.ac.cr"))
             {
@@ -82,7 +88,6 @@ namespace Avatar_Mod_Administración.Pages.Usuario
                 return Page();
             }
 
-            // Validar rol según dominio
             if (emailNuevo.EndsWith("@cuc.cr"))
             {
                 Input.RolDeseado = "estudiante";
@@ -115,16 +120,15 @@ namespace Avatar_Mod_Administración.Pages.Usuario
                 RolDeseado = Input.RolDeseado
             };
 
+            var (ok, status, message) = await _usuarioService.ActualizarAsync(Email, dto, token);
 
-            var resultado = await _usuarioService.ActualizarAsync(Email, dto, token);
-
-            if (resultado)
+            if (ok)
             {
-                TempData["Mensaje"] = "Usuario actualizado exitosamente";
+                TempData["Mensaje"] = message;
                 return RedirectToPage("/Usuario/Usuarios");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al actualizar el usuario");
+            ModelState.AddModelError(string.Empty, message ?? "Error desconocido");
             await CargarCatalogosAsync(token);
             return Page();
         }

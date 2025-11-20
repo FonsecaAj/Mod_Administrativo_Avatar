@@ -36,8 +36,6 @@ namespace Avatar_Mod_Administración.Pages.Modulo
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
-            var token = ObtenerToken()!;
-
             if (string.IsNullOrWhiteSpace(Input.Nombre))
             {
                 ModelState.AddModelError("Input.Nombre", "El nombre del módulo es requerido");
@@ -72,32 +70,24 @@ namespace Avatar_Mod_Administración.Pages.Modulo
                 return Page();
             }
 
-            try
+            var token = ObtenerToken()!;
+            var dto = new ModuloCrearDto
             {
-                var dto = new ModuloCrearDto
-                {
-                    Nombre = Input.Nombre.Trim(),
-                    Activo = Input.Activo,
-                    Orden = Input.Orden
-                };
+                Nombre = Input.Nombre.Trim(),
+                Activo = Input.Activo,
+                Orden = Input.Orden
+            };
 
-                var moduloCreado = await _moduloService.CrearAsync(dto, token);
+            var (ok, status, message) = await _moduloService.CrearAsync(dto, token);
 
-                if (moduloCreado != null)
-                {
-                    TempData["Mensaje"] = $"Módulo '{moduloCreado.Nombre}' creado exitosamente";
-                    return RedirectToPage("/Modulo/Modulos");
-                }
-
-                ModelState.AddModelError(string.Empty, "Error al crear el módulo. Verifique que el nombre no esté registrado.");
-                return Page();
-            }
-            catch (Exception ex)
+            if (ok)
             {
-                _logger.LogError(ex, "Error al crear módulo");
-                ModelState.AddModelError(string.Empty, "Ocurrió un error al crear el módulo. Intente nuevamente.");
-                return Page();
+                TempData["Mensaje"] = message;
+                return RedirectToPage("/Modulo/Modulos");
             }
+
+            ModelState.AddModelError(string.Empty, message ?? "Error al crear el módulo");
+            return Page();
         }
     }
 

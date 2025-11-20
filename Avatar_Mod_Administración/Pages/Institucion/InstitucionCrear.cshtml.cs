@@ -36,7 +36,6 @@ namespace Avatar_Mod_Administración.Pages.Institucion
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
-            // Validación del nombre
             if (string.IsNullOrWhiteSpace(Input.Nombre))
             {
                 ModelState.AddModelError("Input.Nombre", "El nombre de la institución es requerido");
@@ -75,20 +74,21 @@ namespace Avatar_Mod_Administración.Pages.Institucion
             {
                 var token = ObtenerToken()!;
                 var dto = new InstitucionCrearDto { Nombre = Input.Nombre.Trim() };
-                var institucionCreada = await _institucionService.CrearAsync(dto, token);
 
-                if (institucionCreada != null)
+                var (ok, status, message) = await _institucionService.CrearAsync(dto, token);
+
+                if (ok)
                 {
-                    TempData["Mensaje"] = $"Institución '{institucionCreada.Nombre}' creada exitosamente";
+                    TempData["Mensaje"] = message;
                     return RedirectToPage("/Institucion/Instituciones");
                 }
 
-                ModelState.AddModelError(string.Empty, "Error al crear la institución.");
+                ModelState.AddModelError(string.Empty, message ?? "Error al crear la institución");
                 return Page();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "Ocurrió un error al crear la institución.");
+                ModelState.AddModelError(string.Empty, ex.Message);
                 return Page();
             }
         }

@@ -52,15 +52,16 @@ namespace Avatar_Mod_Administración.Pages.Rol
 
             var token = ObtenerToken()!;
             var dto = new RolCrearDto { Nombre = Input.Nombre.Trim() };
-            var resultado = await _rolService.CrearAsync(dto, token);
 
-            if (resultado)
+            var (ok, status, message) = await _rolService.CrearAsync(dto, token);
+
+            if (ok)
             {
-                TempData["Mensaje"] = "Rol creado exitosamente";
+                TempData["Mensaje"] = message;
                 return RedirectToPage("/Rol/Roles");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al crear el rol.");
+            ModelState.AddModelError(string.Empty, message ?? "Error al crear el rol");
             return Page();
         }
     }

@@ -19,35 +19,16 @@ namespace Avatar_Mod_Administración.Pages
             _logger = logger;
         }
 
-        public async Task<IActionResult> OnGetAsync()
+        public IActionResult OnGet()
         {
-            try
+            // Verificación simple y rápida sin try-catch innecesario
+            var sesion = _authService.ObtenerSesionActual();
+            if (sesion != null)
             {
-                // Intentar restaurar sesión desde cookies si existe
-                var restaurado = await _authService.RestaurarSesionDesdeCookiesAsync();
-                if (restaurado)
-                {
-                    _logger.LogInformation("Sesión restaurada desde cookies - redirigiendo a Dashboard");
-                    return RedirectToPage("/Index");
-                }
-
-                // Verificar si ya hay sesión activa en memoria
-                var sesion = _authService.ObtenerSesionActual();
-                if (sesion != null)
-                {
-                    _logger.LogInformation("Sesión activa encontrada - redirigiendo a Dashboard");
-                    return RedirectToPage("/Index");
-                }
-
-                // No hay sesión, mostrar formulario de login
-                _logger.LogDebug("No hay sesión activa - mostrando formulario de login");
-                return Page();
+                return RedirectToPage("/Index");
             }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al verificar sesión en Login");
-                return Page();
-            }
+
+            return Page();
         }
 
         public async Task<IActionResult> OnPostAsync()
@@ -57,21 +38,14 @@ namespace Avatar_Mod_Administración.Pages
                 return Page();
             }
 
-            _logger.LogInformation("Intentando login para: {Email}", Input.Email);
-
             var response = await _authService.LoginAsync(Input.Email, Input.Contrasenna);
 
             if (response == null)
             {
-                _logger.LogWarning("Login falló - credenciales incorrectas para: {Email}", Input.Email);
                 ModelState.AddModelError(string.Empty, "Usuario y/o contraseña incorrectos");
                 return Page();
             }
 
-            _logger.LogInformation("Login exitoso para: {Email}", response.UsuarioID);
-            _logger.LogInformation("Recordar sesión: {Recordar}", Input.RecordarSesion ? "SÍ" : "NO");
-
-            // Guardar sesión con cookies solo si se marcó "Recordar sesión"
             _authService.GuardarSesion(response, Input.RecordarSesion);
 
             return RedirectToPage("/Index");

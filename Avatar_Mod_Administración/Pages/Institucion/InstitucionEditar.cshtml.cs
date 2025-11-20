@@ -37,6 +37,7 @@ namespace Avatar_Mod_Administración.Pages.Institucion
             {
                 var token = ObtenerToken()!;
                 var institucion = await _institucionService.ObtenerPorIdAsync(Id, token);
+
                 if (institucion == null)
                 {
                     TempData["Error"] = "La institución solicitada no existe";
@@ -48,9 +49,9 @@ namespace Avatar_Mod_Administración.Pages.Institucion
 
                 return Page();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                TempData["Error"] = "Error al cargar la institución";
+                TempData["Error"] = ex.Message;
                 return RedirectToPage("/Institucion/Instituciones");
             }
         }
@@ -61,63 +62,74 @@ namespace Avatar_Mod_Administración.Pages.Institucion
             if (result != null) return result;
 
             var token = ObtenerToken()!;
-            var institucionOriginal = await _institucionService.ObtenerPorIdAsync(Id, token);
-            if (institucionOriginal == null)
-            {
-                TempData["Error"] = "La institución no existe";
-                return RedirectToPage("/Institucion/Instituciones");
-            }
-
-            // Validaciones...
-            if (string.IsNullOrWhiteSpace(Input.Nombre))
-            {
-                ModelState.AddModelError("Input.Nombre", "El nombre es requerido");
-            }
-            else
-            {
-                var nombreTrimmed = Input.Nombre.Trim();
-
-                if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$"))
-                {
-                    ModelState.AddModelError("Input.Nombre", "El nombre solo puede contener letras y espacios");
-                }
-
-                if (nombreTrimmed.Length < 3 || nombreTrimmed.Length > 100)
-                {
-                    ModelState.AddModelError("Input.Nombre", "El nombre debe tener entre 3 y 100 caracteres");
-                }
-
-                if (Regex.IsMatch(nombreTrimmed, @"\s{2,}"))
-                {
-                    ModelState.AddModelError("Input.Nombre", "El nombre no puede contener espacios consecutivos");
-                }
-            }
-
-            if (!ModelState.IsValid)
-            {
-                NombreOriginal = institucionOriginal.Nombre;
-                return Page();
-            }
 
             try
             {
-                var dto = new InstitucionCrearDto { Nombre = Input.Nombre.Trim() };
-                var institucionActualizada = await _institucionService.ActualizarAsync(Id, dto, token);
-
-                if (institucionActualizada != null)
+                var institucionOriginal = await _institucionService.ObtenerPorIdAsync(Id, token);
+                if (institucionOriginal == null)
                 {
-                    TempData["Mensaje"] = $"Institución actualizada exitosamente a '{institucionActualizada.Nombre}'";
+                    TempData["Error"] = "La institución no existe";
                     return RedirectToPage("/Institucion/Instituciones");
                 }
 
-                ModelState.AddModelError(string.Empty, "Error al actualizar la institución.");
+                if (string.IsNullOrWhiteSpace(Input.Nombre))
+                {
+                    ModelState.AddModelError("Input.Nombre", "El nombre es requerido");
+                }
+                else
+                {
+                    var nombreTrimmed = Input.Nombre.Trim();
+
+                    if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$"))
+                    {
+                        ModelState.AddModelError("Input.Nombre", "El nombre solo puede contener letras y espacios");
+                    }
+
+                    if (nombreTrimmed.Length < 3 || nombreTrimmed.Length > 100)
+                    {
+                        ModelState.AddModelError("Input.Nombre", "El nombre debe tener entre 3 y 100 caracteres");
+                    }
+
+                    if (Regex.IsMatch(nombreTrimmed, @"\s{2,}"))
+                    {
+                        ModelState.AddModelError("Input.Nombre", "El nombre no puede contener espacios consecutivos");
+                    }
+                }
+
+                if (!ModelState.IsValid)
+                {
+                    NombreOriginal = institucionOriginal.Nombre;
+                    return Page();
+                }
+
+                var dto = new InstitucionCrearDto { Nombre = Input.Nombre.Trim() };
+
+                var (ok, status, message) = await _institucionService.ActualizarAsync(Id, dto, token);
+
+                if (ok)
+                {
+                    TempData["Mensaje"] = message;
+                    return RedirectToPage("/Institucion/Instituciones");
+                }
+
+                ModelState.AddModelError(string.Empty, message ?? "Error al actualizar la institución");
                 NombreOriginal = institucionOriginal.Nombre;
                 return Page();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                ModelState.AddModelError(string.Empty, "Ocurrió un error al actualizar la institución.");
-                NombreOriginal = institucionOriginal.Nombre;
+                ModelState.AddModelError(string.Empty, ex.Message);
+
+                try
+                {
+                    var institucionOriginal = await _institucionService.ObtenerPorIdAsync(Id, token);
+                    if (institucionOriginal != null)
+                    {
+                        NombreOriginal = institucionOriginal.Nombre;
+                    }
+                }
+                catch { }
+
                 return Page();
             }
         }

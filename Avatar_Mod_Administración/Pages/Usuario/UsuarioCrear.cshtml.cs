@@ -42,7 +42,6 @@ namespace Avatar_Mod_Administración.Pages.Usuario
 
             var token = ObtenerToken()!;
 
-            // Validación manual del nombre (no vacío ni solo espacios)
             if (string.IsNullOrWhiteSpace(Input.Nombre))
             {
                 ModelState.AddModelError("Input.Nombre", "El nombre no puede estar vacío o contener solo espacios");
@@ -54,7 +53,6 @@ namespace Avatar_Mod_Administración.Pages.Usuario
                 return Page();
             }
 
-            // Validar dominio
             var email = Input.Email.Trim().ToLower();
             if (!email.EndsWith("@cuc.cr") && !email.EndsWith("@cuc.ac.cr"))
             {
@@ -63,7 +61,6 @@ namespace Avatar_Mod_Administración.Pages.Usuario
                 return Page();
             }
 
-            // Validar y asignar rol según dominioa
             if (email.EndsWith("@cuc.cr"))
             {
                 Input.RolDeseado = "estudiante";
@@ -96,15 +93,15 @@ namespace Avatar_Mod_Administración.Pages.Usuario
                 RolDeseado = Input.RolDeseado
             };
 
-            var resultado = await _usuarioService.CrearAsync(dto, token);
+            var (ok, status, message) = await _usuarioService.CrearAsync(dto, token);
 
-            if (resultado)
+            if (ok)
             {
-                TempData["Mensaje"] = "Usuario creado exitosamente";
+                TempData["Mensaje"] = message;
                 return RedirectToPage("/Usuario/Usuarios");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al crear el usuario. Verifique que el email no esté registrado.");
+            ModelState.AddModelError(string.Empty, message ?? "Error desconocido");
             await CargarCatalogosAsync(token);
             return Page();
         }

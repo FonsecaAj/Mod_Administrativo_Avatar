@@ -32,19 +32,27 @@ namespace Avatar_Mod_Administración.Pages.Parametro
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
-            var token = ObtenerToken()!;
+            try
+            {
+                var token = ObtenerToken()!;
 
-            PaginaActual = pagina < 1 ? 1 : pagina;
+                PaginaActual = pagina < 1 ? 1 : pagina;
 
-            TotalParametros = await _parametroService.ObtenerTotalAsync(token);
-            TotalPaginas = (int)Math.Ceiling(TotalParametros / (double)ParametrosPorPagina);
+                TotalParametros = await _parametroService.ObtenerTotalAsync(token);
+                TotalPaginas = (int)Math.Ceiling(TotalParametros / (double)ParametrosPorPagina);
 
-            if (PaginaActual > TotalPaginas && TotalPaginas > 0)
-                PaginaActual = TotalPaginas;
+                if (PaginaActual > TotalPaginas && TotalPaginas > 0)
+                    PaginaActual = TotalPaginas;
 
-            Parametros = await _parametroService.ObtenerTodosAsync(token, PaginaActual, ParametrosPorPagina);
+                Parametros = await _parametroService.ObtenerTodosAsync(token, PaginaActual, ParametrosPorPagina);
 
-            return Page();
+                return Page();
+            }
+            catch (Exception ex)
+            {
+                TempData["Error"] = ex.Message;
+                return Page();
+            }
         }
 
         public async Task<IActionResult> OnPostEliminarAsync(string id)
@@ -53,12 +61,13 @@ namespace Avatar_Mod_Administración.Pages.Parametro
             if (result != null) return result;
 
             var token = ObtenerToken()!;
-            var resultado = await _parametroService.EliminarAsync(id, token);
 
-            if (resultado)
-                TempData["Mensaje"] = "Parámetro eliminado exitosamente";
+            var (ok, status, message) = await _parametroService.EliminarAsync(id, token);
+
+            if (ok)
+                TempData["Mensaje"] = message;
             else
-                TempData["Error"] = "No se pudo eliminar el parámetro";
+                TempData["Error"] = message;
 
             return RedirectToPage();
         }
