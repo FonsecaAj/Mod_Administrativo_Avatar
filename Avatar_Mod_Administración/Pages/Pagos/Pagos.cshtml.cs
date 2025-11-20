@@ -58,16 +58,39 @@ namespace Avatar_Mod_Administración.Pages.Pagos
             }
 
             var token = ObtenerToken();
-            var (ok, status, msg, pago) = await _api.CrearPagoAsync(ID_Factura, MetodoPago, token);
 
-            if (!ok)
+            // Crea el pago
+            var (ok, status, msg, pagoCreado) = await _api.CrearPagoAsync(ID_Factura, MetodoPago, token);
+
+            if (!ok || pagoCreado == null)
             {
                 ErrorMessage = msg;
                 return Page();
             }
 
-            Pago = pago;
-            Message = msg;
+           
+            var (okConsulta, statusConsulta, msgConsulta, pagoCompleto, detalles) =
+                await _api.ObtenerPagoAsync(pagoCreado.ID_Pago, token);
+
+            if (!okConsulta || pagoCompleto == null)
+            {
+                // Si falla la consulta, muestra el mensaje de creación y el pago principal.
+                _logger.LogWarning("No se pudo obtener el detalle completo del pago recién creado ID: {ID}", pagoCreado.ID_Pago);
+                Pago = pagoCreado;
+                DetallesPago = Enumerable.Empty<PagoDetalleDto>();
+                Message = msg;
+            }
+            else
+            {
+                // Si la consulta fue exitosa, asigna el pago completo y los detalles.
+                Pago = pagoCompleto;
+                DetallesPago = detalles;
+                Message = $"Pago ID {pagoCreado.ID_Pago} registrado exitosamente. {msg}";
+            }
+
+            // Establecer el ID_Pago para que aparezca en la caja de 'Consultar'
+            ID_Pago = Pago?.ID_Pago ?? 0;
+
             return Page();
         }
 
