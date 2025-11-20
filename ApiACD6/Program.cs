@@ -5,8 +5,8 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// SOLUCIÓN: Configurar puerto específico
-builder.WebHost.UseUrls("http://127.0.0.1:5002"); // Puerto diferente
+
+builder.WebHost.UseUrls("http://127.0.0.1:5001"); 
 
 // Add services to the container.
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

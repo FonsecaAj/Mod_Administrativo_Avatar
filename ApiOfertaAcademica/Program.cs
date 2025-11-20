@@ -5,8 +5,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// AGREGAR ESTA CONFIGURACIÓN - Cambiar el puerto
-builder.WebHost.UseUrls("http://127.0.0.1:5089"); // Puerto diferente
+builder.WebHost.UseUrls("http://127.0.0.1:5088"); // Puerto diferente
 
 builder.Services.AddEndpointsApiExplorer();
 
