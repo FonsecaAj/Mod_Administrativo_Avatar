@@ -30,11 +30,10 @@ builder.Configuration["AutenticacionApiUrl"] = "https://tiusr20pl.cuc-carrera-ti
 var app = builder.Build();
 
 // Swagger UI
-if (app.Environment.IsDevelopment())
-{
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 
 // Mapear endpoints
 app.MapRubrosEndpoints();
