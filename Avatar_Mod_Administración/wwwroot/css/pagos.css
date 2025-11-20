@@ -43,19 +43,22 @@
     }
 }
 
-/* Container Principal Facturas */
-.facturas-container {
+/* ----------------------------------- */
+/* Estilos Globales y Componentes Base */
+/* ----------------------------------- */
+
+.pagos-container { /* Un contenedor opcional para la página de pagos */
     animation: fadeIn 0.5s ease-out;
 }
 
 /* Cards de Formularios y Consultas */
-.card { /* Aplicando a la clase Bootstrap 'card' para la mayoría de los casos */
+.card {
     border: none;
     border-radius: 1rem;
-    box-shadow: 0 8px 24px rgba(47, 73, 110, 0.12); /* Uso de sombra del estilo de referencia */
+    box-shadow: 0 8px 24px rgba(47, 73, 110, 0.12);
     overflow: hidden;
     animation: slideUp 0.6s ease-out;
-    background-color: var(--bg-primary); /* Asegurar fondo blanco/claro */
+    background-color: var(--bg-primary);
     transition: box-shadow 0.3s ease;
 }
 
@@ -76,7 +79,10 @@
     align-items: center;
 }
 
-/* Alertas */
+/* ----------------------------------- */
+/* Alertas y Mensajes */
+/* ----------------------------------- */
+
 .alert {
     border-radius: 0.75rem;
     border: none;
@@ -85,7 +91,7 @@
     display: flex;
     align-items: start;
     font-weight: 500;
-    border-left: 4px solid; /* Placeholder para el borde de color */
+    border-left: 4px solid;
 }
 
 /* Adaptación de colores de alerta */
@@ -98,7 +104,7 @@
 .alert-danger {
     background: linear-gradient(135deg, rgba(200, 90, 84, 0.15), rgba(200, 90, 84, 0.08));
     border-left-color: var(--danger-color);
-    color: var(--danger-color); /* Usar color de texto danger para el mensaje */
+    color: var(--danger-color);
 }
 
 .alert-info {
@@ -107,7 +113,16 @@
     color: var(--text-primary);
 }
 
-/* Formularios - Etiquetas y Campos */
+.alert-warning {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 193, 7, 0.08));
+    border-left-color: var(--warning-color);
+    color: var(--text-primary);
+}
+
+/* ----------------------------------- */
+/* Formularios y Botones */
+/* ----------------------------------- */
+
 .form-label {
     color: var(--text-primary);
     font-weight: 600;
@@ -132,26 +147,26 @@
         background: var(--bg-primary);
     }
 
-/* Botón Crear Factura */
-.btn-primary {
-    background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+/* Botón Registrar Pago (btn-success) */
+.btn-success {
+    background: linear-gradient(135deg, var(--success-color), #40926C);
     border: none;
     color: white;
     padding: 0.75rem 1.5rem;
     font-weight: 600;
     border-radius: 0.5rem;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(195, 163, 142, 0.3);
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
 }
 
-    .btn-primary:hover {
-        background: linear-gradient(135deg, var(--accent-dark), var(--accent-color));
+    .btn-success:hover {
+        background: linear-gradient(135deg, #40926C, var(--success-color));
         transform: translateY(-2px);
-        box-shadow: 0 6px 20px rgba(195, 163, 142, 0.5);
+        box-shadow: 0 6px 20px rgba(25, 135, 84, 0.5);
         color: white;
     }
 
-/* Botón Reversar Factura */
+/* Botón Reversar Pago (btn-danger) */
 .btn-danger {
     background: linear-gradient(135deg, var(--danger-color), #B74944);
     border: none;
@@ -169,9 +184,9 @@
         box-shadow: 0 6px 20px rgba(200, 90, 84, 0.5);
     }
 
-/* Botón Filtrar */
-.btn-info {
-    background: linear-gradient(135deg, var(--info-color), #4A7B91);
+/* Botón Buscar (btn-secondary) - Consulta por ID */
+.btn-secondary {
+    background-color: var(--text-secondary);
     border: none;
     color: white;
     font-weight: 600;
@@ -180,24 +195,78 @@
     transition: all 0.3s ease;
 }
 
-    .btn-info:hover {
-        background: linear-gradient(135deg, #4A7B91, var(--info-color));
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(91, 143, 163, 0.4);
+    .btn-secondary:hover {
+        background-color: var(--text-primary);
+        color: white;
     }
 
-/* Tabla de Facturas */
-#tablaFacturas {
-    margin: 0;
-    border-radius: 0.75rem; /* Para que coincida con el borde del card */
-    overflow: hidden; /* Para contener los thead/tbody */
+/* Botón Consultar Período (btn-primary) - Listar */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(47, 73, 110, 0.3);
 }
 
-    #tablaFacturas thead {
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(47, 73, 110, 0.5);
+        color: white;
+    }
+
+
+/* ----------------------------------- */
+/* Tablas de Resultados y Detalle */
+/* ----------------------------------- */
+
+/* Detalle de Pago por ID (Tabla de 2 columnas) */
+.table-bordered th, .table-bordered td {
+    border: 1px solid var(--border-color) !important;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+}
+
+.table-bordered th {
+    background-color: var(--bg-secondary);
+    color: var(--primary-color);
+    font-weight: 600;
+    width: 30%;
+}
+
+/* Detalle de Elementos (Tabla de detalle) */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.table-light { /* Thead para Elementos Detallados */
+    background-color: var(--bg-secondary) !important;
+}
+
+.table-striped thead th {
+    background-color: var(--bg-secondary);
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* Tabla de Listado de Pagos por Período */
+#tablaPagos { /* ⭐ Cambio: tablaFacturas -> tablaPagos */
+    margin: 0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+    #tablaPagos thead {
         background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
     }
 
-        #tablaFacturas thead th {
+        #tablaPagos thead th {
             color: white;
             font-weight: 600;
             text-transform: uppercase;
@@ -209,22 +278,22 @@
             transition: color 0.3s ease;
         }
 
-            #tablaFacturas thead th:hover {
+            #tablaPagos thead th:hover {
                 color: var(--accent-color);
             }
 
-    #tablaFacturas tbody tr {
+    #tablaPagos tbody tr {
         transition: all 0.2s ease;
         border-bottom: 1px solid var(--border-color);
     }
 
-        #tablaFacturas tbody tr:hover {
+        #tablaPagos tbody tr:hover {
             background: var(--bg-secondary);
             transform: scale(1.005);
             box-shadow: 0 2px 8px rgba(47, 73, 110, 0.04);
         }
 
-    #tablaFacturas tbody td {
+    #tablaPagos tbody td {
         padding: 0.75rem 1.25rem;
         vertical-align: middle;
         color: var(--text-primary);
@@ -240,22 +309,38 @@
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-    .badge.bg-success { /* Pagada */
+    .badge.bg-success { /* Completado */
         background: linear-gradient(135deg, var(--success-color), #6A9780) !important;
         color: white;
     }
 
-    .badge.bg-danger { /* Anulada */
+    .badge.bg-danger { /* Reversado */
         background: linear-gradient(135deg, var(--danger-color), #B74944) !important;
         color: white;
     }
 
-    .badge.bg-warning { /* Pendiente */
-        background: linear-gradient(135deg, var(--warning-color), #d4a574) !important;
-        color: var(--text-primary) !important;
+    .badge.bg-secondary { /* Otro estado */
+        background: linear-gradient(135deg, var(--text-secondary), #959fa8) !important;
+        color: white !important;
     }
 
-/* Botón Ver Detalle */
+/* Botón Detalle (btn-info) en la tabla */
+.btn-sm.btn-info {
+    background: linear-gradient(135deg, var(--info-color), #4A7B91) !important;
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    transition: all 0.3s ease;
+}
+
+    .btn-sm.btn-info:hover {
+        background: linear-gradient(135deg, #4A7B91, var(--info-color)) !important;
+        transform: translateY(-1px);
+    }
+
+/* Paginación (Navegación debajo de la tabla) */
 .btn-outline-secondary {
     border: 2px solid var(--border-color);
     color: var(--text-secondary);
@@ -269,80 +354,52 @@
         color: white;
     }
 
-/* Paginación (Navegación debajo de la tabla) */
-.d-flex.justify-content-between.align-items-center.mt-3 {
-    padding: 0.5rem 0;
-}
-
 #paginaInfo {
     color: var(--primary-color);
     font-size: 0.95rem;
 }
 
+/* ----------------------------------- */
 /* Modal de Reversión */
-#modalReversar .modal-content {
+/* ----------------------------------- */
+
+#modalReversarPago .modal-content { /* ⭐ Cambio: #modalReversar -> #modalReversarPago */
     border: none;
     border-radius: 1rem;
     overflow: hidden;
     box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
 }
 
-#modalReversar .modal-header {
+#modalReversarPago .modal-header {
     background: linear-gradient(135deg, var(--danger-color), #B74944);
     color: white;
     border: none;
     padding: 1.5rem 2rem;
 }
 
-#modalReversar .modal-body {
+#modalReversarPago .modal-body {
     padding: 2rem;
 }
 
-#modalReversar .form-label.fw-semibold {
+#modalReversarPago .form-label.fw-semibold {
     color: var(--text-primary);
     font-weight: 700 !important;
 }
 
-#modalReversar textarea {
+#modalReversarPago textarea {
     min-height: 100px;
     border: 2px solid var(--border-color);
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
 }
 
-    #modalReversar textarea:focus {
+    #modalReversarPago textarea:focus {
         border-color: var(--danger-color);
         box-shadow: 0 0 0 0.25rem rgba(200, 90, 84, 0.15);
     }
 
-#modalReversar .modal-footer {
+#modalReversarPago .modal-footer {
     background: var(--bg-secondary);
     border-top: 1px solid var(--border-color);
     padding: 1.25rem 2rem;
-}
-
-/* Detalle de Factura por ID (Tabla de 2 columnas) */
-.table-bordered th, .table-bordered td {
-    border: 1px solid var(--border-color) !important;
-    padding: 0.75rem 1.25rem;
-    font-size: 0.95rem;
-}
-
-.table-bordered th {
-    background-color: var(--bg-secondary);
-    color: var(--primary-color);
-    font-weight: 600;
-    width: 30%; /* Para que las etiquetas no sean demasiado anchas */
-}
-
-/* Detalle de Factura (Tabla de detalle) */
-.table-striped tbody tr:nth-of-type(odd) {
-    background-color: rgba(0, 0, 0, 0.03);
-}
-
-.table-striped thead th {
-    background-color: var(--primary-color);
-    color: white;
-    font-weight: 600;
-    padding: 0.75rem 1.25rem;
 }
