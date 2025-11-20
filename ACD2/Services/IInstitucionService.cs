@@ -13,7 +13,7 @@
         public InstitucionService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _acd1ApiUrl = configuration["ACD1ApiUrl"] ?? "http://localhost:5001";
+            _acd1ApiUrl = configuration["ACD1ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/ACD1/";
         }
 
         public async Task<bool> ValidarInstitucionAsync(int idInstitucion, string? authToken)

@@ -74,7 +74,7 @@ app.MapPost("/modulo", async (
         "INSERT"
     );
 
-    // ✅ Devolver el módulo directamente en ResponseObject (igual que Created antes)
+    // Devolver el módulo directamente en ResponseObject (igual que Created antes)
     return Results.Json(new BusinessLogicResponse
     {
         StatusCode = 201,
@@ -158,7 +158,7 @@ app.MapPut("/modulo/{id}", async (
         "UPDATE"
     );
 
-    // ✅ Devolver el módulo directamente en ResponseObject (igual que Ok antes)
+    // Devolver el módulo directamente en ResponseObject (igual que Ok antes)
     return Results.Json(new BusinessLogicResponse
     {
         StatusCode = 200,
@@ -190,7 +190,7 @@ app.MapDelete("/modulo/{id}", async (
     // Validar si el módulo está asignado a algún rol
     try
     {
-        var usr2ApiUrl = configuration["USR2ApiUrl"] ?? "http://localhost:5204";
+        var usr2ApiUrl = configuration["USR2ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR2/";
         using var httpClient = new HttpClient();
 
         var request = new HttpRequestMessage(HttpMethod.Get, $"{usr2ApiUrl}/rol-modulo/validar-modulo/{id}");
@@ -272,7 +272,7 @@ app.MapGet("/modulo", async (
         "SELECT"
     );
 
-    // ✅ CRÍTICO: Devolver los módulos DIRECTAMENTE (sin envoltura adicional)
+    // Devolver los módulos DIRECTAMENTE (sin envoltura adicional)
     // El menú dinámico espera un array de módulos
     return Results.Json(new BusinessLogicResponse
     {
@@ -318,7 +318,7 @@ app.MapGet("/modulo/{id}", async (
         "SELECT"
     );
 
-    // ✅ Devolver el módulo directamente en ResponseObject
+    // Devolver el módulo directamente en ResponseObject
     return Results.Json(new BusinessLogicResponse
     {
         StatusCode = 200,

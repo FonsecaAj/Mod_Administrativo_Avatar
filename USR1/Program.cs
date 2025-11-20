@@ -18,8 +18,11 @@ builder.Services.AddHttpClient<IBitacoraService, BitacoraService>();
 
 var app = builder.Build();
 
+
 app.UseSwagger();
 app.UseSwaggerUI();
+
+
 app.UseHttpsRedirection();
 
 // POST /usuario - Crear usuario
@@ -42,72 +45,66 @@ app.MapPost("/usuario", async (
     if (usuarioExistente != null)
         return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "El email ya está registrado" }, statusCode: 400);
 
-    try
+    var email = dto.Email.Trim().ToLower();
+    var rolAsignado = await ObtenerRolPorDominioAsync(email, dto.RolDeseado, rolService, authorization);
+
+    if (rolAsignado == null)
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "No se pudo asignar el rol correspondiente al dominio" }, statusCode: 400);
+
+    var usuario = new Usuario
     {
-        var email = dto.Email.Trim().ToLower();
-        var rolAsignado = await ObtenerRolPorDominioAsync(email, dto.RolDeseado, rolService, authorization);
+        Email = email,
+        IdTipoIdentificacion = dto.IdTipoIdentificacion,
+        Identificacion = dto.Identificacion.Trim(),
+        Nombre = dto.Nombre.Trim(),
+        IdRol = rolAsignado.IdRol,
+        Contrasenna = dto.Contrasenna
+    };
 
-        if (rolAsignado == null)
-            return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "No se pudo asignar el rol correspondiente al dominio" }, statusCode: 400);
+    var emailCreado = await repository.CrearAsync(usuario);
 
-        var usuario = new Usuario
-        {
-            Email = email,
-            IdTipoIdentificacion = dto.IdTipoIdentificacion,
-            Identificacion = dto.Identificacion.Trim(),
-            Nombre = dto.Nombre.Trim(),
-            IdRol = rolAsignado.IdRol,
-            Contrasenna = dto.Contrasenna
-        };
+    var usuarioCreado = await repository.ObtenerPorEmailAsync(emailCreado);
 
-        var emailCreado = await repository.CrearAsync(usuario);
-        var usuarioCreado = await repository.ObtenerPorEmailAsync(emailCreado);
+    if (usuarioCreado == null)
+        return Results.Json(new BusinessLogicResponse { StatusCode = 500, Message = "Error al recuperar el usuario creado" }, statusCode: 500);
 
-        if (usuarioCreado == null)
-            return Results.Json(new BusinessLogicResponse { StatusCode = 500, Message = "Error al recuperar el usuario creado" }, statusCode: 500);
-
-        var nuevoRegistro = new
-        {
-            usuarioCreado.Email,
-            usuarioCreado.IdTipoIdentificacion,
-            usuarioCreado.Identificacion,
-            usuarioCreado.Nombre,
-            usuarioCreado.IdRol,
-            RolAsignado = rolAsignado.Nombre
-        };
-
-        var usuarioDelToken = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
-
-        await bitacoraService.RegistrarAsync(
-            usuarioDelToken,
-            JsonSerializer.Serialize(nuevoRegistro),
-            "INSERT"
-        );
-
-        var response = new
-        {
-            usuarioCreado.Email,
-            usuarioCreado.IdTipoIdentificacion,
-            usuarioCreado.Identificacion,
-            usuarioCreado.Nombre,
-            usuarioCreado.IdRol,
-            RolNombre = rolAsignado.Nombre,
-            usuarioCreado.FechaCreacion,
-            usuarioCreado.FechaModificacion,
-            usuarioCreado.Activo
-        };
-
-        return Results.Json(new BusinessLogicResponse
-        {
-            StatusCode = 201,
-            Message = $"Usuario creado correctamente con email {emailCreado}",
-            ResponseObject = response
-        }, statusCode: 201);
-    }
-    catch (InvalidOperationException ex)
+    var nuevoRegistro = new
     {
-        return Results.Json(new BusinessLogicResponse { StatusCode = 503, Message = ex.Message }, statusCode: 503);
-    }
+        usuarioCreado.Email,
+        usuarioCreado.IdTipoIdentificacion,
+        usuarioCreado.Identificacion,
+        usuarioCreado.Nombre,
+        usuarioCreado.IdRol,
+        RolAsignado = rolAsignado.Nombre
+    };
+
+    var usuarioDelToken = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
+
+    await bitacoraService.RegistrarAsync(
+        usuarioDelToken,
+        JsonSerializer.Serialize(nuevoRegistro),
+        "INSERT"
+    );
+
+    var response = new
+    {
+        usuarioCreado.Email,
+        usuarioCreado.IdTipoIdentificacion,
+        usuarioCreado.Identificacion,
+        usuarioCreado.Nombre,
+        usuarioCreado.IdRol,
+        RolNombre = rolAsignado.Nombre,
+        usuarioCreado.FechaCreacion,
+        usuarioCreado.FechaModificacion,
+        usuarioCreado.Activo
+    };
+
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 201,
+        Message = $"Usuario creado correctamente con email {emailCreado}",
+        ResponseObject = response
+    }, statusCode: 201);
 })
 .WithName("CrearUsuario")
 .WithOpenApi();
@@ -133,90 +130,83 @@ app.MapPut("/usuario/{email}", async (
     if (usuarioExistente == null)
         return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Usuario no encontrado" }, statusCode: 404);
 
-    try
+    var registroAnterior = new
     {
-        var registroAnterior = new
-        {
-            usuarioExistente.Email,
-            usuarioExistente.IdTipoIdentificacion,
-            usuarioExistente.Identificacion,
-            usuarioExistente.Nombre,
-            usuarioExistente.IdRol
-        };
+        usuarioExistente.Email,
+        usuarioExistente.IdTipoIdentificacion,
+        usuarioExistente.Identificacion,
+        usuarioExistente.Nombre,
+        usuarioExistente.IdRol
+    };
 
-        var emailNuevo = dto.Email.Trim().ToLower();
-        var rolAsignado = await ObtenerRolPorDominioAsync(emailNuevo, dto.RolDeseado, rolService, authorization);
+    var emailNuevo = dto.Email.Trim().ToLower();
+    var rolAsignado = await ObtenerRolPorDominioAsync(emailNuevo, dto.RolDeseado, rolService, authorization);
 
-        if (rolAsignado == null)
-            return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "No se pudo asignar el rol correspondiente al dominio" }, statusCode: 400);
+    if (rolAsignado == null)
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "No se pudo asignar el rol correspondiente al dominio" }, statusCode: 400);
 
-        var usuario = new Usuario
-        {
-            Email = email,
-            IdTipoIdentificacion = dto.IdTipoIdentificacion,
-            Identificacion = dto.Identificacion.Trim(),
-            Nombre = dto.Nombre.Trim(),
-            IdRol = rolAsignado.IdRol,
-            Contrasenna = string.IsNullOrWhiteSpace(dto.Contrasenna)
-                ? usuarioExistente.Contrasenna
-                : dto.Contrasenna
-        };
-
-        await repository.ActualizarAsync(usuario);
-
-        var usuarioActualizado = await repository.ObtenerPorEmailAsync(email);
-
-        if (usuarioActualizado == null)
-            return Results.Json(new BusinessLogicResponse { StatusCode = 500, Message = "Error al recuperar el usuario actualizado" }, statusCode: 500);
-
-        var registroActual = new
-        {
-            usuarioActualizado.Email,
-            usuarioActualizado.IdTipoIdentificacion,
-            usuarioActualizado.Identificacion,
-            usuarioActualizado.Nombre,
-            usuarioActualizado.IdRol
-        };
-
-        var usuarioDelToken = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
-
-        var cambios = new
-        {
-            Anterior = registroAnterior,
-            Actual = registroActual,
-            CambioContrasenna = !string.IsNullOrWhiteSpace(dto.Contrasenna)
-        };
-
-        await bitacoraService.RegistrarAsync(
-            usuarioDelToken,
-            JsonSerializer.Serialize(cambios),
-            "UPDATE"
-        );
-
-        var response = new
-        {
-            usuarioActualizado.Email,
-            usuarioActualizado.IdTipoIdentificacion,
-            usuarioActualizado.Identificacion,
-            usuarioActualizado.Nombre,
-            usuarioActualizado.IdRol,
-            RolNombre = rolAsignado.Nombre,
-            usuarioActualizado.FechaCreacion,
-            usuarioActualizado.FechaModificacion,
-            usuarioActualizado.Activo
-        };
-
-        return Results.Json(new BusinessLogicResponse
-        {
-            StatusCode = 200,
-            Message = "Usuario actualizado correctamente",
-            ResponseObject = response
-        }, statusCode: 200);
-    }
-    catch (InvalidOperationException ex)
+    var usuario = new Usuario
     {
-        return Results.Json(new BusinessLogicResponse { StatusCode = 503, Message = ex.Message }, statusCode: 503);
-    }
+        Email = email,
+        IdTipoIdentificacion = dto.IdTipoIdentificacion,
+        Identificacion = dto.Identificacion.Trim(),
+        Nombre = dto.Nombre.Trim(),
+        IdRol = rolAsignado.IdRol,
+        Contrasenna = string.IsNullOrWhiteSpace(dto.Contrasenna)
+            ? usuarioExistente.Contrasenna
+            : dto.Contrasenna
+    };
+
+    await repository.ActualizarAsync(usuario);
+
+    var usuarioActualizado = await repository.ObtenerPorEmailAsync(email);
+
+    if (usuarioActualizado == null)
+        return Results.Json(new BusinessLogicResponse { StatusCode = 500, Message = "Error al recuperar el usuario actualizado" }, statusCode: 500);
+
+    var registroActual = new
+    {
+        usuarioActualizado.Email,
+        usuarioActualizado.IdTipoIdentificacion,
+        usuarioActualizado.Identificacion,
+        usuarioActualizado.Nombre,
+        usuarioActualizado.IdRol
+    };
+
+    var usuarioDelToken = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
+
+    var cambios = new
+    {
+        Anterior = registroAnterior,
+        Actual = registroActual,
+        CambioContrasenna = !string.IsNullOrWhiteSpace(dto.Contrasenna)
+    };
+
+    await bitacoraService.RegistrarAsync(
+        usuarioDelToken,
+        JsonSerializer.Serialize(cambios),
+        "UPDATE"
+    );
+
+    var response = new
+    {
+        usuarioActualizado.Email,
+        usuarioActualizado.IdTipoIdentificacion,
+        usuarioActualizado.Identificacion,
+        usuarioActualizado.Nombre,
+        usuarioActualizado.IdRol,
+        RolNombre = rolAsignado.Nombre,
+        usuarioActualizado.FechaCreacion,
+        usuarioActualizado.FechaModificacion,
+        usuarioActualizado.Activo
+    };
+
+    return Results.Json(new BusinessLogicResponse
+    {
+        StatusCode = 200,
+        Message = "Usuario actualizado correctamente",
+        ResponseObject = response
+    }, statusCode: 200);
 })
 .WithName("ActualizarUsuario")
 .WithOpenApi();
@@ -255,6 +245,7 @@ app.MapDelete("/usuario/{email}", async (
         "DELETE"
     );
 
+    // Devolver BusinessLogicResponse en lugar de NoContent()
     return Results.Json(new BusinessLogicResponse
     {
         StatusCode = 200,

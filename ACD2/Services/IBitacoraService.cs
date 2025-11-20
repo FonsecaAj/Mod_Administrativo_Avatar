@@ -13,7 +13,7 @@
         public BitacoraService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _gen1ApiUrl = configuration["GEN1ApiUrl"] ?? "http://localhost:5208";
+            _gen1ApiUrl = configuration["GEN1ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral/";
         }
 
         public async Task RegistrarAsync(string usuario, string descripcion)

@@ -293,7 +293,7 @@ app.MapPost("/api/bitacora", async (
 
         using var httpClient = new HttpClient();
         httpClient.Timeout = TimeSpan.FromSeconds(5);
-        var gen1Url = builder.Configuration["GEN1ApiUrl"] ?? "http://localhost:5155";
+        var gen1Url = builder.Configuration["GEN1ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral/";
 
         try
         {

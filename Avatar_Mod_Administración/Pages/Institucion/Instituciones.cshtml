@@ -234,14 +234,14 @@
                 </p>
             </div>
             <div class="modal-footer">
-                <form method="post" id="formEliminar">
+                <form method="post" id="formEliminar" asp-page-handler="Eliminar">
                     <input type="hidden" name="id" id="idInput" />
                     <div class="d-flex gap-2">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
                             <i class="bi bi-x-circle"></i>
                             Cancelar
                         </button>
-                        <button type="submit" asp-page-handler="Eliminar" class="btn btn-danger">
+                        <button type="submit" class="btn btn-danger">
                             <i class="bi bi-trash-fill"></i>
                             Eliminar
                         </button>

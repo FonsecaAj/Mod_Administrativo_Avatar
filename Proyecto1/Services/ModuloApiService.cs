@@ -15,7 +15,7 @@ namespace USR2.Services
             ILogger<ModuloApiService> logger)
         {
             _httpClient = httpClient;
-            _usr4ApiUrl = configuration["USR4ApiUrl"] ?? "http://localhost:5290";
+            _usr4ApiUrl = configuration["USR4ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR4/";
             _logger = logger;
 
             _logger.LogInformation("ModuloApiService inicializado con URL: {Url}", _usr4ApiUrl);

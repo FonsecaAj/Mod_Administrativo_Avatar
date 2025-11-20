@@ -33,20 +33,19 @@ namespace Avatar_Mod_Administración.Services
                 request.Headers.Add("Authorization", $"Bearer {tokenLimpio}");
 
                 var response = await _httpClient.SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
-
-                // Parsear BusinessLogicResponse siempre
-                using var doc = JsonDocument.Parse(content);
-                string messageFromApi = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError("Error al obtener usuarios: {Status}, {Content}", response.StatusCode, content);
-                    throw new Exception(messageFromApi);
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error al obtener usuarios: {Status}, {Content}", response.StatusCode, errorContent);
+                    return new List<Usuario>();
                 }
 
+                var content = await response.Content.ReadAsStringAsync();
                 _logger.LogInformation("Usuarios obtenidos exitosamente");
 
+                // Parsear BusinessLogicResponse
+                using var doc = JsonDocument.Parse(content);
                 if (doc.RootElement.TryGetProperty("responseObject", out var responseObj))
                 {
                     var usuarios = JsonSerializer.Deserialize<List<Usuario>>(responseObj.GetRawText(), new JsonSerializerOptions
@@ -60,15 +59,10 @@ namespace Avatar_Mod_Administración.Services
 
                 return new List<Usuario>();
             }
-            catch (JsonException)
-            {
-                _logger.LogError("Error al parsear respuesta de la API");
-                throw new Exception("Error al procesar la respuesta del servidor");
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener usuarios");
-                throw;
+                return new List<Usuario>();
             }
         }
 
@@ -93,17 +87,14 @@ namespace Avatar_Mod_Administración.Services
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
                 var content = await response.Content.ReadAsStringAsync();
 
                 // Parsear BusinessLogicResponse
                 using var doc = JsonDocument.Parse(content);
-                string messageFromApi = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
-
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception(messageFromApi);
-                }
-
                 if (doc.RootElement.TryGetProperty("responseObject", out var responseObj))
                 {
                     var usuario = JsonSerializer.Deserialize<Usuario>(responseObj.GetRawText(), new JsonSerializerOptions
@@ -121,18 +112,14 @@ namespace Avatar_Mod_Administración.Services
 
                 return null;
             }
-            catch (JsonException)
-            {
-                _logger.LogError("Error al parsear respuesta de la API");
-                return null;
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al obtener usuario");
-                throw;
+                return null;
             }
         }
 
+        // Devolver (ok, status, message)
         public async Task<(bool ok, int statusCode, string? message)> CrearAsync(UsuarioCrearDto dto, string token)
         {
             try
@@ -142,29 +129,45 @@ namespace Avatar_Mod_Administración.Services
                 request.Content = JsonContent.Create(dto);
 
                 var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error al crear usuario: {Status}, {Content}", response.StatusCode, errorContent);
+
+                    // Intentar extraer el mensaje de error del BusinessLogicResponse
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(errorContent);
+                        int status = doc.RootElement.GetProperty("statusCode").GetInt32();
+                        string message = doc.RootElement.GetProperty("message").GetString() ?? "Error al crear usuario";
+                        return (false, status, message);
+                    }
+                    catch
+                    {
+                        return (false, (int)response.StatusCode, "Error al crear usuario");
+                    }
+                }
+
                 var content = await response.Content.ReadAsStringAsync();
 
-                // Parsear BusinessLogicResponse
-                using var payload = JsonDocument.Parse(content);
+                // Parsear BusinessLogicResponse igual que Factura
+                using var payload = await JsonDocument.ParseAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content)));
                 int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
-                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Usuario creado exitosamente";
 
-                _logger.LogInformation("Respuesta API - Estado {Status}: {Mensaje}", statusCode, msg);
+                _logger.LogInformation("Usuario creado. Estado {Status}: {Mensaje}", statusCode, msg);
 
                 return (statusCode == 201, statusCode, msg);
-            }
-            catch (JsonException)
-            {
-                _logger.LogError("Error al parsear respuesta de la API");
-                return (false, 500, "Error al procesar la respuesta del servidor");
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear usuario");
-                return (false, 500, $"Error de conexión: {ex.Message}");
+                return (false, 500, $"Error procesando respuesta: {ex.Message}");
             }
         }
 
+        // Devolver (ok, status, message)
         public async Task<(bool ok, int statusCode, string? message)> ActualizarAsync(string email, UsuarioCrearDto dto, string token)
         {
             try
@@ -176,29 +179,46 @@ namespace Avatar_Mod_Administración.Services
                 request.Content = JsonContent.Create(dto);
 
                 var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error al actualizar usuario: {Status}, {Error}",
+                        response.StatusCode, errorContent);
+
+                    // Intentar extraer el mensaje de error del BusinessLogicResponse
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(errorContent);
+                        int status = doc.RootElement.GetProperty("statusCode").GetInt32();
+                        string message = doc.RootElement.GetProperty("message").GetString() ?? "Error al actualizar usuario";
+                        return (false, status, message);
+                    }
+                    catch
+                    {
+                        return (false, (int)response.StatusCode, "Error al actualizar usuario");
+                    }
+                }
+
                 var content = await response.Content.ReadAsStringAsync();
 
                 // Parsear BusinessLogicResponse
-                using var payload = JsonDocument.Parse(content);
+                using var payload = await JsonDocument.ParseAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content)));
                 int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
-                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Usuario actualizado exitosamente";
 
                 _logger.LogInformation("Usuario {Email} actualizado. Estado {Status}: {Mensaje}", email, statusCode, msg);
 
                 return (statusCode == 200, statusCode, msg);
             }
-            catch (JsonException)
-            {
-                _logger.LogError("Error al parsear respuesta de la API");
-                return (false, 500, "Error al procesar la respuesta del servidor");
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar usuario");
-                return (false, 500, $"Error de conexión: {ex.Message}");
+                return (false, 500, $"Error procesando respuesta: {ex.Message}");
             }
         }
 
+        // Devolver (ok, status, message)
         public async Task<(bool ok, int statusCode, string? message)> EliminarAsync(string email, string token)
         {
             try
@@ -207,26 +227,41 @@ namespace Avatar_Mod_Administración.Services
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error al eliminar usuario: {Status}, {Content}", response.StatusCode, errorContent);
+
+                    // Intentar extraer el mensaje de error del BusinessLogicResponse
+                    try
+                    {
+                        using var doc = JsonDocument.Parse(errorContent);
+                        int status = doc.RootElement.GetProperty("statusCode").GetInt32();
+                        string message = doc.RootElement.GetProperty("message").GetString() ?? "Error al eliminar usuario";
+                        return (false, status, message);
+                    }
+                    catch
+                    {
+                        return (false, (int)response.StatusCode, "Error al eliminar usuario");
+                    }
+                }
+
                 var content = await response.Content.ReadAsStringAsync();
 
                 // Parsear BusinessLogicResponse
-                using var payload = JsonDocument.Parse(content);
+                using var payload = await JsonDocument.ParseAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(content)));
                 int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
-                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
+                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Usuario eliminado exitosamente";
 
                 _logger.LogInformation("Usuario {Email} eliminado. Estado {Status}: {Mensaje}", email, statusCode, msg);
 
                 return (statusCode == 200, statusCode, msg);
             }
-            catch (JsonException)
-            {
-                _logger.LogError("Error al parsear respuesta de la API");
-                return (false, 500, "Error al procesar la respuesta del servidor");
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar usuario");
-                return (false, 500, $"Error de conexión: {ex.Message}");
+                return (false, 500, $"Error procesando respuesta: {ex.Message}");
             }
         }
 
@@ -251,24 +286,24 @@ namespace Avatar_Mod_Administración.Services
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
-                var content = await response.Content.ReadAsStringAsync();
-
-                // Parsear BusinessLogicResponse
-                using var doc = JsonDocument.Parse(content);
-                string messageFromApi = doc.RootElement.GetProperty("message").GetString() ?? "Error desconocido";
 
                 if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError("Error al filtrar usuarios: {Status}, {Content}", response.StatusCode, content);
+                    var errorContent = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error al filtrar usuarios: {Status}, {Content}", response.StatusCode, errorContent);
 
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
                         _logger.LogWarning("Token no autorizado - posiblemente expirado");
                     }
 
-                    throw new Exception(messageFromApi);
+                    return new List<Usuario>();
                 }
 
+                var content = await response.Content.ReadAsStringAsync();
+
+                // Parsear BusinessLogicResponse
+                using var doc = JsonDocument.Parse(content);
                 if (doc.RootElement.TryGetProperty("responseObject", out var responseObj))
                 {
                     var usuarios = JsonSerializer.Deserialize<List<Usuario>>(responseObj.GetRawText(), new JsonSerializerOptions
@@ -284,15 +319,10 @@ namespace Avatar_Mod_Administración.Services
 
                 return new List<Usuario>();
             }
-            catch (JsonException)
-            {
-                _logger.LogError("Error al parsear respuesta de la API");
-                throw new Exception("Error al procesar la respuesta del servidor");
-            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error excepcional al filtrar usuarios");
-                throw;
+                return new List<Usuario>();
             }
         }
 

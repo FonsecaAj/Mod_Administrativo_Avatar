@@ -14,7 +14,7 @@
         public AutenticacionService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _autenticacionApiUrl = configuration["AutenticacionApiUrl"] ?? "http://localhost:5233";
+            _autenticacionApiUrl = configuration["AutenticacionApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR5Login/";
         }
 
         public async Task<bool> ValidarTokenAsync(string? authorization)

@@ -14,7 +14,7 @@
         public ParametroService(HttpClient httpClient, IConfiguration configuration)
         {
             _httpClient = httpClient;
-            _parametroApiUrl = configuration["ParametroApiUrl"] ?? "http://localhost:5279";
+            _parametroApiUrl = configuration["ParametroApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR3/";
         }
 
         public async Task<int> ObtenerTiempoExpiracionJwtAsync()
