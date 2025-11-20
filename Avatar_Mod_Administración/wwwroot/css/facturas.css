@@ -1,0 +1,713 @@
+﻿/* ========================================================================= */
+/* 🎨 ARCHIVO DE ESTILOS UNIFICADO (APP-STYLES.CSS) */
+/*
+ * Este CSS unifica los diseños de 'Usuarios' y 'Facturas' usando clases
+ * genéricas (.app-*) para mantener la consistencia en toda la administración.
+ */
+/* ========================================================================= */
+
+/* 1. ANIMACIONES BASE */
+/* ------------------------------------------------------------------------- */
+.app-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 2. ESTRUCTURA DE PÁGINA */
+/* ------------------------------------------------------------------------- */
+
+/* Header de Página */
+.app-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+    .app-header h2 {
+        color: var(--primary-color);
+        font-size: 1.875rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+        .app-header h2 i {
+            color: var(--accent-color);
+            margin-right: 0.75rem;
+            font-size: 2rem;
+        }
+
+    /* Título de menor jerarquía (usado en Facturas.cshtml) */
+    .app-header h5 {
+        color: var(--primary-color);
+        font-weight: 700;
+        margin: 0;
+    }
+
+/* 3. BOTONES DE ACCIÓN PRINCIPALES (CREAR / AGREGAR) */
+/* ------------------------------------------------------------------------- */
+.app-btn-primary {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(195, 163, 142, 0.3);
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+    .app-btn-primary i {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .app-btn-primary:hover {
+        background: linear-gradient(135deg, var(--accent-dark), var(--accent-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(195, 163, 142, 0.5);
+        color: white;
+    }
+
+/* 4. CARDS (FORMULARIOS, DETALLES Y ACCIONES SECUNDARIAS) */
+/* ------------------------------------------------------------------------- */
+
+/* Card de Formulario o Acción (Crear/Editar/Reversar) */
+.app-form-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(47, 73, 110, 0.12);
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+    background: var(--bg-primary);
+    /* padding añadido directamente si se usa 'card-body' */
+}
+
+    .app-form-card .card-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 1.5rem 2rem;
+        border: none;
+    }
+
+        .app-form-card .card-header h4 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+            .app-form-card .card-header h4 i {
+                margin-right: 0.75rem;
+                font-size: 1.75rem;
+            }
+
+    .app-form-card .card-body {
+        padding: 2rem;
+    }
+
+    .app-form-card h5 {
+        /* Estilo para títulos internos de card (como "Crear Factura") */
+        color: var(--primary-color);
+        font-weight: 600;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+        .app-form-card h5 i {
+            margin-right: 0.5rem;
+            color: var(--accent-color);
+        }
+
+/* Card de Detalle (Factura Consultada) */
+.app-detalle-card {
+    /* Reutiliza la mayoría de estilos de .app-form-card */
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(47, 73, 110, 0.12);
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+    background: var(--bg-primary);
+}
+
+    .app-detalle-card .row {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+        .app-detalle-card .row:last-child {
+            border-bottom: none;
+        }
+
+    .app-detalle-card .fw-bold {
+        color: var(--primary-color);
+        font-weight: 700;
+    }
+
+    .app-detalle-card h6 {
+        color: var(--primary-color);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        margin-top: 1.5rem;
+        margin-bottom: 1rem;
+    }
+
+        .app-detalle-card h6 i {
+            color: var(--accent-color);
+            margin-right: 0.5rem;
+        }
+
+
+/* Card de Filtros / Listado */
+.app-filtros-card {
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+    padding: 1.5rem; /* Ajuste para que el padding sea uniforme */
+}
+
+    .app-filtros-card:hover {
+        border-color: var(--accent-light);
+        box-shadow: var(--shadow-md);
+    }
+
+    .app-filtros-card .card-header h5 {
+        margin: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+        .app-filtros-card .card-header h5 i {
+            margin-right: 0.5rem;
+        }
+
+
+/* 5. FORMULARIOS */
+/* ------------------------------------------------------------------------- */
+.app-form .form-label {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .app-form .form-label i {
+        color: var(--accent-color);
+        margin-right: 0.5rem;
+    }
+
+.app-form .form-control,
+.app-form .form-select {
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: var(--bg-primary);
+}
+
+    .app-form .form-control:focus,
+    .app-form .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 0.25rem rgba(195, 163, 142, 0.15);
+        background: var(--bg-primary);
+    }
+
+    .app-form .form-control.is-invalid,
+    .app-form .form-select.is-invalid {
+        border-color: var(--danger-color);
+    }
+
+        .app-form .form-control.is-invalid:focus,
+        .app-form .form-select.is-invalid:focus {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 0.25rem rgba(200, 90, 84, 0.15);
+        }
+
+.app-form .form-text {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .app-form .form-text i {
+        margin-right: 0.5rem;
+    }
+
+.app-form .text-danger {
+    color: var(--danger-color) !important;
+    font-size: 0.875rem;
+    margin-top: 0.375rem;
+    display: block;
+    font-weight: 500;
+}
+
+/* Acciones al final de un formulario (Guardar, Cancelar) */
+.app-form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border-color);
+    margin-top: 1.5rem;
+}
+
+    .app-form-actions .btn {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+        .app-form-actions .btn i {
+            margin-right: 0.5rem;
+        }
+
+    .app-form-actions .btn-secondary {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+        .app-form-actions .btn-secondary:hover {
+            background: var(--border-color);
+            border-color: var(--text-secondary);
+            transform: translateY(-2px);
+        }
+
+    /* Usamos .app-btn-primary si es la acción principal (Guardar) */
+    .app-form-actions .app-btn-primary {
+        margin-left: 0; /* Deshacer margen por si viene de .app-btn-primary standalone */
+    }
+
+
+/* 6. TABLAS DE LISTADO */
+/* ------------------------------------------------------------------------- */
+.app-table-card {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+    .app-table-card .card-body {
+        padding: 0;
+    }
+
+.app-table {
+    margin: 0;
+}
+
+    .app-table thead {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+
+        .app-table thead th {
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.25rem;
+            border: none;
+            cursor: pointer; /* Indica que se puede hacer clic para ordenar */
+        }
+
+            .app-table thead th a {
+                color: white;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+            }
+
+                .app-table thead th a:hover {
+                    color: var(--accent-light);
+                }
+
+    .app-table tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+        .app-table tbody tr:hover {
+            background: var(--bg-secondary);
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(47, 73, 110, 0.08);
+        }
+
+    .app-table tbody td {
+        padding: 1rem 1.25rem;
+        vertical-align: middle;
+        color: var(--text-primary);
+    }
+
+/* Botones de acción en tabla */
+.app-btn-action {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    border: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .app-btn-action i {
+        font-size: 1rem;
+    }
+
+    .app-btn-action.btn-info {
+        background: linear-gradient(135deg, var(--info-color), #4A7B91);
+        color: white;
+    }
+
+        .app-btn-action.btn-info:hover {
+            background: linear-gradient(135deg, #4A7B91, var(--info-color));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(91, 143, 163, 0.4);
+        }
+
+    .app-btn-action.btn-warning {
+        background: linear-gradient(135deg, var(--warning-color), var(--accent-color));
+        color: white;
+    }
+
+        .app-btn-action.btn-warning:hover {
+            background: linear-gradient(135deg, var(--accent-color), var(--warning-color));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.4);
+        }
+
+    .app-btn-action.btn-danger {
+        background: linear-gradient(135deg, var(--danger-color), #B74944);
+        color: white;
+    }
+
+        .app-btn-action.btn-danger:hover {
+            background: linear-gradient(135deg, #B74944, var(--danger-color));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(200, 90, 84, 0.4);
+        }
+
+/* 7. BADGES DE ESTADO (ROLES / FACTURAS) */
+/* ------------------------------------------------------------------------- */
+.app-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: white; /* Asegura el color del texto */
+}
+
+    /* Facturas y Roles: Pagada/Activo/Primary */
+    .app-badge.bg-success {
+        background: linear-gradient(135deg, var(--success-color), #6A9780) !important;
+    }
+
+    /* Facturas y Roles: Pendiente/Advertencia */
+    .app-badge.bg-warning, .app-badge.bg-warning.text-dark {
+        background: linear-gradient(135deg, var(--warning-color), #D4A574) !important;
+        color: white !important;
+    }
+
+    /* Facturas y Roles: Anulada/Inactivo/Peligro */
+    .app-badge.bg-danger {
+        background: linear-gradient(135deg, var(--danger-color), #B74944) !important;
+    }
+
+    /* Roles: Info/Secundario */
+    .app-badge.bg-info {
+        background: linear-gradient(135deg, var(--info-color), #4A7B91) !important;
+    }
+
+    .app-badge.bg-secondary {
+        background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+    }
+
+    .app-badge.bg-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+    }
+
+/* 8. PAGINACIÓN Y ELEMENTOS DE LISTADO */
+/* ------------------------------------------------------------------------- */
+
+/* Paginación */
+.pagination-nav .pagination {
+    margin: 0;
+}
+
+    .pagination-nav .pagination .page-item .page-link {
+        border: 2px solid var(--border-color);
+        color: var(--primary-color);
+        font-weight: 600;
+        margin: 0 0.25rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+.pagination-nav .page-item .page-link:hover {
+    background: var(--accent-light);
+    border-color: var(--accent-color);
+    color: white;
+    transform: translateY(-2px);
+}
+
+.pagination-nav .page-item.active .page-link {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+    border-color: var(--accent-color);
+    color: white;
+    box-shadow: 0 4px 12px rgba(195, 163, 142, 0.3);
+}
+
+.pagination-nav .page-item.disabled .page-link {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+/* Botones Anterior/Siguiente de Facturas */
+.pagination-nav button.btn-outline-secondary {
+    border: 2px solid var(--border-color);
+    color: var(--primary-color);
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+    .pagination-nav button.btn-outline-secondary:hover {
+        background: var(--accent-light);
+        border-color: var(--accent-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+/* 9. MODALES Y ALERTAS */
+/* ------------------------------------------------------------------------- */
+
+/* Alertas Personalizadas */
+.app-alert {
+    border-radius: 0.75rem;
+    border: none;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: start;
+}
+
+    .app-alert i {
+        margin-right: 0.75rem;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        margin-top: 0.125rem;
+    }
+
+.alert-info.app-alert {
+    background: linear-gradient(135deg, rgba(91, 143, 163, 0.15), rgba(91, 143, 163, 0.08));
+    border-left: 4px solid var(--info-color);
+    color: var(--primary-color);
+}
+
+.alert-success.app-alert {
+    background: linear-gradient(135deg, rgba(123, 168, 146, 0.15), rgba(123, 168, 146, 0.08));
+    border-left: 4px solid var(--success-color);
+    color: var(--primary-color);
+}
+
+.alert-danger.app-alert {
+    background: linear-gradient(135deg, rgba(200, 90, 84, 0.15), rgba(200, 90, 84, 0.08));
+    border-left: 4px solid var(--danger-color);
+    color: var(--danger-color);
+}
+
+.alert-warning.app-alert {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.15), rgba(212, 165, 116, 0.08));
+    border-left: 4px solid var(--warning-color);
+    color: var(--primary-color);
+}
+
+/* Modal de Peligro (Eliminar/Reversar) */
+.app-modal-danger .modal-content {
+    border: none;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: modalSlideIn 0.3s ease-out;
+}
+
+.app-modal-danger .modal-header {
+    background: linear-gradient(135deg, var(--danger-color), #B74944);
+    color: white;
+    border: none;
+    padding: 1.5rem 2rem;
+}
+
+    .app-modal-danger .modal-header h5 {
+        margin: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+        .app-modal-danger .modal-header h5 i {
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+        }
+
+.app-modal-danger .modal-body {
+    padding: 2rem;
+}
+
+    .app-modal-danger .modal-body .fw-semibold {
+        color: var(--primary-color);
+    }
+
+.app-modal-danger .modal-footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 1.25rem 2rem;
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 10. RESPONSIVE DESIGN */
+/* ------------------------------------------------------------------------- */
+
+@media (max-width: 768px) {
+    .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+        .app-header h2 {
+            font-size: 1.5rem;
+        }
+
+    .app-btn-primary {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .app-form-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .app-form-actions {
+        flex-direction: column-reverse;
+    }
+
+        .app-form-actions .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+    .app-table {
+        font-size: 0.85rem;
+    }
+
+        .app-table thead th,
+        .app-table tbody td {
+            padding: 0.75rem;
+        }
+
+    .app-filtros-card .row {
+        gap: 1rem;
+    }
+
+    /* Adaptar botones de paginación si la tabla tiene muchos datos */
+    .pagination-nav {
+        flex-direction: column;
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .app-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .app-form-card .card-header h4 {
+        font-size: 1.25rem;
+    }
+}
+
+/* 11. PRINT STYLES */
+/* ------------------------------------------------------------------------- */
+@media print {
+    .app-header .btn,
+    .app-filtros-card,
+    .app-btn-action,
+    .app-form-actions,
+    .pagination-nav {
+        display: none !important;
+    }
+
+    .app-form-card,
+    .app-table-card,
+    .app-detalle-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+    }
+}
