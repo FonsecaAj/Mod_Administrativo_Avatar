@@ -4,100 +4,133 @@
     ViewData["Title"] = "Listado de Estudiantes por Período";
 }
 
-<h1 class="display-6 mb-4">Listado de Estudiantes por Período</h1>
+<link rel="stylesheet" href="~/css/estudiantesmatri.css" />
 
-<form method="get" class="card p-4 shadow-sm mb-4">
-    <div class="row g-3 align-items-end">
-        <div class="col-md-2">
-            <label class="form-label">Período</label>
-            <input asp-for="Periodo" type="number" class="form-control" placeholder="Ej: 1" />
-        </div>
+<div class="estudiantesmatri-container">
 
-        <div class="col-md-3">
-            <label class="form-label">Carrera</label>
-            <input asp-for="Carrera" type="text" class="form-control" placeholder="Ej: Tecnologías de la Información" />
-        </div>
-
-        <div class="col-md-3">
-            <label class="form-label">Curso</label>
-            <input asp-for="Curso" type="text" class="form-control" placeholder="Ej: Programación I" />
-        </div>
-
-        <div class="col-md-3">
-            <label class="form-label">Grupo</label>
-            <input asp-for="Grupo" type="text" class="form-control" placeholder="Ej: Programación I G1" />
-        </div>
-
-        <div class="col-md-1 d-grid">
-            <button type="submit" class="btn btn-primary">Buscar</button>
-        </div>
-    </div>
-</form>
-
-@if (Model.ErrorMessage != null)
-{
-    <div class="alert alert-danger">@Model.ErrorMessage</div>
-}
-else if (Model.Message != null)
-{
-    <div class="alert alert-info">@Model.Message</div>
-}
-
-@if (Model.Estudiantes != null && Model.Estudiantes.Any())
-{
-    <div class="d-flex justify-content-between mb-2">
-        <div>
-            <button type="button" class="btn btn-outline-success btn-sm" onclick="exportarCSV()">📄 Exportar CSV</button>
-            <button type="button" class="btn btn-outline-danger btn-sm" onclick="exportarPDF()">📕 Exportar PDF</button>
-        </div>
-        <div><strong>Total estudiantes:</strong> @Model.Estudiantes.Count()</div>
+    <!-- TÍTULO -->
+    <div class="estudiantesmatri-header mb-4">
+        <h1><i class="bi bi-people-fill"></i> Listado de Estudiantes por Período</h1>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped shadow-sm" id="tablaEstudiantes">
-            <thead class="table-dark">
-                <tr>
-                    <th onclick="ordenarPor(0)">ID ⬍</th>
-                    <th onclick="ordenarPor(1)">Tipo ⬍</th>
-                    <th onclick="ordenarPor(2)">Identificación ⬍</th>
-                    <th onclick="ordenarPor(3)">Nombre ⬍</th>
-                    <th onclick="ordenarPor(4)">Carrera ⬍</th>
-                    <th onclick="ordenarPor(5)">Curso ⬍</th>
-                    <th onclick="ordenarPor(6)">Grupo ⬍</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var e in Model.Estudiantes)
-                {
-                    if ((string.IsNullOrEmpty(Model.Carrera) || e.Carrera.Contains(Model.Carrera, StringComparison.OrdinalIgnoreCase)) &&
-                    (string.IsNullOrEmpty(Model.Curso) || e.Curso.Contains(Model.Curso, StringComparison.OrdinalIgnoreCase)) &&
-                    (string.IsNullOrEmpty(Model.Grupo) || e.Grupo.Contains(Model.Grupo, StringComparison.OrdinalIgnoreCase)))
+    <!-- FORMULARIO -->
+    <form method="get" class="estudiantesmatri-form mb-4">
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-2">
+                <label class="form-label">Período</label>
+                <input asp-for="Periodo" type="number" class="form-control" placeholder="Ej: 1" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Carrera</label>
+                <input asp-for="Carrera" type="text" class="form-control" placeholder="Ej: Tecnologías de la Información" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Curso</label>
+                <input asp-for="Curso" type="text" class="form-control" placeholder="Ej: Programación I" />
+            </div>
+
+            <div class="col-md-3">
+                <label class="form-label">Grupo</label>
+                <input asp-for="Grupo" type="text" class="form-control" placeholder="Ej: Programación I G1" />
+            </div>
+
+            <div class="col-md-1 d-grid">
+                <button type="submit" class="btn-buscar">Buscar</button>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- ALERTAS -->
+    @if (Model.ErrorMessage != null)
+    {
+        <div class="alert-matri alert-danger">@Model.ErrorMessage</div>
+    }
+    else if (Model.Message != null)
+    {
+        <div class="alert-matri alert-info">@Model.Message</div>
+    }
+
+    @if (Model.Estudiantes != null && Model.Estudiantes.Any())
+    {
+        <!-- ACCIONES SUPERIORES -->
+        <div class="estudiantesmatri-actions d-flex justify-content-between mb-2">
+            <div>
+                <button type="button" class="btn-export-csv btn-sm" onclick="exportarCSV()">📄 Exportar CSV</button>
+                <button type="button" class="btn-export-pdf btn-sm" onclick="exportarPDF()">📕 Exportar PDF</button>
+            </div>
+
+            <div><strong>Total estudiantes:</strong> @Model.Estudiantes.Count()</div>
+        </div>
+
+        <!-- TABLA -->
+        <div class="table-responsive estudiantesmatri-table-card">
+            <table id="tablaEstudiantes" class="table table-estudiantesmatri">
+                <thead>
+                    <tr>
+                        <th onclick="ordenarPor(0)">ID ⬍</th>
+                        <th onclick="ordenarPor(1)">Tipo ⬍</th>
+                        <th onclick="ordenarPor(2)">Identificación ⬍</th>
+                        <th onclick="ordenarPor(3)">Nombre ⬍</th>
+                        <th onclick="ordenarPor(4)">Carrera ⬍</th>
+                        <th onclick="ordenarPor(5)">Curso ⬍</th>
+                        <th onclick="ordenarPor(6)">Grupo ⬍</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var e in Model.Estudiantes)
                     {
-                        <tr>
-                            <td>@e.ID_Estudiante</td>
-                            <td>@e.Tipo_Identificacion</td>
-                            <td>@e.Identificacion</td>
-                            <td>@e.Nombre_Completo</td>
-                            <td>@e.Carrera</td>
-                            <td>@e.Curso</td>
-                            <td>@e.Grupo</td>
-                        </tr>
+                        if ((string.IsNullOrEmpty(Model.Carrera) || e.Carrera.Contains(Model.Carrera, StringComparison.OrdinalIgnoreCase)) &&
+                            (string.IsNullOrEmpty(Model.Curso) || e.Curso.Contains(Model.Curso, StringComparison.OrdinalIgnoreCase)) &&
+                            (string.IsNullOrEmpty(Model.Grupo) || e.Grupo.Contains(Model.Grupo, StringComparison.OrdinalIgnoreCase)))
+                        {
+                            <tr>
+                                <td>@e.ID_Estudiante</td>
+                                <td>@e.Tipo_Identificacion</td>
+                                <td>@e.Identificacion</td>
+                                <td>@e.Nombre_Completo</td>
+                                <td>@e.Carrera</td>
+                                <td>@e.Curso</td>
+                                <td>@e.Grupo</td>
+                            </tr>
+                        }
                     }
-                }
-            </tbody>
-        </table>
-    </div>
+                </tbody>
+            </table>
+        </div>
 
-    <nav class="d-flex justify-content-between align-items-center mt-3">
-        <button id="btnAnterior" class="btn btn-outline-secondary btn-sm">← Anterior</button>
-        <span id="paginaInfo" class="fw-semibold"></span>
-        <button id="btnSiguiente" class="btn btn-outline-secondary btn-sm">Siguiente →</button>
-    </nav>
-}
-else if (Model.Periodo != 0)
-{
-    <div class="alert alert-warning">No se encontraron registros para el período indicado.</div>
-}
+        <!-- PAGINACIÓN IGUAL A USUARIOS -->
+        <nav aria-label="Paginación" class="mt-4 estudiantesmatri-pagination">
+            <ul class="pagination justify-content-center mb-0">
+
+                <li class="page-item">
+                    <a class="page-link" href="#" id="btnAnterior">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" id="paginaInfo">Página 1</a>
+                </li>
+
+                <li class="page-item">
+                    <a class="page-link" href="#" id="btnSiguiente">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    }
+    else if (Model.Periodo != 0)
+    {
+        <div class="alert-matri alert-warning">No se encontraron registros para el período indicado.</div>
+    }
+
+</div>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -187,7 +220,7 @@ else if (Model.Periodo != 0)
         }
 
         // ============================
-        // Exportar PDF 
+        // Exportar PDF
         // ============================
 
         async function exportarPDF() {

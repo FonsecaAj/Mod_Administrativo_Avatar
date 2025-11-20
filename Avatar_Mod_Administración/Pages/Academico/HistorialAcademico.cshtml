@@ -4,79 +4,124 @@
     ViewData["Title"] = "Historial Académico";
 }
 
-<h1 class="display-6 mb-4">Consulta de Promedios por Estudiante</h1>
+<link rel="stylesheet" href="~/css/historialacademico.css" />
 
-<form method="get" class="card p-4 shadow-sm mb-4">
-    <div class="row g-3 align-items-end">
-        <div class="col-md-3">
-            <label class="form-label">Tipo de identificación</label>
-            <select name="Tipo" class="form-select">
-                <option value="">Seleccione...</option>
-                <option value="cedula" selected="@("cedula" == Model.Tipo)">Cédula</option>
-                <option value="pasaporte" selected="@("pasaporte" == Model.Tipo)">Pasaporte</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Identificación</label>
-            <input name="Identificacion" class="form-control" value="@Model.Identificacion" placeholder="Ej: 305670111" />
-        </div>
-        <div class="col-md-2 d-grid">
-            <button type="submit" class="btn btn-primary">Buscar</button>
-        </div>
-    </div>
-</form>
 
-@if (Model.ErrorMessage != null)
-{
-    <div class="alert alert-danger">@Model.ErrorMessage</div>
-}
-else if (Model.Message != null)
-{
-    <div class="alert alert-info">@Model.Message</div>
-}
+<div class="historial-container">
 
-@if (Model.Historial != null && Model.Historial.Any())
-{
-    <div class="d-flex justify-content-between mb-2">
-        <div>
-            <button type="button" class="btn btn-outline-success btn-sm" onclick="exportarCSV()">📄 Exportar CSV</button>
-            <button type="button" class="btn btn-outline-danger btn-sm" onclick="exportarPDF()">📕 Exportar PDF</button>
-        </div>
-        <div><strong>Total cursos:</strong> @Model.Historial.Count()</div>
+    <!-- =========================================
+         TÍTULO PRINCIPAL
+    ========================================== -->
+    <div class="historial-header">
+        <h1><i class="bi bi-mortarboard"></i> Consulta de Promedios por Estudiante</h1>
     </div>
 
-    <div class="table-responsive">
-        <table id="tablaHistorial" class="table table-striped shadow-sm">
-            <thead class="table-dark">
-                <tr>
-                    <th onclick="ordenarPor(0)">Código del Curso ⬍</th>
-                    <th onclick="ordenarPor(1)">Nombre del Curso ⬍</th>
-                    <th onclick="ordenarPor(2)">Promedio ⬍</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var item in Model.Historial)
-                {
+    <!-- =========================================
+         FORMULARIO
+    ========================================== -->
+    <form method="get" class="historial-form mb-4">
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+                <label class="form-label">Tipo de identificación</label>
+                <select name="Tipo" class="form-select">
+                    <option value="">Seleccione...</option>
+                    <option value="cedula" selected="@("cedula" == Model.Tipo)">Cédula</option>
+                    <option value="pasaporte" selected="@("pasaporte" == Model.Tipo)">Pasaporte</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Identificación</label>
+                <input name="Identificacion" class="form-control" value="@Model.Identificacion" placeholder="Ej: 305670111" />
+            </div>
+
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn-buscar">Buscar</button>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- =========================================
+         ALERTAS
+    ========================================== -->
+    @if (Model.ErrorMessage != null)
+    {
+        <div class="alert-historial alert-danger">@Model.ErrorMessage</div>
+    }
+    else if (Model.Message != null)
+    {
+        <div class="alert-historial alert-info">@Model.Message</div>
+    }
+
+    <!-- =========================================
+         TABLA
+    ========================================== -->
+    @if (Model.Historial != null && Model.Historial.Any())
+    {
+        <!-- ACCIONES SUPERIORES -->
+        <div class="historial-actions d-flex justify-content-between mb-2">
+            <div>
+                <button type="button" class="btn-export-csv btn-sm" onclick="exportarCSV()">📄 Exportar CSV</button>
+                <button type="button" class="btn-export-pdf btn-sm" onclick="exportarPDF()">📕 Exportar PDF</button>
+            </div>
+
+            <div><strong>Total cursos:</strong> @Model.Historial.Count()</div>
+        </div>
+
+        <!-- TABLA -->
+        <div class="table-responsive historial-table-card">
+            <table id="tablaHistorial" class="table table-historial">
+                <thead>
                     <tr>
-                        <td>@item.Codigo_Curso</td>
-                        <td>@item.Nombre_Curso</td>
-                        <td>@item.Promedio</td>
+                        <th onclick="ordenarPor(0)">Código del Curso ⬍</th>
+                        <th onclick="ordenarPor(1)">Nombre del Curso ⬍</th>
+                        <th onclick="ordenarPor(2)">Promedio ⬍</th>
                     </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Historial)
+                    {
+                        <tr>
+                            <td>@item.Codigo_Curso</td>
+                            <td>@item.Nombre_Curso</td>
+                            <td>@item.Promedio</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
 
-    <nav class="d-flex justify-content-between align-items-center mt-3">
-        <button id="btnAnterior" class="btn btn-outline-secondary btn-sm">← Anterior</button>
-        <span id="paginaInfo" class="fw-semibold"></span>
-        <button id="btnSiguiente" class="btn btn-outline-secondary btn-sm">Siguiente →</button>
-    </nav>
-}
-else if (Model.Tipo != null && Model.Identificacion != null)
-{
-    <div class="alert alert-warning">No se encontraron registros para este estudiante.</div>
-}
+        <!-- PAGINACIÓN -->
+        <nav aria-label="Paginación" class="mt-4">
+            <ul class="pagination justify-content-center mb-0">
+
+                <li class="page-item">
+                    <a class="page-link" href="#" id="btnAnterior">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" id="paginaInfo">Página 1</a>
+                </li>
+
+                <li class="page-item">
+                    <a class="page-link" href="#" id="btnSiguiente">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    }
+    else if (Model.Tipo != null && Model.Identificacion != null)
+    {
+        <div class="alert-historial alert-warning">No se encontraron registros para este estudiante.</div>
+    }
+
+</div>
 
 @section Scripts {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -169,11 +214,11 @@ else if (Model.Tipo != null && Model.Identificacion != null)
         // ============================
         // Exportar PDF
         // ============================
-                async function exportarPDF() {
+        async function exportarPDF() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF("p", "mm", "a4");
 
-            // ====== ENCABEZADO ======
+            // ENCABEZADO
             doc.setFontSize(18);
             doc.setFont("helvetica", "bold");
             doc.text('Historial Académico', 14, 15);
@@ -181,36 +226,33 @@ else if (Model.Tipo != null && Model.Identificacion != null)
             doc.setFontSize(12);
             doc.setFont("helvetica", "normal");
             doc.text('Promedios por Estudiante', 14, 23);
-            doc.setDrawColor(0);
             doc.line(14, 25, 196, 25);
 
-            // ====== DATOS GENERALES ======
             const tipo = document.querySelector('select[name="Tipo"]').value || 'No especificado';
             const identificacion = document.querySelector('input[name="Identificacion"]').value || 'No ingresada';
             const totalCursos = document.querySelectorAll('#tablaHistorial tbody tr').length;
             const fecha = new Date().toLocaleString('es-CR');
 
-            let infoY = 33;
-            doc.setFontSize(11);
+            let y0 = 33;
             doc.setFont("helvetica", "bold");
-            doc.text("Tipo de Identificación:", 14, infoY);
-            doc.text("Identificación:", 14, infoY + 7);
-            doc.text("Total de Cursos:", 14, infoY + 14);
-            doc.text("Fecha de Generación:", 14, infoY + 21);
+            doc.text("Tipo de Identificación:", 14, y0);
+            doc.text("Identificación:", 14, y0 + 7);
+            doc.text("Total de Cursos:", 14, y0 + 14);
+            doc.text("Fecha de Generación:", 14, y0 + 21);
 
             doc.setFont("helvetica", "normal");
-            doc.text(tipo.charAt(0).toUpperCase() + tipo.slice(1), 70, infoY);
-            doc.text(identificacion, 70, infoY + 7);
-            doc.text(String(totalCursos), 70, infoY + 14);
-            doc.text(fecha, 70, infoY + 21);
+            doc.text(tipo, 70, y0);
+            doc.text(identificacion, 70, y0 + 7);
+            doc.text(String(totalCursos), 70, y0 + 14);
+            doc.text(fecha, 70, y0 + 21);
 
-            doc.line(14, infoY + 25, 196, infoY + 25);
+            doc.line(14, y0 + 25, 196, y0 + 25);
 
-            // ====== TABLA ======
-            const startY = infoY + 33;
+            // TABLA
             const headers = ['Código del Curso', 'Nombre del Curso', 'Promedio'];
             const colWidths = [40, 120, 25];
-            let y = startY;
+
+            let y = y0 + 33;
 
             doc.setFont("helvetica", "bold");
             headers.forEach((h, i) => doc.text(h, 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
@@ -223,14 +265,13 @@ else if (Model.Tipo != null && Model.Identificacion != null)
                 cols.forEach((c, i) => doc.text(String(c), 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
                 y += 7;
 
-                // salto de página
                 if (y > 270 && idx < filas.length - 1) {
                     doc.addPage();
                     y = 20;
                 }
             });
 
-            // ====== PIE DE PÁGINA ======
+            // PIE DE PÁGINA
             const totalPages = doc.internal.getNumberOfPages();
             for (let i = 1; i <= totalPages; i++) {
                 doc.setPage(i);

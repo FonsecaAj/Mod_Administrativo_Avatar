@@ -1,0 +1,267 @@
+﻿/* ================================
+   CONTENEDOR PRINCIPAL
+================================ */
+.historial-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ================================
+   TÍTULO PRINCIPAL
+================================ */
+.historial-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+    .historial-header h1 {
+        color: var(--primary-color);
+        font-size: 1.875rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+    }
+
+        .historial-header h1 i {
+            margin-right: 0.75rem;
+            font-size: 2rem;
+            color: var(--accent-color);
+        }
+
+/* ================================
+   FORMULARIO DE BÚSQUEDA
+================================ */
+.historial-form {
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-md);
+    background: var(--bg-primary);
+    animation: slideUp 0.6s ease-out;
+    padding: 1.5rem 2rem;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.historial-form .form-label {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.historial-form .form-control,
+.historial-form .form-select {
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: var(--bg-primary);
+    transition: all 0.3s ease;
+}
+
+    .historial-form .form-control:focus,
+    .historial-form .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 0.25rem rgba(195, 163, 142, 0.15);
+    }
+
+/* ================================
+   BOTÓN BUSCAR
+================================ */
+.btn-buscar {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.8rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .btn-buscar:hover {
+        transform: translateY(-2px);
+        background: linear-gradient(135deg, var(--accent-dark), var(--accent-color));
+        box-shadow: 0 6px 20px rgba(195, 163, 142, 0.4);
+    }
+
+/* ================================
+   ALERTAS
+================================ */
+.alert-historial {
+    border-radius: 0.75rem;
+    border: none;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+}
+
+    .alert-historial.alert-info {
+        background: linear-gradient(135deg, rgba(91, 143, 163, 0.15), rgba(91, 143, 163, 0.08));
+        border-left: 4px solid var(--info-color);
+        color: var(--primary-color);
+    }
+
+    .alert-historial.alert-danger {
+        background: linear-gradient(135deg, rgba(200, 90, 84, 0.15), rgba(200, 90, 84, 0.08));
+        border-left: 4px solid var(--danger-color);
+        color: var(--danger-color);
+    }
+
+    .alert-historial.alert-warning {
+        background: linear-gradient(135deg, rgba(212, 165, 116, 0.15), rgba(212, 165, 116, 0.08));
+        border-left: 4px solid var(--warning-color);
+        color: var(--primary-color);
+    }
+
+/* ================================
+   BOTONES DE EXPORTACIÓN
+================================ */
+.historial-actions button {
+    border-radius: 0.5rem;
+    font-weight: 600;
+    padding: 0.45rem 1rem;
+    transition: all 0.3s ease;
+}
+
+.btn-export-csv {
+    background: var(--bg-secondary);
+    border: 2px solid var(--success-color);
+    color: var(--success-color);
+}
+
+    .btn-export-csv:hover {
+        background: var(--success-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+.btn-export-pdf {
+    background: var(--bg-secondary);
+    border: 2px solid var(--danger-color);
+    color: var(--danger-color);
+}
+
+    .btn-export-pdf:hover {
+        background: var(--danger-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+/* ================================
+   TABLA DEL HISTORIAL
+================================ */
+.historial-table-card {
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+.table-historial thead {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+}
+
+    .table-historial thead th {
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        padding: 1rem;
+    }
+
+.table-historial tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: all 0.2s ease;
+}
+
+    .table-historial tbody tr:hover {
+        background: var(--bg-secondary);
+        transform: scale(1.01);
+        box-shadow: 0 2px 8px rgba(47, 73, 110, 0.08);
+    }
+
+.table-historial tbody td {
+    padding: 1rem;
+    color: var(--text-primary);
+}
+
+/* ================================
+   PAGINACIÓN
+================================ */
+.historial-pagination button {
+    border: 2px solid var(--border-color);
+    padding: 0.4rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .historial-pagination button:hover {
+        background: var(--accent-light);
+        border-color: var(--accent-color);
+        color: white;
+        transform: translateY(-2px);
+    }
+
+/* ================================
+   RESPONSIVE
+================================ */
+@media (max-width: 768px) {
+    .historial-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .historial-form {
+        padding: 1rem 1.25rem;
+    }
+
+    .table-historial thead th,
+    .table-historial tbody td {
+        padding: 0.75rem;
+    }
+}
+
+/* ============================================
+   PAGINACIÓN IGUAL A USUARIOS
+============================================ */
+.historial-pagination .page-link {
+    border: 2px solid var(--border-color) !important;
+    color: var(--primary-color) !important;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+    .historial-pagination .page-link:hover {
+        background: var(--accent-light) !important;
+        border-color: var(--accent-color) !important;
+        color: white !important;
+        transform: translateY(-2px);
+    }
+
+.historial-pagination .page-item.disabled .page-link {
+    background: var(--bg-secondary);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
