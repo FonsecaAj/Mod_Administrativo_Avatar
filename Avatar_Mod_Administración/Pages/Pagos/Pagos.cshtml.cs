@@ -7,7 +7,7 @@ namespace Avatar_Mod_Administración.Pages.Pagos
     public class PagosModel : BasePageModel
     {
         private readonly IPagoApiClient _api;
-
+            
         public PagosModel(
             IPagoApiClient api,
             IAuthService authService,
@@ -34,8 +34,18 @@ namespace Avatar_Mod_Administración.Pages.Pagos
         public IEnumerable<PagoDto>? PagosListado { get; set; } = Enumerable.Empty<PagoDto>();
 
 
-        
+        public async Task<IActionResult> OnGetAsync()
+        {
+            // Llama a la inicialización de sesión que verifica/renueva el token 
+            // y carga los datos de usuario (nombre, rol) en ViewData.
+            var result = await InicializarSesionAsync();
 
+            // Si la sesión expiró o es inválida, redirige a Login.
+            if (result != null) return result;
+
+            // Retorna la página.
+            return Page();
+        }
         public async Task<IActionResult> OnPostRegistrarAsync()
         {
             var result = await InicializarSesionAsync();

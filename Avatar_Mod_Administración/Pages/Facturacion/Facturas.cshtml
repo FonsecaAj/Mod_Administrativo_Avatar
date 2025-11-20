@@ -37,8 +37,8 @@ else if (Model.Message != null)
                     <label class="form-label">ID Factura</label>
                     <input asp-for="ID_Factura" type="number" class="form-control" placeholder="Ej: 5" />
                 </div>
-                <input type="hidden" asp-for="Motivo" id="inputMotivo" />
                 <button type="button" class="btn btn-danger" onclick="abrirModalReversar()">Reversar</button>
+                <input type="hidden" asp-for="Motivo" id="inputMotivo" />
             </form>
         </div>
     </div>
@@ -48,7 +48,7 @@ else if (Model.Message != null)
 
 <div class="card p-4 shadow-sm mb-4">
     <h5>📄 Listado de Facturas por Periodo y Estado</h5>
-    <form method="post" asp-page-handler="Listar">
+    <form method="post" asp-page-handler="Listar" id="formListarFacturas">
         <div class="row g-3 align-items-end">
             <div class="col-md-3">
                 <label asp-for="FechaInicio" class="form-label">Fecha Inicio</label>
@@ -75,16 +75,16 @@ else if (Model.Message != null)
 
     @if (Model.FacturasListado != null && Model.FacturasListado.Any())
     {
-        <h6 class="mt-4">Resultados (@Model.FacturasListado.Count)</h6>
+        <h6 class="mt-4">Resultados (<span id="totalFilas">@Model.FacturasListado.Count()</span>)</h6>
         <div class="table-responsive">
-            <table class="table table-sm table-hover mt-2">
-                <thead>
+            <table class="table table-sm table-hover mt-2" id="tablaFacturas">
+                <thead class="table-dark">
                     <tr>
-                        <th>ID</th>
-                        <th>Identificación</th>
-                        <th>Fecha</th>
-                        <th>Total</th>
-                        <th>Estado</th>
+                        <th onclick="ordenarPor(0)">ID ⬍</th>
+                        <th onclick="ordenarPor(1)">Identificación ⬍</th>
+                        <th onclick="ordenarPor(2)">Fecha ⬍</th>
+                        <th onclick="ordenarPor(3)">Total ⬍</th>
+                        <th onclick="ordenarPor(4)">Estado ⬍</th>
                         <th>Acción</th>
                     </tr>
                 </thead>
@@ -94,7 +94,7 @@ else if (Model.Message != null)
                         <tr>
                             <td>@f.ID_Factura</td>
                             <td>@f.Identificacion_Estudiante</td>
-                            <td>@f.Fecha_Emision.ToString("dd/MM/yyyy")</td>
+                            <td>@f.Fecha_Emision.ToString("dd/MM/yyyy HH:mm")</td> @* Agregado HH:mm para ordenamiento por tiempo *@
                             <td>@f.Total.ToString("C")</td>
                             <td>
                                 <span class="badge @(f.Estado == "Pagada" ? "bg-success" : f.Estado == "Anulada" ? "bg-danger" : "bg-warning text-dark")">
@@ -116,8 +116,15 @@ else if (Model.Message != null)
                 </tbody>
             </table>
         </div>
+
+        <nav class="d-flex justify-content-between align-items-center mt-3">
+            <button id="btnAnterior" type="button" class="btn btn-outline-secondary btn-sm">← Anterior</button>
+            <span id="paginaInfo" class="fw-semibold"></span>
+            <button id="btnSiguiente" type="button" class="btn btn-outline-secondary btn-sm">Siguiente →</button>
+        </nav>
+
     }
-    else if (Model.FacturasListado != null)
+    else if (Model.FacturasListado != null && !string.IsNullOrEmpty(Model.FechaInicio.ToString()) && !string.IsNullOrEmpty(Model.FechaFin.ToString()))
     {
         <div class="alert alert-info mt-3">No se encontraron facturas con los filtros seleccionados.</div>
     }
@@ -206,10 +213,123 @@ else if (Model.Message != null)
 @section Scripts {
     <script>
         let modal;
+        // ⭐ Variables para Paginación y Ordenamiento (Adaptadas)
+        let paginaActual = 1;
+        const filasPorPagina = 10;
+        let ordenColumna = -1;
+        let ordenAsc = true;
+        const tablaID = "tablaFacturas"; // ID de la tabla de facturas
 
         document.addEventListener("DOMContentLoaded", () => {
             modal = new bootstrap.Modal(document.getElementById("modalReversar"));
+
+            // Inicializar campos de fecha al valor de las propiedades del modelo si están vacíos
+            const today = new Date().toISOString().split('T')[0];
+            const defaultStart = new Date();
+            defaultStart.setDate(defaultStart.getDate() - 30);
+            const defaultStartISO = defaultStart.toISOString().split('T')[0];
+
+            if (!document.getElementById("FechaInicio").value) {
+                document.getElementById("FechaInicio").value = defaultStartISO;
+            }
+            if (!document.getElementById("FechaFin").value) {
+                document.getElementById("FechaFin").value = today;
+            }
+
+            // Iniciar Paginación si la tabla existe
+            if (document.getElementById(tablaID)) {
+                mostrarPagina();
+                document.getElementById("btnAnterior").addEventListener("click", anteriorPagina);
+                document.getElementById("btnSiguiente").addEventListener("click", siguientePagina);
+            }
         });
+
+        // ============================
+        // Paginación y Ordenamiento
+        // ============================
+
+        function mostrarPagina() {
+            const filas = document.querySelectorAll(`#${tablaID} tbody tr`);
+            const totalFilas = filas.length;
+            const totalPaginas = Math.ceil(totalFilas / filasPorPagina);
+
+            // Actualizar el total de resultados mostrado
+            const totalFilasSpan = document.getElementById("totalFilas");
+            if (totalFilasSpan) {
+                totalFilasSpan.innerText = totalFilas;
+            }
+
+            filas.forEach((fila, i) => {
+                fila.style.display = (i >= (paginaActual - 1) * filasPorPagina && i < paginaActual * filasPorPagina)
+                    ? "" : "none";
+            });
+
+            const infoSpan = document.getElementById("paginaInfo");
+            if (infoSpan) {
+                 infoSpan.innerText = `Página ${paginaActual} de ${totalPaginas}`;
+            }
+
+            const btnAnt = document.getElementById("btnAnterior");
+            const btnSig = document.getElementById("btnSiguiente");
+
+            if (btnAnt) btnAnt.disabled = paginaActual === 1;
+            if (btnSig) btnSig.disabled = paginaActual === totalPaginas || totalPaginas === 0;
+        }
+
+        function siguientePagina() {
+            const filas = document.querySelectorAll(`#${tablaID} tbody tr`);
+            const totalPaginas = Math.ceil(filas.length / filasPorPagina);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                mostrarPagina();
+            }
+        }
+
+        function anteriorPagina() {
+            if (paginaActual > 1) {
+                paginaActual--;
+                mostrarPagina();
+            }
+        }
+
+        function ordenarPor(indice) {
+            const tabla = document.getElementById(tablaID);
+            const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+
+            // Lógica de ordenamiento: Cambiar dirección si se hace clic en la misma columna
+            const multiplicador = (ordenColumna === indice && ordenAsc) ? -1 : 1;
+            ordenColumna = indice;
+            ordenAsc = multiplicador === 1;
+
+            filas.sort((a, b) => {
+                // Se usa innerText para obtener el valor de la celda
+                const valorA = a.children[indice].innerText.toLowerCase();
+                const valorB = b.children[indice].innerText.toLowerCase();
+
+                // Intenta convertir a número para ordenar por valor numérico (útil para ID y Monto)
+                // Se limpia el string de caracteres no numéricos excepto el punto decimal y la coma
+                const numA = parseFloat(valorA.replace(/[^0-9.,]/g, '').replace(',', '.'));
+                const numB = parseFloat(valorB.replace(/[^0-9.,]/g, '').replace(',', '.'));
+
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return (numA - numB) * multiplicador;
+                }
+
+                // Para ordenar fechas o cadenas
+                return valorA.localeCompare(valorB, 'es') * multiplicador;
+            });
+
+            const cuerpo = tabla.querySelector("tbody");
+            cuerpo.innerHTML = "";
+            filas.forEach(f => cuerpo.appendChild(f));
+
+            paginaActual = 1;
+            mostrarPagina();
+        }
+
+        // ============================
+        // Funciones de Reversión (Modal)
+        // ============================
 
         function abrirModalReversar() {
             const id = document.querySelector("#ID_Factura").value;
@@ -217,6 +337,9 @@ else if (Model.Message != null)
                 alert("Debe ingresar un ID de factura válido antes de continuar.");
                 return;
             }
+            // Limpiar campos y mensajes de error
+            document.getElementById("motivo").value = "";
+            document.getElementById("errorModalMsg").innerText = "";
             modal.show();
         }
 
