@@ -12,9 +12,8 @@
 }
 
 <form method="post" class="row g-3">
-    <input asp-for="Profesor.IdProfesor" type="hidden" />
 
- 
+    <input asp-for="Profesor.IdProfesor" type="hidden" />
 
     <div class="col-md-4">
         <label asp-for="Profesor.NumeroIdentificacion" class="form-label"></label>
@@ -24,7 +23,7 @@
 
     <div class="col-md-4">
         <label asp-for="Profesor.TipoIdentificacion" class="form-label"></label>
-        <input asp-for="Profesor.TipoIdentificacion" class="form-control" />
+        <select asp-for="Profesor.TipoIdentificacion" asp-items="Model.TiposIdentificacion" class="form-select"></select>
         <span asp-validation-for="Profesor.TipoIdentificacion" class="text-danger"></span>
     </div>
 
@@ -48,11 +47,11 @@
 
     <div class="col-md-4">
         <label asp-for="Profesor.FechaNacimiento" class="form-label"></label>
-        <input asp-for="Profesor.FechaNacimiento" class="form-control" type="date" />
+        <input asp-for="Profesor.FechaNacimiento" type="date" class="form-control" />
         <span asp-validation-for="Profesor.FechaNacimiento" class="text-danger"></span>
     </div>
 
-    <div class="col-12">
+    <div class="col-12 mt-3">
         <button type="submit" class="btn btn-primary">Guardar cambios</button>
         <a asp-page="Index" class="btn btn-secondary">Volver</a>
     </div>

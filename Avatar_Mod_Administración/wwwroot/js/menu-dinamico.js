@@ -21,6 +21,7 @@
         'Desglose y Notas': { icono: 'bi-clipboard-data', url: '/Notas/Index', grupo: 'Evaluación', prefijo: '/Notas' },
         'Promedios': { icono: 'bi-graph-up', url: '/Promedios/Index', grupo: 'Evaluación', prefijo: '/Promedios' },
         'Reportes': { icono: 'bi-file-earmark-bar-graph', url: '/Reportes/Index', grupo: 'Reportes', prefijo: '/Reportes' }
+
     };
 
     //  OPCIONES PARA EL ROL ADMINISTRADOR (o rol con ID 1)
@@ -78,8 +79,20 @@
         } catch (error) { return []; }
     }
 
+    async function cargarModulosPorRol(rolId, token) {
+        try {
+            const rolIdNum = parseInt(rolId);
+            if (!rolIdNum || rolIdNum === 0) return [];
+            const response = await fetch(`/api/rol/${rolIdNum}/modulos`, {
+                method: 'GET', headers: { 'Content-Type': 'application/json', 'Authorization': token }, credentials: 'include'
+            });
+            if (!response.ok) { if (response.status === 401) window.location.href = '/Login'; return []; }
+            return await response.json();
+        } catch (error) { return []; }
+    }
     async function cargarMenuDinamico() {
         const loader = document.getElementById('menu-loader');
+
         try {
             const sesionValida = await verificarSesion();
             if (!sesionValida) return;

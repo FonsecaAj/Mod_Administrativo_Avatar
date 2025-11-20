@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administración.Services;
-using Avatar_Mod_Administración.Entities;
+using Avatar_Mod_Administraciï¿½n.Services;
+using Avatar_Mod_Administraciï¿½n.Entities;
 
-namespace Avatar_Mod_Administración.Pages.Rol
+namespace Avatar_Mod_Administraciï¿½n.Pages.Rol
 {
     public class RolesModel : BasePageModel
     {

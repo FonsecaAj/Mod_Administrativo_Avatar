@@ -1,4 +1,4 @@
-using Dapper;
+Ôªøusing Dapper;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -40,7 +40,7 @@ app.MapPost("/usuario", async (
 
     var usuarioExistente = await repository.ObtenerPorEmailAsync(dto.Email);
     if (usuarioExistente != null)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "El email ya est· registrado" }, statusCode: 400);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = "El email ya est√° registrado" }, statusCode: 400);
 
     try
     {
@@ -389,12 +389,12 @@ app.MapGet("/tipoidentificacion/{id}", async (
         new { Id = id });
 
     if (tipoIdentificacion == null)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Tipo de identificaciÛn no encontrado" }, statusCode: 404);
+        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "Tipo de identificaci√≥n no encontrado" }, statusCode: 404);
 
     return Results.Json(new BusinessLogicResponse
     {
         StatusCode = 200,
-        Message = "Tipo de identificaciÛn obtenido correctamente",
+        Message = "Tipo de identificaci√≥n obtenido correctamente",
         ResponseObject = tipoIdentificacion
     }, statusCode: 200);
 })
@@ -503,7 +503,7 @@ static async Task<(bool esValido, string mensaje)> ValidarUsuarioAsync(
 
     var emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
     if (!Regex.IsMatch(dto.Email.Trim(), emailPattern))
-        return (false, "El formato del email no es v·lido");
+        return (false, "El formato del email no es v√°lido");
 
     var email = dto.Email.Trim().ToLower();
     if (!email.EndsWith("@cuc.cr") && !email.EndsWith("@cuc.ac.cr"))
@@ -527,13 +527,13 @@ static async Task<(bool esValido, string mensaje)> ValidarUsuarioAsync(
         return (false, "El nombre completo es requerido");
 
     if (string.IsNullOrWhiteSpace(dto.Identificacion))
-        return (false, "La identificaciÛn es requerida");
+        return (false, "La identificaci√≥n es requerida");
 
     if (dto.IdTipoIdentificacion <= 0)
-        return (false, "El tipo de identificaciÛn es requerido");
+        return (false, "El tipo de identificaci√≥n es requerido");
 
     if (string.IsNullOrWhiteSpace(dto.Contrasenna))
-        return (false, "La contraseÒa es requerida");
+        return (false, "La contrase√±a es requerida");
 
     return (true, string.Empty);
 }
@@ -548,7 +548,7 @@ static async Task<(bool esValido, string mensaje)> ValidarUsuarioParaEdicionAsyn
 
     var emailPattern = @"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$";
     if (!Regex.IsMatch(dto.Email.Trim(), emailPattern))
-        return (false, "El formato del email no es v·lido");
+        return (false, "El formato del email no es v√°lido");
 
     var email = dto.Email.Trim().ToLower();
     if (!email.EndsWith("@cuc.cr") && !email.EndsWith("@cuc.ac.cr"))
@@ -572,13 +572,13 @@ static async Task<(bool esValido, string mensaje)> ValidarUsuarioParaEdicionAsyn
         return (false, "El nombre completo es requerido");
 
     if (string.IsNullOrWhiteSpace(dto.Identificacion))
-        return (false, "La identificaciÛn es requerida");
+        return (false, "La identificaci√≥n es requerida");
 
     if (dto.IdTipoIdentificacion <= 0)
-        return (false, "El tipo de identificaciÛn es requerido");
+        return (false, "El tipo de identificaci√≥n es requerido");
 
     if (!string.IsNullOrWhiteSpace(dto.Contrasenna) && dto.Contrasenna.Length < 6)
-        return (false, "La contraseÒa debe tener al menos 6 caracteres");
+        return (false, "La contrase√±a debe tener al menos 6 caracteres");
 
     return (true, string.Empty);
 }

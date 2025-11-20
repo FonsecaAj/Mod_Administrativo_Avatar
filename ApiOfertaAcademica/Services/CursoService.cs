@@ -30,7 +30,10 @@ namespace ApiACD3.Services
         // OBTENER TODOS
         // ============================================
         public async Task<BusinessLogicResponse> ObtenerTodos()
+
         {
+            var usuario = await ObtenerUsuarioActualAsync();
+
             try
             {
                 var cursos = await _repo.ObtenerTodos();

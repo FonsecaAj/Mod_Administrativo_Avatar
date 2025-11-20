@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administración.Entities;
-using Avatar_Mod_Administración.Services;
+using Avatar_Mod_Administraciï¿½n.Entities;
+using Avatar_Mod_Administraciï¿½n.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace Avatar_Mod_Administración.Pages.Modulo
+namespace Avatar_Mod_Administraciï¿½n.Pages.Modulo
 {
     public class ModuloCrearModel : BasePageModel
     {
@@ -38,13 +38,13 @@ namespace Avatar_Mod_Administración.Pages.Modulo
 
             if (string.IsNullOrWhiteSpace(Input.Nombre))
             {
-                ModelState.AddModelError("Input.Nombre", "El nombre del módulo es requerido");
+                ModelState.AddModelError("Input.Nombre", "El nombre del mï¿½dulo es requerido");
             }
             else
             {
                 var nombreTrimmed = Input.Nombre.Trim();
 
-                if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$"))
+                if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\s]+$"))
                 {
                     ModelState.AddModelError("Input.Nombre", "El nombre solo puede contener letras y espacios");
                 }
@@ -86,7 +86,7 @@ namespace Avatar_Mod_Administración.Pages.Modulo
                 return RedirectToPage("/Modulo/Modulos");
             }
 
-            ModelState.AddModelError(string.Empty, message ?? "Error al crear el módulo");
+            ModelState.AddModelError(string.Empty, message ?? "Error al crear el mï¿½dulo");
             return Page();
         }
     }
@@ -100,7 +100,7 @@ namespace Avatar_Mod_Administración.Pages.Modulo
         public bool Activo { get; set; } = true;
 
         [Required(ErrorMessage = "El orden es requerido")]
-        [Range(0, int.MaxValue, ErrorMessage = "El orden debe ser un número mayor o igual a 0")]
+        [Range(0, int.MaxValue, ErrorMessage = "El orden debe ser un nï¿½mero mayor o igual a 0")]
         public int Orden { get; set; } = 0;
     }
 }

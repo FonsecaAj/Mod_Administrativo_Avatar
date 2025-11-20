@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administración.Services;
+using Avatar_Mod_Administraciï¿½n.Services;
 using System.ComponentModel.DataAnnotations;
-using TipoIdentificacionEntity = Avatar_Mod_Administración.Entities.TipoIdentificacion;
-using RolEntity = Avatar_Mod_Administración.Entities.Rol;
-using UsuarioCrearDto = Avatar_Mod_Administración.Entities.UsuarioCrearDto;
+using TipoIdentificacionEntity = Avatar_Mod_Administraciï¿½n.Entities.TipoIdentificacion;
+using RolEntity = Avatar_Mod_Administraciï¿½n.Entities.Rol;
+using UsuarioCrearDto = Avatar_Mod_Administraciï¿½n.Entities.UsuarioCrearDto;
 
-namespace Avatar_Mod_Administración.Pages.Usuario
+namespace Avatar_Mod_Administraciï¿½n.Pages.Usuario
 {
     public class UsuarioCrearModel : BasePageModel
     {
@@ -44,7 +44,7 @@ namespace Avatar_Mod_Administración.Pages.Usuario
 
             if (string.IsNullOrWhiteSpace(Input.Nombre))
             {
-                ModelState.AddModelError("Input.Nombre", "El nombre no puede estar vacío o contener solo espacios");
+                ModelState.AddModelError("Input.Nombre", "El nombre no puede estar vacï¿½o o contener solo espacios");
             }
 
             if (!ModelState.IsValid)
@@ -116,21 +116,21 @@ namespace Avatar_Mod_Administración.Pages.Usuario
     public class UsuarioInputDto
     {
         [Required(ErrorMessage = "El email es requerido")]
-        [EmailAddress(ErrorMessage = "Formato de email inválido")]
+        [EmailAddress(ErrorMessage = "Formato de email invï¿½lido")]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El tipo de identificación es requerido")]
-        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un tipo de identificación")]
+        [Required(ErrorMessage = "El tipo de identificaciï¿½n es requerido")]
+        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un tipo de identificaciï¿½n")]
         public int IdTipoIdentificacion { get; set; }
 
-        [Required(ErrorMessage = "La identificación es requerida")]
+        [Required(ErrorMessage = "La identificaciï¿½n es requerida")]
         public string Identificacion { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El nombre es requerido")]
         public string Nombre { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "La contraseña es requerida")]
-        [MinLength(6, ErrorMessage = "La contraseña debe tener al menos 6 caracteres")]
+        [Required(ErrorMessage = "La contraseï¿½a es requerida")]
+        [MinLength(6, ErrorMessage = "La contraseï¿½a debe tener al menos 6 caracteres")]
         public string Contrasenna { get; set; } = string.Empty;
 
         public string? RolDeseado { get; set; }

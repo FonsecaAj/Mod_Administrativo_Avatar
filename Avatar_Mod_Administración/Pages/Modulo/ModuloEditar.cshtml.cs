@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administración.Services;
-using Avatar_Mod_Administración.Entities;
+using Avatar_Mod_Administraciï¿½n.Services;
+using Avatar_Mod_Administraciï¿½n.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace Avatar_Mod_Administración.Pages.Modulo
+namespace Avatar_Mod_Administraciï¿½n.Pages.Modulo
 {
     public class ModuloEditarModel : BasePageModel
     {
@@ -40,7 +40,7 @@ namespace Avatar_Mod_Administración.Pages.Modulo
 
                 if (modulo == null)
                 {
-                    TempData["Error"] = "El módulo solicitado no existe";
+                    TempData["Error"] = "El mï¿½dulo solicitado no existe";
                     return RedirectToPage("/Modulo/Modulos");
                 }
 
@@ -74,19 +74,19 @@ namespace Avatar_Mod_Administración.Pages.Modulo
                 var moduloOriginal = await _moduloService.ObtenerPorIdAsync(Id, token);
                 if (moduloOriginal == null)
                 {
-                    TempData["Error"] = "El módulo no existe";
+                    TempData["Error"] = "El mï¿½dulo no existe";
                     return RedirectToPage("/Modulo/Modulos");
                 }
 
                 if (string.IsNullOrWhiteSpace(Input.Nombre))
                 {
-                    ModelState.AddModelError("Input.Nombre", "El nombre del módulo es requerido");
+                    ModelState.AddModelError("Input.Nombre", "El nombre del mï¿½dulo es requerido");
                 }
                 else
                 {
                     var nombreTrimmed = Input.Nombre.Trim();
 
-                    if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$"))
+                    if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\s]+$"))
                     {
                         ModelState.AddModelError("Input.Nombre", "El nombre solo puede contener letras y espacios");
                     }
@@ -128,7 +128,7 @@ namespace Avatar_Mod_Administración.Pages.Modulo
                     return RedirectToPage("/Modulo/Modulos");
                 }
 
-                ModelState.AddModelError(string.Empty, message ?? "Error al actualizar el módulo");
+                ModelState.AddModelError(string.Empty, message ?? "Error al actualizar el mï¿½dulo");
                 NombreOriginal = moduloOriginal.Nombre;
                 return Page();
             }
@@ -149,7 +149,7 @@ namespace Avatar_Mod_Administración.Pages.Modulo
         public bool Activo { get; set; } = true;
 
         [Required(ErrorMessage = "El orden es requerido")]
-        [Range(0, int.MaxValue, ErrorMessage = "El orden debe ser un número mayor o igual a 0")]
+        [Range(0, int.MaxValue, ErrorMessage = "El orden debe ser un nï¿½mero mayor o igual a 0")]
         public int Orden { get; set; } = 0;
     }
 }

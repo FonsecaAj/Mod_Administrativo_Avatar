@@ -61,14 +61,18 @@ namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
                 return Page();
             }
 
-            var exito = await _cursoClient.CrearAsync(NuevoCurso);
+            var (ok, code, msg) = await _cursoClient.CrearAsync(NuevoCurso);
 
-            if (exito)
+            if (ok)
+            {
+                TempData["Mensaje"] = msg;
                 return RedirectToPage("Index");
+            }
 
-            ModelState.AddModelError(string.Empty, "Error al crear el curso. Intente de nuevo.");
+            ModelState.AddModelError(string.Empty, msg);
             await OnGetAsync();
             return Page();
         }
+
     }
 }

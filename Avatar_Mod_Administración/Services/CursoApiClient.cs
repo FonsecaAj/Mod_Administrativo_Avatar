@@ -2,6 +2,8 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text;
+using System.Text.Json;
 
 namespace Avatar_Mod_Administración.Services
 {
@@ -18,10 +20,10 @@ namespace Avatar_Mod_Administración.Services
             _config = config;
             _authService = authService;
 
-            // ⭐️ Se mantiene la construcción de la URL base
             _baseUrl = $"{_config["Adm_Cursos:BaseUrl"]}/api/curso";
         }
 
+       
 
         private string ObtenerTokenLimpio()
         {
@@ -38,10 +40,11 @@ namespace Avatar_Mod_Administración.Services
             return token;
         }
 
-
         private void AplicarToken()
         {
             var token = ObtenerTokenLimpio();
+
+            _http.DefaultRequestHeaders.Remove("Authorization");
 
             if (!string.IsNullOrEmpty(token))
             {
@@ -50,139 +53,174 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        // --- MÉTODOS DE OBTENCIÓN (MODIFICADOS PARA MANEJAR 404 Y ERRORES) ---
+        
+        public async Task<IEnumerable<CursoDto>> ObtenerPorCarreraAsync(int idCarrera)
+        {
+            AplicarToken();
+
+            try
+            {
+                var url = $"{_baseUrl}/carrera/{idCarrera}";
+                var response = await _http.GetAsync(url);
+
+                if (!response.IsSuccessStatusCode)
+                    return new List<CursoDto>();
+
+                var data = await response.Content.ReadFromJsonAsync<BusinessLogicResponse<IEnumerable<CursoDto>>>();
+                return data?.ResponseObject ?? new List<CursoDto>();
+            }
+            catch
+            {
+                return new List<CursoDto>();
+            }
+        }
 
         public async Task<IEnumerable<CursoDto>> ObtenerTodosAsync()
         {
             AplicarToken();
+
             try
             {
-                // Usamos GetAsync para manejar el estado antes de deserializar
                 var response = await _http.GetAsync(_baseUrl);
 
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                    return new List<CursoDto>(); // Devolver vacío en lugar de crashear
-
-                // Lanza excepción si no es 2xx
-                response.EnsureSuccessStatusCode();
+                if (!response.IsSuccessStatusCode)
+                {
+                    return new List<CursoDto>();
+                }
 
                 var data = await response.Content.ReadFromJsonAsync<BusinessLogicResponse<IEnumerable<CursoDto>>>();
                 return data?.ResponseObject ?? new List<CursoDto>();
             }
-            catch (HttpRequestException)
+            catch
             {
-                // Capturar otros errores HTTP (como 401, 500)
                 return new List<CursoDto>();
             }
         }
 
-        public async Task<IEnumerable<CursoDto>> ObtenerPorCarreraAsync(int idCarrera)
+        
+
+        public async Task<LookupsResponse?> ObtenerLookupsAsync()
         {
             AplicarToken();
-            var url = $"{_baseUrl}/carrera/{idCarrera}";
+
+            var url = $"{_baseUrl}/lookups";
+
             try
             {
                 var response = await _http.GetAsync(url);
 
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                    return new List<CursoDto>();
-
-                response.EnsureSuccessStatusCode();
-
-                var data = await response.Content.ReadFromJsonAsync<BusinessLogicResponse<IEnumerable<CursoDto>>>();
-                return data?.ResponseObject ?? new List<CursoDto>();
-            }
-            catch (HttpRequestException)
-            {
-                return new List<CursoDto>();
-            }
-        }
-
-        public async Task<CursoDto?> ObtenerPorIdAsync(int id)
-        {
-            AplicarToken();
-            try
-            {
-                var response = await _http.GetAsync($"{_baseUrl}/{id}");
-
-                // Si no se encuentra, retornamos null
-                if (response.StatusCode == HttpStatusCode.NotFound)
+                if (!response.IsSuccessStatusCode)
                     return null;
 
-                response.EnsureSuccessStatusCode();
-
-                var data = await response.Content.ReadFromJsonAsync<BusinessLogicResponse<CursoDto>>();
+                var data = await response.Content.ReadFromJsonAsync<BusinessLogicResponse<LookupsResponse>>();
                 return data?.ResponseObject;
             }
-            catch (HttpRequestException)
+            catch
             {
                 return null;
             }
         }
 
-        // ⭐️ MÉTODO ESPECÍFICO CORREGIDO ⭐️
-        public async Task<LookupsResponse?> ObtenerLookupsAsync()
+        
+        public async Task<CursoDto?> ObtenerPorIdAsync(int id)
         {
             AplicarToken();
-            // Asegúrate de que la URL aquí es correcta. 
-            // Si el 404 persiste, la URL debe ser ajustada (e.g., quitar _baseUrl si ya está configurado)
-            var url = $"{_baseUrl}/lookups";
+
             try
             {
-                // 1. Usar GetAsync para obtener la respuesta sin lanzar excepción inmediatamente
-                var response = await _http.GetAsync(url);
+                var response = await _http.GetAsync($"{_baseUrl}/{id}");
 
-                // 2. Verificar específicamente el 404 (Not Found)
-                if (response.StatusCode == HttpStatusCode.NotFound)
-                {
-                    // Devolver null en lugar de lanzar una excepción
+                if (!response.IsSuccessStatusCode)
                     return null;
-                }
 
-                // 3. Lanzar excepción si hay otros errores (401, 500, etc.)
-                response.EnsureSuccessStatusCode();
-
-                // 4. Si es exitoso (2xx), leer el contenido
-                var data = await response.Content.ReadFromJsonAsync<BusinessLogicResponse<LookupsResponse>>();
+                var data = await response.Content.ReadFromJsonAsync<BusinessLogicResponse<CursoDto>>();
                 return data?.ResponseObject;
             }
-            catch (HttpRequestException ex)
+            catch
             {
-                // Capturar otros fallos de la red o del servidor
-                Console.WriteLine($"[ERROR API LOOKUPS] Detalle: {ex.Message}");
                 return null;
             }
         }
 
         
 
-        public async Task<bool> CrearAsync(CursoDto curso)
+        public async Task<(bool ok, int statusCode, string message)>
+            CrearAsync(CursoDto curso)
         {
             AplicarToken();
-            var response = await _http.PostAsJsonAsync(_baseUrl, curso);
-            return response.IsSuccessStatusCode;
-        }
 
-        public async Task<bool> ActualizarAsync(CursoDto curso)
-        {
-            AplicarToken();
-            var response = await _http.PutAsJsonAsync($"{_baseUrl}/{curso.ID_Curso}", curso);
-
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                var detalle = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[ERROR API PUT] Status: {response.StatusCode}, Detalle: {detalle}");
-                return false;
-            }
+                var contenido = new StringContent(
+                    JsonSerializer.Serialize(curso),
+                    Encoding.UTF8,
+                    "application/json"
+                );
 
-            return true;
+                var response = await _http.PostAsync(_baseUrl, contenido);
+
+                using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                int status = doc.RootElement.GetProperty("statusCode").GetInt32();
+                string message = doc.RootElement.GetProperty("message").GetString() ?? "";
+
+                return (status == 201, status, message);
+            }
+            catch (Exception ex)
+            {
+                return (false, 500, $"Error procesando respuesta: {ex.Message}");
+            }
         }
 
-        public async Task<bool> EliminarAsync(int id)
+        
+
+        public async Task<(bool ok, int statusCode, string message)>
+            ActualizarAsync(CursoDto curso)
         {
             AplicarToken();
-            var response = await _http.DeleteAsync($"{_baseUrl}/{id}");
-            return response.IsSuccessStatusCode;
+
+            try
+            {
+                var contenido = new StringContent(
+                    JsonSerializer.Serialize(curso),
+                    Encoding.UTF8,
+                    "application/json"
+                );
+
+                var response = await _http.PutAsync($"{_baseUrl}/{curso.ID_Curso}", contenido);
+
+                using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                int status = doc.RootElement.GetProperty("statusCode").GetInt32();
+                string message = doc.RootElement.GetProperty("message").GetString() ?? "";
+
+                return (status == 200, status, message);
+            }
+            catch (Exception ex)
+            {
+                return (false, 500, $"Error procesando respuesta: {ex.Message}");
+            }
+        }
+
+        
+
+        public async Task<(bool ok, int statusCode, string message)>
+            EliminarAsync(int id)
+        {
+            AplicarToken();
+
+            try
+            {
+                var response = await _http.DeleteAsync($"{_baseUrl}/{id}");
+
+                using var doc = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                int status = doc.RootElement.GetProperty("statusCode").GetInt32();
+                string message = doc.RootElement.GetProperty("message").GetString() ?? "";
+
+                return (status == 200, status, message);
+            }
+            catch (Exception ex)
+            {
+                return (false, 500, $"Error procesando respuesta: {ex.Message}");
+            }
         }
     }
 }

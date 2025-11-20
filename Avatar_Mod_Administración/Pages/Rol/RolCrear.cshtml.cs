@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administración.Entities;
-using Avatar_Mod_Administración.Services;
+using Avatar_Mod_Administraciï¿½n.Entities;
+using Avatar_Mod_Administraciï¿½n.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace Avatar_Mod_Administración.Pages.Rol
+namespace Avatar_Mod_Administraciï¿½n.Pages.Rol
 {
     public class RolCrearModel : BasePageModel
     {
@@ -40,7 +40,7 @@ namespace Avatar_Mod_Administración.Pages.Rol
             {
                 ModelState.AddModelError("Input.Nombre", "El nombre del rol es requerido");
             }
-            else if (!Regex.IsMatch(Input.Nombre.Trim(), @"^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$"))
+            else if (!Regex.IsMatch(Input.Nombre.Trim(), @"^[a-zA-Zï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½\s]+$"))
             {
                 ModelState.AddModelError("Input.Nombre", "El nombre del rol solo puede contener letras y espacios");
             }
