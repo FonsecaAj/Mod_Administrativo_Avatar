@@ -1,7 +1,7 @@
 using Avatar_Mod_Administración.Entities;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Avatar_Mod_Administración.Pages.ADM11_Profesor
 {
@@ -17,10 +17,14 @@ namespace Avatar_Mod_Administración.Pages.ADM11_Profesor
             : base(auth, usuarioService, logger)
         {
             _api = api;
+
+            CargarTiposIdentificacion();
         }
 
         [BindProperty]
         public ProfesorDto Profesor { get; set; } = new();
+
+        public List<SelectListItem> TiposIdentificacion { get; set; } = new();
 
         [TempData] public string? Mensaje { get; set; }
         [TempData] public string? MensajeError { get; set; }
@@ -40,9 +44,12 @@ namespace Avatar_Mod_Administración.Pages.ADM11_Profesor
 
             ValidarMayorDeEdad();
 
+            if (string.IsNullOrWhiteSpace(Profesor.TipoIdentificacion))
+                ModelState.AddModelError("Profesor.TipoIdentificacion", "Debe seleccionar un tipo de identificación.");
+
             if (!ModelState.IsValid)
             {
-                MensajeError = "Hay errores de validación.";
+                CargarTiposIdentificacion();
                 return Page();
             }
 
@@ -52,6 +59,7 @@ namespace Avatar_Mod_Administración.Pages.ADM11_Profesor
                 return RedirectToPage("Index");
 
             MensajeError = "No se pudo crear el profesor.";
+            CargarTiposIdentificacion();
             return Page();
         }
 
@@ -65,6 +73,17 @@ namespace Avatar_Mod_Administración.Pages.ADM11_Profesor
 
             if (edad < 18)
                 ModelState.AddModelError("Profesor.FechaNacimiento", "El profesor debe ser mayor de edad.");
+        }
+
+        private void CargarTiposIdentificacion()
+        {
+            TiposIdentificacion = new()
+            {
+                new SelectListItem("Cédula nacional", "Cédula"),
+                new SelectListItem("Pasaporte", "Pasaporte"),
+                new SelectListItem("DIMEX", "DIMEX"),
+                new SelectListItem("Otro", "Otro")
+            };
         }
     }
 }

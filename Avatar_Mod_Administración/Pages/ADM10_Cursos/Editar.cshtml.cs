@@ -79,10 +79,15 @@ namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
                 return Page();
             }
 
-            var exito = await _cursoClient.ActualizarAsync(CursoEditado);
+            var (ok, code, msg) = await _cursoClient.ActualizarAsync(CursoEditado);
 
-            if (exito)
+            if (ok)
+            {
+                TempData["Mensaje"] = msg;
                 return RedirectToPage("Index");
+            }
+
+            ModelState.AddModelError(string.Empty, msg);
 
             var lookupsFail = await _cursoClient.ObtenerLookupsAsync();
             if (lookupsFail != null)
@@ -97,8 +102,8 @@ namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
                     .ToList();
             }
 
-            ModelState.AddModelError(string.Empty, "No se pudo actualizar el curso.");
             return Page();
         }
+
     }
 }

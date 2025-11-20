@@ -42,12 +42,17 @@ namespace Avatar_Mod_Administracion.Pages.ADM10_Cursos
             if (resultado != null)
                 return resultado;
 
-            var exito = await _cursoClient.EliminarAsync(id);
-            if (exito)
-                return RedirectToPage("Index");
+            var (ok, code, msg) = await _cursoClient.EliminarAsync(id);
 
-            ModelState.AddModelError(string.Empty, "No se pudo eliminar el curso.");
+            if (ok)
+            {
+                TempData["Mensaje"] = msg;
+                return RedirectToPage("Index");
+            }
+
+            ModelState.AddModelError(string.Empty, msg);
             return Page();
         }
+
     }
 }
