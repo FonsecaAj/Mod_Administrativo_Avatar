@@ -4,67 +4,149 @@
     ViewData["Title"] = "Administrar Cursos";
 }
 
-<h2>Administrar Cursos</h2>
+<link rel="stylesheet" href="~/css/cursos.css" />
+<!-- Incluir Font Awesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-@if (TempData["Mensaje"] != null)
-{
-    <div class="alert alert-success alert-dismissible fade show mt-3" role="alert">
-        @TempData["Mensaje"]
-        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+<div class="cursos-container">
+    <div class="cursos-header">
+        <h2>
+            <i class="fas fa-book"></i>Administrar Cursos
+        </h2>
+        <a asp-page="Crear" class="btn-crear-curso">
+            <i class="fas fa-plus"></i>Nuevo Curso
+        </a>
     </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-curso alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <div class="filtros-card card">
+        <div class="card-header">
+            <h5><i class="fas fa-filter"></i>Filtrar Cursos</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="curso-form">
+                <div class="row">
+                    <div class="col-md-5">
+                        <label class="form-label">
+                            <i class="fas fa-graduation-cap"></i>Carrera:
+                        </label>
+                        <select asp-for="IdCarreraSeleccionada" asp-items="Model.Carreras" class="form-select">
+                            <option value="">Todas las carreras</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            <i class="fas fa-layer-group"></i>Nivel:
+                        </label>
+                        <select asp-for="NivelSeleccionado" asp-items="Model.Niveles" class="form-select">
+                            <option value="">Todos los niveles</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-search"></i>Filtrar
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="cursos-table-card card">
+        <div class="card-body">
+            <table class="table table-cursos">
+                <thead>
+                    <tr>
+                        <th>
+                            <a href="#">
+                                Identificador <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                Nombre <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                Nivel <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                ID Carrera <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Cursos.Any())
+                    {
+                        foreach (var c in Model.Cursos)
+                        {
+                            <tr>
+                                <td>@c.Identificador</td>
+                                <td>@c.Nombre</td>
+                                <td>
+                                    <span class="badge bg-primary">@c.Nivel</span>
+                                </td>
+                                <td>@c.ID_Carrera</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-page="Editar" asp-route-id="@c.ID_Curso" class="btn-action-curso btn-warning" data-bs-toggle="tooltip" title="Editar curso">
+                                            <i class="fas fa-edit"></i>Editar
+                                        </a>
+                                        <a asp-page="Eliminar" asp-route-id="@c.ID_Curso" class="btn-action-curso btn-danger" data-bs-toggle="tooltip" title="Eliminar curso">
+                                            <i class="fas fa-trash"></i>Eliminar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center">
+                                <div class="empty-state">
+                                    <i class="fas fa-book-open"></i>
+                                    <p class="text-muted">No hay cursos registrados</p>
+                                    <a asp-page="Crear" class="btn-crear-curso mt-3">
+                                        <i class="fas fa-plus"></i>Crear Primer Curso
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Inicializar tooltips de Bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Animación para elementos que entran en vista
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.filtros-card, .cursos-table-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
 }
-
-
-<form method="get" class="mb-4">
-    <div class="row">
-        <div class="col-md-5">
-            <label>Carrera:</label>
-            <select asp-for="IdCarreraSeleccionada" asp-items="Model.Carreras" class="form-select"></select>
-        </div>
-        <div class="col-md-4">
-            <label>Nivel:</label>
-            <select asp-for="NivelSeleccionado" asp-items="Model.Niveles" class="form-select"></select>
-        </div>
-        <div class="col-md-3 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary w-100">Filtrar</button>
-        </div>
-    </div>
-</form>
-
-<p>
-    <a asp-page="Crear" class="btn btn-success">Nuevo Curso</a>
-</p>
-
-<table class="table table-bordered mt-3">
-    <thead class="table-dark">
-        <tr>
-            <th>Identificador</th>
-            <th>Nombre</th>
-            <th>Nivel</th>
-            <th>ID Carrera</th>
-            <th>Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @if (Model.Cursos.Any())
-        {
-            foreach (var c in Model.Cursos)
-            {
-                <tr>
-                    <td>@c.Identificador</td>
-                    <td>@c.Nombre</td>
-                    <td>@c.Nivel</td>
-                    <td>@c.ID_Carrera</td>
-                    <td>
-                        <a asp-page="Editar" asp-route-id="@c.ID_Curso" class="btn btn-warning btn-sm">Editar</a>
-                        <a asp-page="Eliminar" asp-route-id="@c.ID_Curso" class="btn btn-danger btn-sm">Eliminar</a>
-                    </td>
-                </tr>
-            }
-        }
-        else
-        {
-            <tr><td colspan="5" class="text-center">No hay cursos registrados</td></tr>
-        }
-    </tbody>
-</table>

@@ -4,96 +4,210 @@
     ViewData["Title"] = "Administrar Profesores";
 }
 
-<h1 class="mb-4">Administrar Profesores</h1>
+<link rel="stylesheet" href="~/css/profesores.css" />
+<!-- Incluir Font Awesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-@if (!string.IsNullOrEmpty(Model.Mensaje))
-{
-    <div class="alert alert-success">@Model.Mensaje</div>
-}
-@if (!string.IsNullOrEmpty(Model.MensajeError))
-{
-    <div class="alert alert-danger">@Model.MensajeError</div>
-}
-
-<form method="get" class="row g-3 mb-3">
-    <div class="col-md-4">
-        <label class="form-label">Buscar por:</label>
-        <select class="form-select" name="BuscarPor">
-            <option value="Todos" selected="@(Model.BuscarPor == "Todos")">Todos</option>
-            <option value="Identificacion" selected="@(Model.BuscarPor == "Identificacion")">Identificación</option>
-            <option value="Nombre" selected="@(Model.BuscarPor == "Nombre")">Nombre</option>
-            <option value="Email" selected="@(Model.BuscarPor == "Email")">Email</option>
-        </select>
+<div class="profesores-container">
+    <div class="profesores-header">
+        <h1>
+            <i class="fas fa-chalkboard-teacher"></i>Administrar Profesores
+        </h1>
+        <a asp-page="Crear" class="btn-crear-profesor">
+            <i class="fas fa-plus"></i>Nuevo Profesor
+        </a>
     </div>
 
-    <div class="col-md-4">
-        <label class="form-label">Profesor a buscar</label>
-        <input class="form-control" name="Texto" value="@Model.Texto" />
+    @if (!string.IsNullOrEmpty(Model.Mensaje))
+    {
+        <div class="alert alert-success alert-profesor">
+            <i class="fas fa-check-circle"></i>@Model.Mensaje
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(Model.MensajeError))
+    {
+        <div class="alert alert-danger alert-profesor">
+            <i class="fas fa-exclamation-circle"></i>@Model.MensajeError
+        </div>
+    }
+
+    <div class="filtros-card card">
+        <div class="card-header">
+            <h5><i class="fas fa-search"></i>Buscar Profesores</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="profesor-form">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            <i class="fas fa-filter"></i>Buscar por:
+                        </label>
+                        <select class="form-select" name="BuscarPor">
+                            <option value="Todos" selected="@(Model.BuscarPor == "Todos")">Todos los profesores</option>
+                            <option value="Identificacion" selected="@(Model.BuscarPor == "Identificacion")">Identificación</option>
+                            <option value="Nombre" selected="@(Model.BuscarPor == "Nombre")">Nombre</option>
+                            <option value="Email" selected="@(Model.BuscarPor == "Email")">Email</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label class="form-label">
+                            <i class="fas fa-user"></i>Profesor a buscar
+                        </label>
+                        <input class="form-control" name="Texto" value="@Model.Texto" placeholder="Ingrese texto a buscar..." />
+                    </div>
+
+                    <div class="col-md-4 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>Buscar
+                        </button>
+                        <a asp-page="Index" class="btn btn-secondary">
+                            <i class="fas fa-refresh"></i>Limpiar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
     </div>
 
-    <div class="col-md-4 d-flex align-items-end">
-        <button type="submit" class="btn btn-primary me-2">Buscar</button>
-        <a asp-page="Crear" class="btn btn-success">Nuevo profesor</a>
+    <div class="profesores-table-card card">
+        <div class="card-body">
+            <table class="table table-profesores">
+                <thead>
+                    <tr>
+                        <th>
+                            <a href="#">
+                                Identificación <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                Tipo ID <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                Nombre Completo <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                Email <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                Teléfono <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                Fecha Nacimiento <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Profesores.Any())
+                    {
+                        foreach (var p in Model.Profesores)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@p.NumeroIdentificacion</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">@p.TipoIdentificacion</span>
+                                </td>
+                                <td>@p.NombreCompleto</td>
+                                <td>
+                                    <i class="fas fa-envelope me-1 text-muted"></i>@p.Email
+                                </td>
+                                <td>
+                                    <i class="fas fa-phone me-1 text-muted"></i>@p.Telefono
+                                </td>
+                                <td>@p.FechaNacimiento.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-page="Editar" asp-route-id="@p.IdProfesor"
+                                           class="btn-action-profesor btn-warning me-1" data-bs-toggle="tooltip" title="Editar profesor">
+                                            <i class="fas fa-edit"></i>Editar
+                                        </a>
+                                        <a asp-page="Eliminar" asp-route-id="@p.IdProfesor"
+                                           class="btn-action-profesor btn-danger" data-bs-toggle="tooltip" title="Eliminar profesor">
+                                            <i class="fas fa-trash"></i>Eliminar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="7" class="text-center">
+                                <div class="empty-state">
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                    <p class="text-muted">No se encontraron profesores</p>
+                                    <a asp-page="Crear" class="btn-crear-profesor mt-3">
+                                        <i class="fas fa-plus"></i>Agregar Primer Profesor
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
     </div>
-</form>
 
+    @if (Model.TotalPaginas > 1)
+    {
+        <nav class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item @(Model.Pagina == 1 ? "disabled" : "")">
+                    <a class="page-link"
+                       asp-route-Pagina="@(Model.Pagina - 1)"
+                       asp-route-BuscarPor="@Model.BuscarPor"
+                       asp-route-Texto="@Model.Texto">
+                        <i class="fas fa-chevron-left"></i>Anterior
+                    </a>
+                </li>
 
-<table class="table table-striped table-sm align-middle">
-    <thead>
-        <tr>
-            <th>Identificación</th>
-            <th>Tipo de identificación</th>
-            <th>Nombre completo</th>
-            <th>Email</th>
-            <th>Teléfono</th>
-            <th>Fecha Nacimiento</th>
-            <th style="width:150px;">Acciones</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var p in Model.Profesores)
-        {
-            <tr>
-                <td>@p.NumeroIdentificacion</td>
-                <td>@p.TipoIdentificacion</td>
-                <td>@p.NombreCompleto</td>
-                <td>@p.Email</td>
-                <td>@p.Telefono</td>
-                <td>@p.FechaNacimiento.ToString("dd/MM/yyyy")</td>
-                <td>
-                    <a asp-page="Editar" asp-route-id="@p.IdProfesor"
-                       class="btn btn-sm btn-warning me-1">Editar</a>
-                    <a asp-page="Eliminar" asp-route-id="@p.IdProfesor"
-                       class="btn btn-sm btn-danger">Eliminar</a>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>
+                <li class="page-item disabled">
+                    <span class="page-link">
+                        Página @Model.Pagina de @Model.TotalPaginas
+                    </span>
+                </li>
 
-@if (Model.TotalPaginas > 1)
-{
-    <nav>
-        <ul class="pagination">
-            <li class="page-item @(Model.Pagina == 1 ? "disabled" : "")">
-                <a class="page-link"
-                   asp-route-Pagina="@(Model.Pagina - 1)"
-                   asp-route-BuscarPor="@Model.BuscarPor"
-                   asp-route-Texto="@Model.Texto">Anterior</a>
-            </li>
+                <li class="page-item @(Model.Pagina == Model.TotalPaginas ? "disabled" : "")">
+                    <a class="page-link"
+                       asp-route-Pagina="@(Model.Pagina + 1)"
+                       asp-route-BuscarPor="@Model.BuscarPor"
+                       asp-route-Texto="@Model.Texto">
+                        Siguiente<i class="fas fa-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+    }
+</div>
 
-            <li class="page-item disabled">
-                <span class="page-link">
-                    Página @Model.Pagina de @Model.TotalPaginas
-                </span>
-            </li>
+@section Scripts {
+    <script>
+        // Inicializar tooltips de Bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
 
-            <li class="page-item @(Model.Pagina == Model.TotalPaginas ? "disabled" : "")">
-                <a class="page-link"
-                   asp-route-Pagina="@(Model.Pagina + 1)"
-                   asp-route-BuscarPor="@Model.BuscarPor"
-                   asp-route-Texto="@Model.Texto">Siguiente</a>
-            </li>
-        </ul>
-    </nav>
+        // Animación para elementos que entran en vista
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.filtros-card, .profesores-table-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
 }

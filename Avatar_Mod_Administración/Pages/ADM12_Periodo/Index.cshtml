@@ -4,55 +4,147 @@
     ViewData["Title"] = "Administrar Periodos";
 }
 
-<h1 class="mb-4">Administrar Periodos</h1>
+<link rel="stylesheet" href="~/css/periodos.css" />
+<!-- Incluir Font Awesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-@if (!string.IsNullOrEmpty(Model.Mensaje))
-{
-    <div class="alert alert-success">@Model.Mensaje</div>
-}
-@if (!string.IsNullOrEmpty(Model.MensajeError))
-{
-    <div class="alert alert-danger">@Model.MensajeError</div>
-}
+<div class="periodos-container">
+    <div class="periodos-header">
+        <h1>
+            <i class="fas fa-calendar-alt"></i>Administrar Periodos
+        </h1>
+        <a asp-page="Crear" class="btn-crear-periodo">
+            <i class="fas fa-plus"></i>Nuevo Periodo
+        </a>
+    </div>
 
-<div class="mb-3">
-    <a asp-page="Crear" class="btn btn-success">Nuevo periodo</a>
+    @if (!string.IsNullOrEmpty(Model.Mensaje))
+    {
+        <div class="alert alert-success alert-periodo">
+            <i class="fas fa-check-circle"></i>@Model.Mensaje
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(Model.MensajeError))
+    {
+        <div class="alert alert-danger alert-periodo">
+            <i class="fas fa-exclamation-circle"></i>@Model.MensajeError
+        </div>
+    }
+
+    <div class="periodos-table-card card">
+        <div class="card-body">
+            <table class="table table-periodos">
+                <thead>
+                    <tr>
+                        <th>
+                            <a href="#">
+                                <i class="fas fa-calendar-day me-1"></i>Año <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                <i class="fas fa-hashtag me-1"></i>Número Periodo <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                <i class="fas fa-play-circle me-1"></i>Fecha Inicio <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                <i class="fas fa-stop-circle me-1"></i>Fecha Fin <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>
+                            <a href="#">
+                                <i class="fas fa-circle me-1"></i>Estado <i class="fas fa-sort"></i>
+                            </a>
+                        </th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Periodos.Any())
+                    {
+                        foreach (var p in Model.Periodos)
+                        {
+                            <tr>
+                                <td>
+                                    <strong>@p.Anno</strong>
+                                </td>
+                                <td>
+                                    <span class="badge bg-primary">Periodo @p.NumeroPeriodo</span>
+                                </td>
+                                <td>@p.FechaInicio.ToString("dd/MM/yyyy")</td>
+                                <td>@p.FechaFin.ToString("dd/MM/yyyy")</td>
+                                <td>
+                                    @if (p.Estado == "Activo")
+                                    {
+                                        <span class="badge bg-success">@p.Estado</span>
+                                    }
+                                    else if (p.Estado == "Inactivo")
+                                    {
+                                        <span class="badge bg-danger">@p.Estado</span>
+                                    }
+                                    else if (p.Estado == "Pendiente")
+                                    {
+                                        <span class="badge bg-warning">@p.Estado</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-secondary">@p.Estado</span>
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-page="Editar" asp-route-id="@p.IdPeriodo"
+                                           class="btn-action-periodo btn-warning me-1" data-bs-toggle="tooltip" title="Editar periodo">
+                                            <i class="fas fa-edit"></i>Editar
+                                        </a>
+                                        <a asp-page="Eliminar" asp-route-id="@p.IdPeriodo"
+                                           class="btn-action-periodo btn-danger" data-bs-toggle="tooltip" title="Eliminar periodo">
+                                            <i class="fas fa-trash"></i>Eliminar
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center">
+                                <div class="empty-state">
+                                    <i class="fas fa-calendar-times"></i>
+                                    <p class="text-muted">No hay periodos registrados</p>
+                                    <a asp-page="Crear" class="btn-crear-periodo mt-3">
+                                        <i class="fas fa-plus"></i>Crear Primer Periodo
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-@if (Model.Periodos.Any())
-{
-    <table class="table table-striped table-sm align-middle">
-        <thead>
-            <tr>
-                <th>@Html.DisplayNameFor(m => m.Periodos[0].Anno)</th>
-                <th>@Html.DisplayNameFor(m => m.Periodos[0].NumeroPeriodo)</th>
-                <th>@Html.DisplayNameFor(m => m.Periodos[0].FechaInicio)</th>
-                <th>@Html.DisplayNameFor(m => m.Periodos[0].FechaFin)</th>
-                <th>@Html.DisplayNameFor(m => m.Periodos[0].Estado)</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var p in Model.Periodos)
-            {
-                <tr>
-                    <td>@p.Anno</td>
-                    <td>@p.NumeroPeriodo</td>
-                    <td>@p.FechaInicio.ToString("dd/MM/yyyy")</td>
-                    <td>@p.FechaFin.ToString("dd/MM/yyyy")</td>
-                    <td>@p.Estado</td>
-                    <td>
-                        <a asp-page="Editar" asp-route-id="@p.IdPeriodo"
-                           class="btn btn-sm btn-warning me-1">Editar</a>
-                        <a asp-page="Eliminar" asp-route-id="@p.IdPeriodo"
-                           class="btn btn-sm btn-danger">Eliminar</a>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else
-{
-    <div class="alert alert-info">No hay periodos registrados.</div>
+@section Scripts {
+    <script>
+        // Inicializar tooltips de Bootstrap
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        });
+
+        // Animación para elementos que entran en vista
+        document.addEventListener('DOMContentLoaded', function() {
+            const cards = document.querySelectorAll('.periodos-table-card');
+            cards.forEach((card, index) => {
+                card.style.animationDelay = `${index * 0.1}s`;
+            });
+        });
+    </script>
 }
