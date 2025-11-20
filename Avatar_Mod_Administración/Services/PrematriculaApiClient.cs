@@ -104,7 +104,8 @@ namespace Avatar_Mod_Administración.Services
 
             dto.ID_Prematricula = id;
 
-            var response = await _http.PutAsJsonAsync(_endpoint, dto);
+            var response = await _http.PutAsJsonAsync($"{_endpoint}/{id}", dto);
+
 
             if (!response.IsSuccessStatusCode)
                 return false;

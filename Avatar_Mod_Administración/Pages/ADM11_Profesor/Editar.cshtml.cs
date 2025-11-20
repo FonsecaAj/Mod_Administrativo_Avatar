@@ -17,7 +17,6 @@ namespace Avatar_Mod_Administración.Pages.ADM11_Profesor
             : base(auth, usuarioService, logger)
         {
             _api = api;
-
             CargarTiposIdentificacion();
         }
 
@@ -64,12 +63,16 @@ namespace Avatar_Mod_Administración.Pages.ADM11_Profesor
                 return Page();
             }
 
-            var ok = await _api.ActualizarAsync(Profesor);
+            // 👇 AQUÍ ESTABA EL PROBLEMA
+            var (ok, code, msg) = await _api.ActualizarAsync(Profesor);
 
             if (ok)
+            {
+                TempData["Mensaje"] = msg;
                 return RedirectToPage("Index");
+            }
 
-            MensajeError = "No se pudo actualizar el profesor.";
+            MensajeError = msg;
             CargarTiposIdentificacion();
             SeleccionarTipoIdentificacion();
             return Page();
@@ -91,7 +94,7 @@ namespace Avatar_Mod_Administración.Pages.ADM11_Profesor
         {
             TiposIdentificacion = new()
             {
-                new SelectListItem("Cédula nacional", "Cédula"),
+                new SelectListItem("Cédula nacional", "Cédula nacional"),
                 new SelectListItem("Pasaporte", "Pasaporte"),
                 new SelectListItem("DIMEX", "DIMEX"),
                 new SelectListItem("Otro", "Otro")

@@ -10,6 +10,10 @@
     {
         public IEnumerable<LookupItem> Carreras { get; set; } = new List<LookupItem>();
         public IEnumerable<LookupItem> Niveles { get; set; } = new List<LookupItem>();
+
+        public IEnumerable<LookupItem> Estudiantes { get; set; } = new List<LookupItem>();
+        public IEnumerable<LookupItem> Cursos { get; set; } = new List<LookupItem>();
+        public IEnumerable<LookupItem> Periodos { get; set; } = new List<LookupItem>();
     }
 
 }

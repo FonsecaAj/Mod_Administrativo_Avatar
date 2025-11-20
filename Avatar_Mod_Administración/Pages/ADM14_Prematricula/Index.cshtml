@@ -43,11 +43,10 @@
     <thead>
         <tr>
             <th>ID</th>
-            <th>ID Estudiante</th>
-            <th>ID Carrera</th>
-            <th>ID Curso</th>
-            <th>ID Periodo</th>
-          
+            <th>Estudiante</th>
+            <th>Carrera</th>
+            <th>Curso</th>
+            <th>Periodo</th>
             <th></th>
         </tr>
     </thead>
@@ -56,11 +55,10 @@
         {
             <tr>
                 <td>@p.ID_Prematricula</td>
-                <td>@p.ID_Estudiante</td>
-                <td>@p.ID_Carrera</td>
-                <td>@p.ID_Curso</td>
-                <td>@p.ID_Periodo</td>
-                
+                <td>@p.NombreEstudiante</td>
+                <td>@p.NombreCarrera</td>
+                <td>@p.NombreCurso</td>
+                <td>@p.NombrePeriodo</td>
                 <td>
                     <a asp-page="Editar" asp-route-id="@p.ID_Prematricula" class="btn btn-sm btn-warning">Editar</a>
                     <a asp-page="Eliminar" asp-route-id="@p.ID_Prematricula" class="btn btn-sm btn-danger">Eliminar</a>
@@ -69,4 +67,3 @@
         }
     </tbody>
 </table>
-

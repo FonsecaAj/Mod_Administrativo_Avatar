@@ -7,7 +7,8 @@ namespace Avatar_Mod_Administración.Services
         Task<IEnumerable<ProfesorDto>> ObtenerTodosAsync();
         Task<ProfesorDto?> ObtenerPorIdAsync(int idProfesor);
         Task<bool> CrearAsync(ProfesorDto profesor);
-        Task<bool> ActualizarAsync(ProfesorDto profesor);
+        Task<(bool ok, int statusCode, string message)> ActualizarAsync(ProfesorDto profesor);
+
         Task<bool> EliminarAsync(int idProfesor);
     }
 }

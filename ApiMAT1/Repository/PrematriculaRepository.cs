@@ -17,9 +17,30 @@ namespace ApiMAT1.Repository
         public IEnumerable<Prematricula> ObtenerTodas()
         {
             using var connection = _connectionFactory.CreateConnection();
-            const string sql = "SELECT * FROM Prematricula";
+
+            const string sql = @"
+        SELECT 
+            p.ID_Prematricula,
+            p.ID_Estudiante,
+            p.ID_Carrera,
+            p.ID_Curso,
+            p.ID_Periodo,
+
+            (e.Nombre + ' ' + e.Apellido1 + ' ' + e.Apellido2) AS NombreEstudiante,
+            car.Nombre AS NombreCarrera,
+            cu.Nombre AS NombreCurso,
+            CONCAT(per.Anno, '-', per.NumeroPeriodo) AS NombrePeriodo
+
+        FROM Prematricula p
+        INNER JOIN Estudiante e ON e.ID_Estudiante = p.ID_Estudiante
+        INNER JOIN Carrera car ON car.ID_Carrera = p.ID_Carrera
+        INNER JOIN Curso cu ON cu.ID_Curso = p.ID_Curso
+        INNER JOIN Periodo per ON per.ID_Periodo = p.ID_Periodo
+    ";
+
             return connection.Query<Prematricula>(sql);
         }
+
 
         public Prematricula? ObtenerPorId(int id)
         {

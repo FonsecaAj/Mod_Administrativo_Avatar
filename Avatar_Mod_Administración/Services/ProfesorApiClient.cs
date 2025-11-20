@@ -2,6 +2,7 @@
 using System.Net;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 
 namespace Avatar_Mod_Administración.Services
 {
@@ -97,22 +98,31 @@ namespace Avatar_Mod_Administración.Services
 
             return response.IsSuccessStatusCode;
         }
-
-        public async Task<bool> ActualizarAsync(ProfesorDto profesor)
+        public async Task<(bool ok, int statusCode, string message)> ActualizarAsync(ProfesorDto profesor)
         {
             AplicarToken();
 
             var response = await _http.PutAsJsonAsync($"{_baseUrl}/{profesor.IdProfesor}", profesor);
 
-            if (!response.IsSuccessStatusCode)
-            {
-                var detalle = await response.Content.ReadAsStringAsync();
-                Console.WriteLine($"[ERROR API PUT PROFESOR] Status: {response.StatusCode}, Detalle: {detalle}");
-                return false;
-            }
+            var json = await response.Content.ReadAsStringAsync();
 
-            return true;
+            try
+            {
+                var data = JsonSerializer.Deserialize<BusinessLogicResponse<object>>(json,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+
+                if (data == null)
+                    return (false, (int)response.StatusCode, "Error desconocido procesando la respuesta");
+
+                return (data.StatusCode == 200, data.StatusCode, data.Message);
+            }
+            catch
+            {
+                return (false, (int)response.StatusCode, "No se pudo interpretar la respuesta del servidor.");
+            }
         }
+
 
         public async Task<bool> EliminarAsync(int id)
         {

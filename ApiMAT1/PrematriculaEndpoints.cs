@@ -39,15 +39,19 @@ namespace ApiMAT1.Endpoints
                 return Results.Ok(result);
             });
 
-            group.MapPut("/", async (Prematricula entidad, IPrematriculaService service, IAutenticacionService auth, HttpContext http) =>
+            group.MapPut("/{id:int}", async (int id, Prematricula entidad, IPrematriculaService service, IAutenticacionService auth, HttpContext http) =>
             {
                 var token = http.Request.Headers["Authorization"].ToString();
                 if (!await auth.ValidarTokenAsync(token))
                     return Results.Unauthorized();
 
+                entidad.ID_Prematricula = id;   // 🔥 Aseguramos que el ID venga correcto
+
                 var result = await service.Actualizar(entidad);
+
                 return Results.Ok(result);
             });
+
 
             group.MapDelete("/{id:int}", async (int id, IPrematriculaService service, IAutenticacionService auth, HttpContext http) =>
             {
