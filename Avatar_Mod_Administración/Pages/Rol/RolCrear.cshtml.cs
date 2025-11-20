@@ -1,10 +1,10 @@
-Ôªøusing Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci√≥n.Entities;
-using Avatar_Mod_Administraci√≥n.Services;
+using Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_AdministraciÛn.Entities;
+using Avatar_Mod_AdministraciÛn.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace Avatar_Mod_Administraci√≥n.Pages.Rol
+namespace Avatar_Mod_AdministraciÛn.Pages.Rol
 {
     public class RolCrearModel : BasePageModel
     {
@@ -40,7 +40,7 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Rol
             {
                 ModelState.AddModelError("Input.Nombre", "El nombre del rol es requerido");
             }
-            else if (!Regex.IsMatch(Input.Nombre.Trim(), @"^[a-zA-Z√°√©√≠√≥√∫√Å√â√ç√ì√ö√±√ë\s]+$"))
+            else if (!Regex.IsMatch(Input.Nombre.Trim(), @"^[a-zA-Z·ÈÌÛ˙¡…Õ”⁄Ò—\s]+$"))
             {
                 ModelState.AddModelError("Input.Nombre", "El nombre del rol solo puede contener letras y espacios");
             }
@@ -52,18 +52,15 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Rol
 
             var token = ObtenerToken()!;
             var dto = new RolCrearDto { Nombre = Input.Nombre.Trim() };
+            var resultado = await _rolService.CrearAsync(dto, token);
 
-            // Usar mensajes din√°micos de la API
-            var (ok, status, message) = await _rolService.CrearAsync(dto, token);
-
-            if (ok)
+            if (resultado)
             {
-                TempData["Mensaje"] = message;  // Mensaje de la API
+                TempData["Mensaje"] = "Rol creado exitosamente";
                 return RedirectToPage("/Rol/Roles");
             }
 
-            // Mostrar mensaje de error de la API
-            ModelState.AddModelError(string.Empty, message ?? "Error al crear el rol");
+            ModelState.AddModelError(string.Empty, "Error al crear el rol.");
             return Page();
         }
     }

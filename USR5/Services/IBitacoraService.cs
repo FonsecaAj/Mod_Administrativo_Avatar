@@ -20,35 +20,28 @@
 
         public async Task RegistrarAsync(string usuario, string descripcion, string? tipoAccion = null)
         {
-            // Fire-and-forget para no bloquear
-            _ = Task.Run(async () =>
+            try
             {
-                try
+                var request = new
                 {
-                    var request = new
-                    {
-                        usuario,
-                        descripcion,
-                        tipo_Accion = tipoAccion
-                    };
+                    usuario,
+                    descripcion,
+                    tipo_Accion = tipoAccion
+                };
 
-                    var response = await _httpClient.PostAsJsonAsync($"{_gen1ApiUrl}/api/bitacora", request);
+                var response = await _httpClient.PostAsJsonAsync($"{_gen1ApiUrl}/api/bitacora", request);
 
-                    if (!response.IsSuccessStatusCode)
-                    {
-                        var content = await response.Content.ReadAsStringAsync();
-                        _logger.LogError("Error al registrar bitácora. Status: {StatusCode}, Response: {Content}",
-                            response.StatusCode, content);
-                    }
-                }
-                catch (Exception ex)
+                if (!response.IsSuccessStatusCode)
                 {
-                    _logger.LogError(ex, "Excepción al registrar bitácora en {Url}", $"{_gen1ApiUrl}/api/bitacora");
+                    var content = await response.Content.ReadAsStringAsync();
+                    _logger.LogError("Error al registrar bitácora. Status: {StatusCode}, Response: {Content}",
+                        response.StatusCode, content);
                 }
-            });
-
-            // Retornar inmediatamente sin esperar
-            await Task.CompletedTask;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Excepción al registrar bitácora en {Url}", $"{_gen1ApiUrl}/api/bitacora");
+            }
         }
     }
 }

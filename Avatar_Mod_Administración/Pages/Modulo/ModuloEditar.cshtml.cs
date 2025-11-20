@@ -1,10 +1,10 @@
-Ôªøusing Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci√≥n.Services;
-using Avatar_Mod_Administraci√≥n.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_AdministraciÛn.Services;
+using Avatar_Mod_AdministraciÛn.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace Avatar_Mod_Administraci√≥n.Pages.Modulo
+namespace Avatar_Mod_AdministraciÛn.Pages.Modulo
 {
     public class ModuloEditarModel : BasePageModel
     {
@@ -40,7 +40,7 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Modulo
                 var modulo = await _moduloService.ObtenerPorIdAsync(Id, token);
                 if (modulo == null)
                 {
-                    TempData["Error"] = "El m√≥dulo solicitado no existe";
+                    TempData["Error"] = "El mÛdulo solicitado no existe";
                     return RedirectToPage("/Modulo/Modulos");
                 }
 
@@ -57,8 +57,8 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Modulo
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al cargar el m√≥dulo {Id}", Id);
-                TempData["Error"] = "Error al cargar el m√≥dulo";
+                _logger.LogError(ex, "Error al cargar el mÛdulo {Id}", Id);
+                TempData["Error"] = "Error al cargar el mÛdulo";
                 return RedirectToPage("/Modulo/Modulos");
             }
         }
@@ -73,19 +73,19 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Modulo
             var moduloOriginal = await _moduloService.ObtenerPorIdAsync(Id, token);
             if (moduloOriginal == null)
             {
-                TempData["Error"] = "El m√≥dulo no existe";
+                TempData["Error"] = "El mÛdulo no existe";
                 return RedirectToPage("/Modulo/Modulos");
             }
 
             if (string.IsNullOrWhiteSpace(Input.Nombre))
             {
-                ModelState.AddModelError("Input.Nombre", "El nombre del m√≥dulo es requerido");
+                ModelState.AddModelError("Input.Nombre", "El nombre del mÛdulo es requerido");
             }
             else
             {
                 var nombreTrimmed = Input.Nombre.Trim();
 
-                if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-Z√°√©√≠√≥√∫√Å√â√ç√ì√ö√±√ë\s]+$"))
+                if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-Z·ÈÌÛ˙¡…Õ”⁄Ò—\s]+$"))
                 {
                     ModelState.AddModelError("Input.Nombre", "El nombre solo puede contener letras y espacios");
                 }
@@ -121,24 +121,22 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Modulo
                     Orden = Input.Orden
                 };
 
-                // Usar mensajes din√°micos de la API
-                var (ok, status, message) = await _moduloService.ActualizarAsync(Id, dto, token);
+                var moduloActualizado = await _moduloService.ActualizarAsync(Id, dto, token);
 
-                if (ok)
+                if (moduloActualizado != null)
                 {
-                    TempData["Mensaje"] = message;  // Mensaje de la API
+                    TempData["Mensaje"] = $"MÛdulo actualizado exitosamente a '{moduloActualizado.Nombre}'";
                     return RedirectToPage("/Modulo/Modulos");
                 }
 
-                // Mostrar mensaje de error de la API
-                ModelState.AddModelError(string.Empty, message ?? "Error al actualizar el m√≥dulo");
+                ModelState.AddModelError(string.Empty, "Error al actualizar el mÛdulo. Verifique que el nombre no estÈ registrado.");
                 NombreOriginal = moduloOriginal.Nombre;
                 return Page();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al actualizar el m√≥dulo {Id}", Id);
-                ModelState.AddModelError(string.Empty, "Ocurri√≥ un error al actualizar el m√≥dulo. Intente nuevamente.");
+                _logger.LogError(ex, "Error al actualizar el mÛdulo {Id}", Id);
+                ModelState.AddModelError(string.Empty, "OcurriÛ un error al actualizar el mÛdulo. Intente nuevamente.");
                 NombreOriginal = moduloOriginal.Nombre;
                 return Page();
             }
@@ -154,7 +152,7 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Modulo
         public bool Activo { get; set; } = true;
 
         [Required(ErrorMessage = "El orden es requerido")]
-        [Range(0, int.MaxValue, ErrorMessage = "El orden debe ser un n√∫mero mayor o igual a 0")]
+        [Range(0, int.MaxValue, ErrorMessage = "El orden debe ser un n˙mero mayor o igual a 0")]
         public int Orden { get; set; } = 0;
     }
 }

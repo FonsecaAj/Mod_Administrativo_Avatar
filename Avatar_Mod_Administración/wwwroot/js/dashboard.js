@@ -3,16 +3,21 @@
 
     // Variables globales del dashboard
     const Dashboard = {
-        animationDuration: 800, // Reducido de 1000ms
+        animationDuration: 1000,
         refreshInterval: 300000, // 5 minutos
         charts: {},
         timers: {}
     };
 
-   
+    
+
+    /**
+     * Inicialización del dashboard
+     */
     function init() {
         console.log('Inicializando Dashboard...');
 
+        // Esperar a que el DOM esté listo
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', onDOMReady);
         } else {
@@ -37,9 +42,14 @@
 
         // Agregar listeners a los elementos
         attachEventListeners();
+
+        // Iniciar actualización automática (opcional)
+        // startAutoRefresh();
     }
 
-
+    /**
+     * Registra la visualización del dashboard en la bitácora
+     */
     function registrarVisualizacion() {
         try {
             if (typeof window.registrarBitacora === 'function' && window.sessionData) {
@@ -52,13 +62,17 @@
                 );
 
                 console.log('Dashboard: Visualización registrada en bitácora');
+            } else {
+                console.warn('Dashboard: Función registrarBitacora no disponible');
             }
         } catch (error) {
             console.error('Error al registrar visualización:', error);
         }
     }
 
-
+    /**
+     * Muestra notificación de bienvenida
+     */
     function mostrarBienvenida() {
         try {
             if (typeof window.mostrarNotificacion === 'function') {
@@ -70,13 +84,17 @@
                 }, 500);
 
                 console.log('Dashboard: Notificación de bienvenida mostrada');
+            } else {
+                console.warn('Dashboard: Función mostrarNotificacion no disponible');
             }
         } catch (error) {
             console.error('Error al mostrar notificación:', error);
         }
     }
 
-
+    /**
+     * Anima los números en las tarjetas de estadísticas
+     */
     function animateStatCards() {
         const statNumbers = document.querySelectorAll('.stat-number');
 
@@ -88,10 +106,13 @@
         console.log(`Dashboard: Animando ${statNumbers.length} tarjetas de estadísticas`);
 
         statNumbers.forEach((element, index) => {
+            // Obtener el valor final
             const finalValue = parseInt(element.textContent) || 0;
+
+            // Guardar el valor original por si se necesita después
             element.dataset.originalValue = finalValue;
 
-            // Usar requestAnimationFrame directamente sin setTimeout
+            // Animar con delay escalonado
             setTimeout(() => {
                 animateNumber(element, 0, finalValue, Dashboard.animationDuration);
             }, index * 100);
@@ -112,73 +133,61 @@
             if (!startTimestamp) startTimestamp = timestamp;
 
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-
-            // OPTIMIZACIÓN: Usar función de easing suave
-            const easeProgress = progress < 0.5
-                ? 2 * progress * progress
-                : -1 + (4 - 2 * progress) * progress;
-
-            const currentValue = Math.floor(easeProgress * (end - start) + start);
+            const currentValue = Math.floor(progress * (end - start) + start);
 
             element.textContent = currentValue;
 
             if (progress < 1) {
                 window.requestAnimationFrame(step);
             } else {
-                element.textContent = end;
+                element.textContent = end; // Asegurar valor final exacto
             }
         };
 
         window.requestAnimationFrame(step);
     }
 
-
+    /**
+     * Agrega event listeners a los elementos del dashboard
+     */
     function attachEventListeners() {
-        // Usar event delegation
-        document.addEventListener('click', function (e) {
-            const quickAccessBtn = e.target.closest('.quick-access-btn');
-            const statCardLink = e.target.closest('.stat-card a');
+        // Listener para botones de acceso rápido
+        const quickAccessButtons = document.querySelectorAll('.quick-access-btn');
+        quickAccessButtons.forEach(button => {
+            button.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                console.log(`Dashboard: Navegando a ${href}`);
 
-            if (quickAccessBtn) {
-                handleQuickAccessClick(quickAccessBtn);
-            } else if (statCardLink) {
-                handleStatCardClick(statCardLink);
-            }
+                // Registrar en bitácora
+                if (typeof window.registrarBitacora === 'function') {
+                    const buttonText = this.querySelector('.fw-bold')?.textContent || 'Desconocido';
+                    window.registrarBitacora(
+                        'Acceso Rápido',
+                        `Usuario accedió a: ${buttonText}`
+                    );
+                }
+            });
         });
 
-        console.log('Dashboard: Event listeners agregados (delegation)');
-    }
+        // Listener para cards de estadísticas con enlaces
+        const statCardLinks = document.querySelectorAll('.stat-card a');
+        statCardLinks.forEach(link => {
+            link.addEventListener('click', function (e) {
+                const href = this.getAttribute('href');
+                console.log(`Dashboard: Accediendo a ${href} desde card`);
 
-    /**
-     * Maneja click en botones de acceso rápido
-     */
-    function handleQuickAccessClick(button) {
-        const href = button.getAttribute('href');
-        console.log(`Dashboard: Navegando a ${href}`);
+                // Registrar en bitácora
+                if (typeof window.registrarBitacora === 'function') {
+                    const cardTitle = this.closest('.card').querySelector('h6')?.textContent || 'Desconocido';
+                    window.registrarBitacora(
+                        'Navegación',
+                        `Usuario accedió a ${cardTitle}`
+                    );
+                }
+            });
+        });
 
-        if (typeof window.registrarBitacora === 'function') {
-            const buttonText = button.querySelector('.fw-bold')?.textContent || 'Desconocido';
-            window.registrarBitacora(
-                'Acceso Rápido',
-                `Usuario accedió a: ${buttonText}`
-            );
-        }
-    }
-
-    /**
-     * Maneja click en enlaces de cards de estadísticas
-     */
-    function handleStatCardClick(link) {
-        const href = link.getAttribute('href');
-        console.log(`Dashboard: Accediendo a ${href} desde card`);
-
-        if (typeof window.registrarBitacora === 'function') {
-            const cardTitle = link.closest('.card').querySelector('h6')?.textContent || 'Desconocido';
-            window.registrarBitacora(
-                'Navegación',
-                `Usuario accedió a ${cardTitle}`
-            );
-        }
+        console.log('Dashboard: Event listeners agregados');
     }
 
     /**
@@ -210,10 +219,12 @@
         console.log('Dashboard: Refrescando estadísticas...');
 
         try {
+            // Mostrar indicador de carga
             if (typeof window.mostrarCargando === 'function') {
                 window.mostrarCargando();
             }
 
+            // Realizar petición al servidor
             const response = await fetch('/Index?handler=Statistics', {
                 method: 'GET',
                 headers: {
@@ -227,6 +238,8 @@
             }
 
             const data = await response.json();
+
+            // Actualizar las estadísticas en la UI
             updateStatisticsUI(data);
 
             console.log('Dashboard: Estadísticas actualizadas', data);
@@ -241,6 +254,7 @@
                 );
             }
         } finally {
+            // Ocultar indicador de carga
             if (typeof window.ocultarCargando === 'function') {
                 window.ocultarCargando();
             }
@@ -254,11 +268,12 @@
     function updateStatisticsUI(data) {
         if (!data) return;
 
+        // Actualizar cada estadística con animación
         const stats = [
-            { key: 'totalUsuarios', index: 0 },
-            { key: 'totalInstituciones', index: 1 },
-            { key: 'totalCarreras', index: 2 },
-            { key: 'totalCursos', index: 3 }
+            { selector: '.stat-number', key: 'totalUsuarios', index: 0 },
+            { selector: '.stat-number', key: 'totalInstituciones', index: 1 },
+            { selector: '.stat-number', key: 'totalCarreras', index: 2 },
+            { selector: '.stat-number', key: 'totalCursos', index: 3 }
         ];
 
         const statElements = document.querySelectorAll('.stat-number');
@@ -317,9 +332,6 @@
             link.click();
             document.body.removeChild(link);
 
-            // Liberar el objeto URL
-            URL.revokeObjectURL(url);
-
             console.log('Dashboard: Exportación completada');
 
             if (typeof window.mostrarNotificacion === 'function') {
@@ -341,6 +353,7 @@
     function printDashboard() {
         console.log('Dashboard: Preparando para imprimir...');
 
+        // Registrar en bitácora
         if (typeof window.registrarBitacora === 'function') {
             window.registrarBitacora(
                 'Impresión Dashboard',
@@ -358,12 +371,12 @@
         console.log('Dashboard: Limpiando recursos...');
         stopAutoRefresh();
 
-        // Limpiar charts si existen
-        for (const key in Dashboard.charts) {
+        // Limpiar cualquier otro recurso
+        Object.keys(Dashboard.charts).forEach(key => {
             if (Dashboard.charts[key] && typeof Dashboard.charts[key].destroy === 'function') {
                 Dashboard.charts[key].destroy();
             }
-        }
+        });
     }
 
     // Event listener para limpieza antes de salir

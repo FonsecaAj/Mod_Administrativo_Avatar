@@ -81,8 +81,7 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        // Devolver (ok, status, message)
-        public async Task<(bool ok, int statusCode, string? message)> CrearAsync(RolCrearDto dto, string token)
+        public async Task<bool> CrearAsync(RolCrearDto dto, string token)
         {
             try
             {
@@ -94,44 +93,23 @@ namespace Avatar_Mod_Administración.Services
                 request.Content = content;
 
                 var response = await _httpClient.SendAsync(request);
+                var exito = response.IsSuccessStatusCode;
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Error al crear rol: {Status}, {Content}", response.StatusCode, errorContent);
+                if (exito)
+                    _logger.LogInformation("Rol creado: {Nombre}", dto.Nombre);
+                else
+                    _logger.LogWarning("Error al crear rol: {StatusCode}", response.StatusCode);
 
-                    try
-                    {
-                        using var doc = JsonDocument.Parse(errorContent);
-                        int status = doc.RootElement.GetProperty("statusCode").GetInt32();
-                        string message = doc.RootElement.GetProperty("message").GetString() ?? "Error al crear rol";
-                        return (false, status, message);
-                    }
-                    catch
-                    {
-                        return (false, (int)response.StatusCode, "Error al crear rol");
-                    }
-                }
-
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                using var payload = await JsonDocument.ParseAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)));
-                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
-                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Rol creado exitosamente";
-
-                _logger.LogInformation("Rol creado. Estado {Status}: {Mensaje}", statusCode, msg);
-
-                return (statusCode == 201, statusCode, msg);
+                return exito;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al crear rol");
-                return (false, 500, $"Error procesando respuesta: {ex.Message}");
+                return false;
             }
         }
 
-        // Devolver (ok, status, message)
-        public async Task<(bool ok, int statusCode, string? message)> ActualizarAsync(int id, RolCrearDto dto, string token)
+        public async Task<bool> ActualizarAsync(int id, RolCrearDto dto, string token)
         {
             try
             {
@@ -143,44 +121,23 @@ namespace Avatar_Mod_Administración.Services
                 request.Content = content;
 
                 var response = await _httpClient.SendAsync(request);
+                var exito = response.IsSuccessStatusCode;
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Error al actualizar rol: {Status}, {Content}", response.StatusCode, errorContent);
+                if (exito)
+                    _logger.LogInformation("Rol actualizado: {Id} - {Nombre}", id, dto.Nombre);
+                else
+                    _logger.LogWarning("Error al actualizar rol {Id}: {StatusCode}", id, response.StatusCode);
 
-                    try
-                    {
-                        using var doc = JsonDocument.Parse(errorContent);
-                        int status = doc.RootElement.GetProperty("statusCode").GetInt32();
-                        string message = doc.RootElement.GetProperty("message").GetString() ?? "Error al actualizar rol";
-                        return (false, status, message);
-                    }
-                    catch
-                    {
-                        return (false, (int)response.StatusCode, "Error al actualizar rol");
-                    }
-                }
-
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                using var payload = await JsonDocument.ParseAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)));
-                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
-                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Rol actualizado exitosamente";
-
-                _logger.LogInformation("Rol {Id} actualizado. Estado {Status}: {Mensaje}", id, statusCode, msg);
-
-                return (statusCode == 200, statusCode, msg);
+                return exito;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al actualizar rol {Id}", id);
-                return (false, 500, $"Error procesando respuesta: {ex.Message}");
+                return false;
             }
         }
 
-        // Devolver (ok, status, message)
-        public async Task<(bool ok, int statusCode, string? message)> EliminarAsync(int id, string token)
+        public async Task<bool> EliminarAsync(int id, string token)
         {
             try
             {
@@ -188,43 +145,24 @@ namespace Avatar_Mod_Administración.Services
                 request.Headers.Add("Authorization", token);
 
                 var response = await _httpClient.SendAsync(request);
+                var exito = response.IsSuccessStatusCode;
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    var errorContent = await response.Content.ReadAsStringAsync();
-                    _logger.LogError("Error al eliminar rol: {Status}, {Content}", response.StatusCode, errorContent);
+                if (exito)
+                    _logger.LogInformation("Rol eliminado: {Id}", id);
+                else
+                    _logger.LogWarning("Error al eliminar rol {Id}: {StatusCode}", id, response.StatusCode);
 
-                    try
-                    {
-                        using var doc = JsonDocument.Parse(errorContent);
-                        int status = doc.RootElement.GetProperty("statusCode").GetInt32();
-                        string message = doc.RootElement.GetProperty("message").GetString() ?? "Error al eliminar rol";
-                        return (false, status, message);
-                    }
-                    catch
-                    {
-                        return (false, (int)response.StatusCode, "Error al eliminar rol");
-                    }
-                }
-
-                var responseContent = await response.Content.ReadAsStringAsync();
-
-                using var payload = await JsonDocument.ParseAsync(new MemoryStream(System.Text.Encoding.UTF8.GetBytes(responseContent)));
-                int statusCode = payload.RootElement.GetProperty("statusCode").GetInt32();
-                string msg = payload.RootElement.GetProperty("message").GetString() ?? "Rol eliminado exitosamente";
-
-                _logger.LogInformation("Rol {Id} eliminado. Estado {Status}: {Mensaje}", id, statusCode, msg);
-
-                return (statusCode == 200, statusCode, msg);
+                return exito;
             }
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error al eliminar rol {Id}", id);
-                return (false, 500, $"Error procesando respuesta: {ex.Message}");
+                return false;
             }
         }
 
-        // Los métodos de consulta (GET) no cambian
+        // permisos
+
         public async Task<List<RolModuloDetalleDto>> ObtenerModulosPorRolAsync(int idRol, string token)
         {
             try

@@ -50,13 +50,13 @@ namespace Avatar_Mod_Administración.Pages
                     return RedirectToPage("/Login");
                 }
 
-                // Obtener todos los datos de sesión de una vez
+                // Obtener datos de sesión HTTP
                 var usuarioEmail = HttpContext.Session.GetString("UsuarioEmail");
                 var usuarioNombre = HttpContext.Session.GetString("UsuarioNombre");
                 var usuarioRol = HttpContext.Session.GetString("UsuarioRol");
                 var usuarioRolIdStr = HttpContext.Session.GetString("UsuarioRolId");
 
-                // Solo hacer llamada a la API si NO hay datos en sesión
+                // Si no hay datos en sesión, obtenerlos del backend
                 if (string.IsNullOrEmpty(usuarioNombre) || string.IsNullOrEmpty(usuarioRol))
                 {
                     _logger.LogInformation("Obteniendo datos del usuario desde USR1");
@@ -69,7 +69,6 @@ namespace Avatar_Mod_Administración.Pages
                         usuarioRol = usuario.RolNombre ?? "Sin Rol";
                         usuarioRolIdStr = usuario.IdRol.ToString();
 
-                        // Guardar todos los datos en una sola operación
                         HttpContext.Session.SetString("UsuarioEmail", sesion.UsuarioID);
                         HttpContext.Session.SetString("UsuarioNombre", usuarioNombre);
                         HttpContext.Session.SetString("UsuarioRol", usuarioRol);
@@ -86,7 +85,7 @@ namespace Avatar_Mod_Administración.Pages
                     }
                 }
 
-                // Asignar ViewData de una vez
+                // Poblar ViewData
                 ViewData["UsuarioID"] = sesion.UsuarioID;
                 ViewData["UsuarioNombre"] = usuarioNombre ?? "Usuario";
                 ViewData["UsuarioRol"] = usuarioRol ?? "Invitado";

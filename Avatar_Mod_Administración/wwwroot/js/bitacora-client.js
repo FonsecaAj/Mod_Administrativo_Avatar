@@ -213,38 +213,16 @@
             registrarCambioRuta();
         }, 500); // Pequeño delay para asegurar que el DOM está listo
 
-
-
-
-
+        // Detectar cambios de URL con polling
         let ultimaRuta = window.location.pathname;
-
-        // Detectar con eventos nativos
-        window.addEventListener('popstate', () => {
-            setTimeout(() => registrarCambioRuta(), 100);
-        });
-
-        // Interceptar clicks en enlaces
-        document.addEventListener('click', (event) => {
-            const link = event.target.closest('a[href]');
-            if (link && !link.href.includes('javascript:')) {
-                const href = link.getAttribute('href');
-                if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
-                    // Esperar a que la navegación ocurra
-                    setTimeout(() => {
-                        const nuevaRuta = window.location.pathname;
-                        if (nuevaRuta !== ultimaRuta) {
-                            ultimaRuta = nuevaRuta;
-                            registrarCambioRuta();
-                        }
-                    }, 100);
-                }
+        setInterval(() => {
+            const rutaActual = window.location.pathname;
+            if (rutaActual !== ultimaRuta) {
+                ultimaRuta = rutaActual;
+                console.log('Cambio de ruta detectado por polling');
+                registrarCambioRuta();
             }
-        }, true);
-
-
-
-
+        }, 500);
 
         // También detectar con popstate (navegación con botones del navegador)
         window.addEventListener('popstate', () => {

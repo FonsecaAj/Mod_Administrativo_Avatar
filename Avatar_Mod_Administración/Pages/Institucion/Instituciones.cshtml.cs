@@ -44,22 +44,43 @@ namespace Avatar_Mod_Administración.Pages.Institucion
             }
         }
 
-        // Usar el mensaje que devuelve la API
         public async Task<IActionResult> OnPostEliminarAsync(int id)
         {
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
-            var token = ObtenerToken()!;
+            try
+            {
+                var token = ObtenerToken()!;
+                var institucion = await _institucionService.ObtenerPorIdAsync(id, token);
+                var nombreInstitucion = institucion?.Nombre ?? $"ID {id}";
 
-            // Recibir (ok, status, message) igual que en Usuario
-            var (ok, status, message) = await _institucionService.EliminarAsync(id, token);
+                var (exito, mensajeError) = await _institucionService.EliminarAsync(id, token);
 
-            // Usar el mensaje que viene de la API
-            if (ok)
-                TempData["Mensaje"] = message;  // "Institución 'X' eliminada exitosamente"
-            else
-                TempData["Error"] = message;    // "No se puede eliminar..." o "Institución no encontrada"
+                if (exito)
+                {
+                    TempData["Mensaje"] = $"Institución '{nombreInstitucion}' eliminada exitosamente";
+                }
+                else
+                {
+                    if (mensajeError?.Contains("carreras") == true || mensajeError?.Contains("relacionadas") == true)
+                    {
+                        TempData["Error"] = $"No se puede eliminar la institución '{nombreInstitucion}' porque tiene carreras asociadas.";
+                    }
+                    else if (mensajeError?.Contains("foreign key") == true)
+                    {
+                        TempData["Error"] = $"No se puede eliminar la institución '{nombreInstitucion}' porque tiene registros relacionados.";
+                    }
+                    else
+                    {
+                        TempData["Error"] = mensajeError ?? $"No se pudo eliminar la institución '{nombreInstitucion}'";
+                    }
+                }
+            }
+            catch (Exception)
+            {
+                TempData["Error"] = "Ocurrió un error al eliminar la institución.";
+            }
 
             return RedirectToPage();
         }
