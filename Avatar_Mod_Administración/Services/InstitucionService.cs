@@ -15,7 +15,7 @@ namespace Avatar_Mod_Administración.Services
             ILogger<InstitucionService> logger)
         {
             _httpClient = httpClient;
-            _apiUrl = configuration["ACD1ApiUrl"] ?? "http://localhost:5001";
+            _apiUrl = configuration["ACD1ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/ACD1/";
             _logger = logger;
         }
 

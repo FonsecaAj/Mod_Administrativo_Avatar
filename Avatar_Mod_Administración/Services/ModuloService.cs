@@ -16,7 +16,7 @@ namespace Avatar_Mod_Administración.Services
             ILogger<ModuloService> logger)
         {
             _httpClient = httpClient;
-            _usr4ApiUrl = configuration.GetValue<string>("USR4ApiUrl") ?? "http://localhost:5290";
+            _usr4ApiUrl = configuration.GetValue<string>("USR4ApiUrl") ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR4/";
             _logger = logger;
         }
 

@@ -16,8 +16,8 @@ namespace Avatar_Mod_Administración.Services
             ILogger<UsuarioService> logger)
         {
             _httpClient = httpClient;
-            _apiUrl = configuration["USR1ApiUrl"] ?? "http://localhost:5205";
-            _usr2ApiUrl = configuration["USR2ApiUrl"] ?? "http://localhost:5204";
+            _apiUrl = configuration["USR1ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR1/";
+            _usr2ApiUrl = configuration["USR2ApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR2/";
             _logger = logger;
         }
 
