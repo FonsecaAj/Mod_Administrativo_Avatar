@@ -42,17 +42,20 @@ namespace ApiACD5.Endpoints
                 var result = await service.Crear(periodo);
                 return Results.Json(result, statusCode: result.StatusCode);
             });
-
-            group.MapPut("/", async (Periodo periodo, IPeriodoService service, IAutenticacionService auth, HttpContext http) =>
+            
+            group.MapPut("/{idPeriodo:int}", async (int idPeriodo, Periodo periodo, IPeriodoService service, IAutenticacionService auth, HttpContext http) =>
             {
                 var authorization = http.Request.Headers["Authorization"].ToString();
 
                 if (!await auth.ValidarTokenAsync(authorization))
                     return Results.Unauthorized();
 
+                periodo.ID_Periodo = idPeriodo; // aseguramos que el ID esté correcto
+
                 var result = await service.Modificar(periodo);
                 return Results.Json(result, statusCode: result.StatusCode);
             });
+
 
 
             group.MapDelete("/{id:int}", async (int id, IPeriodoService service, IAutenticacionService auth, HttpContext http) =>

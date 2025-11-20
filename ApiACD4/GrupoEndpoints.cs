@@ -99,30 +99,28 @@ namespace ApiACD4
                 };
             });
 
-      
-            group.MapPut("/", async (
-                [FromBody] Grupo grupoData,
-                IGrupoService service,
-                IAutenticacionService auth,
-                HttpContext http) =>
-            {
-                var authorization = http.Request.Headers["Authorization"].ToString();
-                if (!await auth.ValidarTokenAsync(authorization))
-                    return Results.Unauthorized();
 
-                var result = await service.Actualizar(grupoData);
+            group.MapPut("/{idGrupo:int}", async (
+            int idGrupo,
+            [FromBody] Grupo grupoData,
+            IGrupoService service,
+            IAutenticacionService auth,
+            HttpContext http) =>
+                    {
+                        var authorization = http.Request.Headers["Authorization"].ToString();
+                        if (!await auth.ValidarTokenAsync(authorization))
+                            return Results.Unauthorized();
 
-                return result.StatusCode switch
-                {
-                    200 => Results.Json(result, statusCode: 200),
-                    400 => Results.Json(result, statusCode: 400),
-                    404 => Results.Json(result, statusCode: 404),
-                    500 => Results.Json(result, statusCode: 500),
-                    _ => Results.Json(result, statusCode: result.StatusCode)
-                };
-            });
+              
+                        grupoData.ID_Grupo = idGrupo;
 
-       
+                        var result = await service.Actualizar(grupoData);
+
+                        return Results.Json(result, statusCode: result.StatusCode);
+                    });
+
+
+
             group.MapDelete("/{id:int}", async (
                 int id,
                 IGrupoService service,

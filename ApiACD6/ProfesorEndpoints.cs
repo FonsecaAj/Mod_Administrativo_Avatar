@@ -42,18 +42,21 @@ namespace ApiACD6.Endpoints
                 return Results.Json(result, statusCode: result.StatusCode);
             });
 
-      
-            group.MapPut("/", async (Profesor profesor, IProfesorService service, IAutenticacionService auth, HttpContext http) =>
+
+            group.MapPut("/{idProfesor:int}", async (int idProfesor, Profesor profesor, IProfesorService service, IAutenticacionService auth, HttpContext http) =>
             {
                 var authorization = http.Request.Headers["Authorization"].ToString();
                 if (!await auth.ValidarTokenAsync(authorization))
                     return Results.Unauthorized();
 
+                profesor.ID_Profesor = idProfesor; // aseguramos que el ID está correcto
+
                 var result = await service.Actualizar(profesor);
                 return Results.Json(result, statusCode: result.StatusCode);
             });
 
-         
+
+
             group.MapDelete("/{idProfesor:int}", async (int idProfesor, IProfesorService service, IAutenticacionService auth, HttpContext http) =>
             {
                 var authorization = http.Request.Headers["Authorization"].ToString();
