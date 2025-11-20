@@ -13,7 +13,7 @@
         'Bitácoras': { icono: 'bi-journal-text', url: '/api/Bitacora', grupo: 'Administración', prefijo: '/api/Bitacora' },
         'Instituciones': { icono: 'bi-building', url: '/Institucion/Instituciones', grupo: 'Académico', prefijo: '/Institucion' },
         'Carreras': { icono: 'bi-mortarboard', url: '/Carrera/Carreras', grupo: 'Académico', prefijo: '/Carrera' },
-        'Cursos': { icono: 'bi-book', url: '/Curso/Cursos', grupo: 'Académico', prefijo: '/Curso' },
+        'Cursos': { icono: 'bi-book', url: '/Curso/Cursos', grupo: 'Académico', prefijo: '/Curso' }, // <--- Módulo a reemplazar en Admin
         'Grupos': { icono: 'bi-diagram-3', url: '/Grupo/Grupos', grupo: 'Académico', prefijo: '/Grupo' },
         'Prematrícula': { icono: 'bi-clipboard-check', url: '/Prematricula/Index', grupo: 'Matrícula', prefijo: '/Prematricula' },
         'Matrícula': { icono: 'bi-journal-check', url: '/Matricula/Index', grupo: 'Matrícula', prefijo: '/Matricula' },
@@ -24,22 +24,21 @@
 
     };
 
-    //  OPCIONES PARA EL ROL ADMINISTRADOR (o rol con ID 1)
+    //  OPCIONES PARA EL ROL ADMINISTRADOR (o rol con ID 1)
     const ADMIN_MENU_EXTENSIONS = [
+        // Dashboard y otros
+        { texto: 'Home', url: '/Index', icono: 'bi-house', grupo: 'Principal', esDashboard: true, prefijo: '/Index' },
+        { texto: 'Historial Académico', url: '/Academico/HistorialAcademico', icono: 'bi-journal-text', grupo: 'Académico', prefijo: '/Academico/HistorialAcademico' },
+        { texto: 'Listados por periodo', url: '/Academico/ListadoEstudiantes', icono: 'bi-people', grupo: 'Académico', prefijo: '/Academico/ListadoEstudiantes' },
+        { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt', grupo: 'Facturación', prefijo: '/Facturacion/Facturas' },
+        { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
 
-        
-        { texto: 'Home', url: '/Index', icono: 'bi-house', grupo: 'Principal', esDashboard: true }, // Se agrega como item normal si no es Dashboard
-        { texto: 'Historial Académico', url: '/Academico/HistorialAcademico', icono: 'bi-journal-text', grupo: 'Académico' },
-        { texto: 'Listados por periodo', url: '/Academico/ListadoEstudiantes', icono: 'bi-people', grupo: 'Académico' },
-        { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt', grupo: 'Facturación' },
-        { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash', grupo: 'Facturación' },
-
-       
-        { texto: 'Cursos', url: '/ADM10_Cursos', icono: 'bi-book', grupo: 'Mantenimiento Adm' },
-        { texto: 'Profesores', url: '/ADM11_Profesor', icono: 'bi-people', grupo: 'Mantenimiento Adm' },
-        { texto: 'Periodo', url: '/ADM12_Periodo', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm' },
-        { texto: 'Grupo', url: '/ADM13_Grupo', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm' },
-        { texto: 'Prematricula', url: '/ADM14_Prematricula', icono: 'bi-receipt', grupo: 'Mantenimiento Adm' }
+        // RUTAS DE ADMINISTRACIÓN MANTENIMIENTO (Las que deben reemplazar a las originales)
+        { texto: 'Cursos', url: '/ADM10_Cursos', icono: 'bi-book', grupo: 'Mantenimiento Adm', prefijo: '/ADM10_Cursos' },
+        { texto: 'Profesores', url: '/ADM11_Profesor', icono: 'bi-people', grupo: 'Mantenimiento Adm', prefijo: '/ADM11_Profesor' },
+        { texto: 'Periodo', url: '/ADM12_Periodo', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm', prefijo: '/ADM12_Periodo' },
+        { texto: 'Grupo', url: '/ADM13_Grupo', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm', prefijo: '/ADM13_Grupo' },
+        { texto: 'Prematrícula', url: '/ADM14_Prematricula', icono: 'bi-receipt', grupo: 'Mantenimiento Adm', prefijo: '/ADM14_Prematricula' }
     ];
 
     let modulosCargados = [];
@@ -67,6 +66,7 @@
         } catch (error) { return false; }
     }
 
+    // La función cargarModulosPorRol está duplicada, se deja una
     async function cargarModulosPorRol(rolId, token) {
         try {
             const rolIdNum = parseInt(rolId);
@@ -79,17 +79,6 @@
         } catch (error) { return []; }
     }
 
-    async function cargarModulosPorRol(rolId, token) {
-        try {
-            const rolIdNum = parseInt(rolId);
-            if (!rolIdNum || rolIdNum === 0) return [];
-            const response = await fetch(`/api/rol/${rolIdNum}/modulos`, {
-                method: 'GET', headers: { 'Content-Type': 'application/json', 'Authorization': token }, credentials: 'include'
-            });
-            if (!response.ok) { if (response.status === 401) window.location.href = '/Login'; return []; }
-            return await response.json();
-        } catch (error) { return []; }
-    }
     async function cargarMenuDinamico() {
         const loader = document.getElementById('menu-loader');
 
@@ -104,42 +93,57 @@
             if (!modulos || modulos.length === 0) { mostrarMenuPorDefecto(); return; }
             modulosCargados = modulos;
             if (loader) loader.remove();
-            construirMenu(modulos, datosUsuario.rol); //  Pasar el rol a construirMenu
+            construirMenu(modulos, datosUsuario.rol); //  Pasar el rol a construirMenu
             actualizarBreadcrumbs();
         } catch (error) { mostrarMenuPorDefecto(); }
     }
 
-    //Recibe el rol del usuario
+    // Recibe el rol del usuario
     function construirMenu(modulos, rolUsuario) {
         const sidebarNav = document.querySelector('.sidebar-nav');
         if (!sidebarNav) return;
         sidebarNav.innerHTML = '';
-        const grupos = agruparModulos(modulos);
+
+        // 1. Agrupar módulos dinámicos primero
+        let grupos = agruparModulos(modulos);
 
         agregarDashboard(sidebarNav);
 
-        // Lógica para incluir las opciones extra si el rol es 'Administrador'
+        // 2. Lógica para incluir las opciones extra si el rol es 'Administrador'
         if (rolUsuario && rolUsuario.toLowerCase() === 'administrador') {
             ADMIN_MENU_EXTENSIONS.forEach(item => {
-                if (!grupos[item.grupo]) grupos[item.grupo] = [];
-
-                // Solo agrega el ítem si no es el 'Home' que ya se agregó como Dashboard
                 if (!item.esDashboard) {
-                    grupos[item.grupo].push({
+                    // Crea un nuevo objeto módulo con la configuración de la extensión
+                    const extensionModule = {
                         nombreModulo: item.texto,
                         moduloActivo: true,
                         config: {
                             icono: item.icono,
                             url: item.url,
                             grupo: item.grupo,
-                            prefijo: item.url
+                            prefijo: item.prefijo || item.url
                         }
-                    });
+                    };
+
+                    // Lógica de reemplazo/adición:
+                    const existingGroup = grupos[item.grupo];
+
+                    if (!existingGroup) {
+                        grupos[item.grupo] = [extensionModule];
+                    } else {
+                        // Busca si existe un módulo con el mismo nombre y lo reemplaza (Ej. Cursos)
+                        const index = existingGroup.findIndex(m => m.nombreModulo === item.texto);
+                        if (index !== -1) {
+                            existingGroup[index] = extensionModule; // Reemplaza el módulo dinámico (el que tiene la ruta rota)
+                        } else {
+                            existingGroup.push(extensionModule); // Simplemente lo añade
+                        }
+                    }
                 }
             });
         }
 
-        // El orden se basa en las claves de MODULOS_CONFIG (Módulos dinámicos) y luego las extensiones
+        // 3. Renderizar el menú
         Object.keys(grupos).sort().forEach(nombreGrupo => {
             const modulosGrupo = grupos[nombreGrupo];
             const tituloSeccion = document.createElement('div');
@@ -148,7 +152,8 @@
             sidebarNav.appendChild(tituloSeccion);
 
             modulosGrupo.forEach(modulo => {
-                const config = MODULOS_CONFIG[modulo.nombreModulo] || modulo.config; // Obtiene config del config global o del ítem de extensión
+                // Prioriza la configuración de la extensión (modulo.config) si existe.
+                const config = modulo.config || MODULOS_CONFIG[modulo.nombreModulo];
                 if (config && modulo.moduloActivo) {
                     agregarItemMenu(sidebarNav, modulo.nombreModulo, config);
                 }
@@ -157,12 +162,12 @@
         marcarRutaActiva();
     }
 
-    // Agrupa módulos dinámicos y ahora también las extensiones manuales
+    // Agrupa módulos dinámicos. Es buena práctica asegurarte de que solo se usen módulos activos.
     function agruparModulos(modulos) {
         const grupos = {};
         modulos.forEach(modulo => {
             const config = MODULOS_CONFIG[modulo.nombreModulo];
-            if (config) {
+            if (config && modulo.moduloActivo) { // <-- Se añadió la verificación modulo.moduloActivo
                 if (!grupos[config.grupo]) grupos[config.grupo] = [];
                 grupos[config.grupo].push(modulo);
             }
@@ -219,6 +224,7 @@
         let moduloMatch = null;
 
         // Búsqueda en MODULOS_CONFIG (Modulos de la API)
+        // Priorizamos coincidencia con prefijo para URL base (ej. /Usuario -> /Usuario/Crear)
         for (const nombre in MODULOS_CONFIG) {
             const config = MODULOS_CONFIG[nombre];
             if (ruta.startsWith(config.prefijo + '/')) {
@@ -228,10 +234,32 @@
         }
 
         // Búsqueda en ADMIN_MENU_EXTENSIONS (Módulos manuales)
+        // Esta sección es CRUCIAL. Si el usuario es Administrador, debemos preferir la extensión.
         if (!moduloMatch) {
-            const extensionMatch = ADMIN_MENU_EXTENSIONS.find(item => ruta.startsWith(item.url + '/'));
+
+            const extensionMatch = ADMIN_MENU_EXTENSIONS.find(item => {
+                const prefix = item.prefijo || item.url;
+                return ruta.startsWith(prefix + '/');
+            });
+
             if (extensionMatch) {
-                moduloMatch = { nombre: extensionMatch.texto, url: extensionMatch.url, grupo: extensionMatch.grupo };
+                // Sobrescribe si ya existía un match por nombre en MODULOS_CONFIG que ahora es extensión
+                moduloMatch = { nombre: extensionMatch.texto, url: extensionMatch.url, grupo: extensionMatch.grupo, prefijo: extensionMatch.prefijo };
+            }
+        }
+
+        // CORRECCIÓN: Si el rol es administrador y se encontró un módulo dinámico,
+        // verificamos si existe una extensión con el mismo nombre y la usamos.
+        if (moduloMatch && obtenerDatosUsuario()?.rol.toLowerCase() === 'administrador') {
+            const adminOverride = ADMIN_MENU_EXTENSIONS.find(item => item.texto === moduloMatch.nombre);
+            if (adminOverride) {
+                // Reemplazamos la información del módulo dinámico con la información de la extensión
+                moduloMatch = {
+                    nombre: adminOverride.texto,
+                    url: adminOverride.url,
+                    grupo: adminOverride.grupo,
+                    prefijo: adminOverride.prefijo
+                };
             }
         }
 
@@ -243,6 +271,7 @@
 
         html += '<li class="breadcrumb-item">' + moduloMatch.grupo + '</li>';
 
+        // Comprobar si la ruta actual es la ruta base del módulo
         if (ruta === moduloMatch.url || ruta === moduloMatch.url + '/') {
             html += '<li class="breadcrumb-item active" aria-current="page">' + moduloMatch.nombre + '</li>';
         } else {
@@ -291,6 +320,7 @@
         if (r.includes('facturas')) return 'Administración de Facturas';
         if (r.includes('pagos')) return 'Consulta de Pagos';
 
+        // Módulos de Mantenimiento Adm (ADM)
         if (r.includes('adm10_cursos')) return 'Mantenimiento Cursos';
         if (r.includes('adm11_profesor')) return 'Mantenimiento Profesores';
         if (r.includes('adm12_periodo')) return 'Mantenimiento Periodos';
