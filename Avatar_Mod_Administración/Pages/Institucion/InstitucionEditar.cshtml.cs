@@ -102,15 +102,18 @@ namespace Avatar_Mod_Administración.Pages.Institucion
             try
             {
                 var dto = new InstitucionCrearDto { Nombre = Input.Nombre.Trim() };
-                var institucionActualizada = await _institucionService.ActualizarAsync(Id, dto, token);
 
-                if (institucionActualizada != null)
+                // Usar mensajes dinámicos de la API
+                var (ok, status, message) = await _institucionService.ActualizarAsync(Id, dto, token);
+
+                if (ok)
                 {
-                    TempData["Mensaje"] = $"Institución actualizada exitosamente a '{institucionActualizada.Nombre}'";
+                    TempData["Mensaje"] = message;  // Mensaje de la API
                     return RedirectToPage("/Institucion/Instituciones");
                 }
 
-                ModelState.AddModelError(string.Empty, "Error al actualizar la institución.");
+                // Mostrar mensaje de error de la API
+                ModelState.AddModelError(string.Empty, message ?? "Error al actualizar la institución");
                 NombreOriginal = institucionOriginal.Nombre;
                 return Page();
             }

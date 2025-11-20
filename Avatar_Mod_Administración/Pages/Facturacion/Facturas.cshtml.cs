@@ -1,33 +1,17 @@
 using Avatar_Mod_Administración.Entities;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Avatar_Mod_Administración.Pages.Facturacion
 {
-    public class FacturasModel : BasePageModel
+    public class FacturasModel : PageModel
     {
         private readonly IFacturaApiClient _api;
-
-        public FacturasModel(
-            IFacturaApiClient api,
-            IAuthService authService,
-            IUsuarioService usuarioService,
-            ILogger<FacturasModel> logger)
-            : base(authService, usuarioService, logger)
-        {
-            _api = api;
-        }
+        public FacturasModel(IFacturaApiClient api) => _api = api;
 
         [BindProperty] public string Identificacion { get; set; } = string.Empty;
         [BindProperty] public int ID_Factura { get; set; }
-        [BindProperty] public string? Motivo { get; set; }
-
-        // Propiedades para el filtro de listado
-        [BindProperty(SupportsGet = true)] public DateTime FechaInicio { get; set; } = DateTime.Today.AddMonths(-1);
-        [BindProperty(SupportsGet = true)] public DateTime FechaFin { get; set; } = DateTime.Today;
-        [BindProperty(SupportsGet = true)] public string? EstadoFiltro { get; set; } // Recibe "" o el estado
-
-        public List<FacturaDto>? FacturasListado { get; set; }
 
         public FacturaDto? Factura { get; set; }
         public string? Message { get; set; }
@@ -82,9 +66,6 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
 
         public async Task<IActionResult> OnPostCrearAsync()
         {
-            var result = await InicializarSesionAsync();
-            if (result != null) return result;
-
             if (string.IsNullOrWhiteSpace(Identificacion))
             {
                 ErrorMessage = "Debe ingresar la identificación del estudiante.";
@@ -100,14 +81,12 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
 
             await OnPostListarAsync(esListadoSecundario: true);
 
+            Message = msg;
             return Page();
         }
 
         public async Task<IActionResult> OnPostReversarAsync()
         {
-            var result = await InicializarSesionAsync();
-            if (result != null) return result;
-
             if (ID_Factura <= 0)
             {
                 ErrorMessage = "Debe ingresar un ID válido.";
@@ -115,7 +94,8 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
                 return Page();
             }
 
-            if (string.IsNullOrWhiteSpace(Motivo))
+            var (ok, status, msg) = await _api.ReversarFacturaAsync(ID_Factura);
+            if (!ok)
             {
                 ErrorMessage = "Debe indicar un motivo de reversión.";
                 
@@ -137,9 +117,6 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
 
         public async Task<IActionResult> OnPostConsultarAsync()
         {
-            var result = await InicializarSesionAsync();
-            if (result != null) return result;
-
             if (ID_Factura <= 0)
             {
                 ErrorMessage = "Debe ingresar un ID válido.";
@@ -159,10 +136,10 @@ namespace Avatar_Mod_Administración.Pages.Facturacion
             // Usamos 'esListadoSecundario: true'
             await OnPostListarAsync(esListadoSecundario: true);
 
-            // Aseguramos que la Factura individual quede cargada al final
             Factura = factura;
-
+            Message = msg;
             return Page();
         }
+
     }
 }

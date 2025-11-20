@@ -65,22 +65,50 @@ namespace USR2.Services
                 _logger.LogDebug("USR2←USR4: Contenido: {Content}",
                     content.Substring(0, Math.Min(100, content.Length)));
 
-                var modulo = JsonSerializer.Deserialize<ModuloDto>(content, new JsonSerializerOptions
-                {
-                    PropertyNameCaseInsensitive = true
-                });
+                // ✅ PARSEAR BusinessLogicResponse y extraer responseObject
+                using var doc = JsonDocument.Parse(content);
 
-                if (modulo != null)
+                // Verificar si tiene la estructura de BusinessLogicResponse
+                if (doc.RootElement.TryGetProperty("responseObject", out var responseObj))
                 {
-                    _logger.LogDebug("USR2←USR4: Módulo {IdModulo} obtenido: {Nombre} (Activo: {Activo})",
-                        idModulo, modulo.Nombre, modulo.Activo);
+                    // Es BusinessLogicResponse, deserializar el responseObject
+                    var modulo = JsonSerializer.Deserialize<ModuloDto>(responseObj.GetRawText(), new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
+
+                    if (modulo != null)
+                    {
+                        _logger.LogDebug("USR2←USR4: Módulo {IdModulo} obtenido de BusinessLogicResponse: {Nombre} (Activo: {Activo})",
+                            idModulo, modulo.Nombre, modulo.Activo);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("USR2←USR4: No se pudo deserializar módulo {IdModulo} desde responseObject", idModulo);
+                    }
+
+                    return modulo;
                 }
                 else
                 {
-                    _logger.LogWarning("USR2←USR4: No se pudo deserializar módulo {IdModulo}", idModulo);
-                }
+                    // Fallback: intentar deserializar directamente (compatibilidad hacia atrás)
+                    var modulo = JsonSerializer.Deserialize<ModuloDto>(content, new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    });
 
-                return modulo;
+                    if (modulo != null)
+                    {
+                        _logger.LogDebug("USR2←USR4: Módulo {IdModulo} obtenido (formato directo): {Nombre} (Activo: {Activo})",
+                            idModulo, modulo.Nombre, modulo.Activo);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("USR2←USR4: No se pudo deserializar módulo {IdModulo}", idModulo);
+                    }
+
+                    return modulo;
+                }
             }
             catch (HttpRequestException httpEx)
             {

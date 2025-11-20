@@ -12,7 +12,7 @@
 }
 else if (Model.Message != null)
 {
-    <div class="alert alert-success">@Model.Message</div>
+    <div class="alert alert-info">@Model.Message</div>
 }
 
 <div class="row g-4">
@@ -32,7 +32,7 @@ else if (Model.Message != null)
     <div class="col-md-6">
         <div class="card p-4 shadow-sm">
             <h5>♻️ Reversar Factura</h5>
-            <form id="formReversar" method="post" asp-page-handler="Reversar">
+            <form method="post" asp-page-handler="Reversar" onsubmit="return confirm('¿Reversar esta factura?');">
                 <div class="mb-3">
                     <label class="form-label">ID Factura</label>
                     <input asp-for="ID_Factura" type="number" class="form-control" placeholder="Ej: 5" />
@@ -133,13 +133,9 @@ else if (Model.Message != null)
 <hr class="my-4" />
 
 <div class="card p-4 shadow-sm">
-    <h5>🔍 Consultar Factura por ID</h5>
+    <h5>🔍 Consultar Factura</h5>
     <form method="post" asp-page-handler="Consultar">
         <div class="mb-3 d-flex" style="max-width: 350px;">
-            <input type="hidden" asp-for="FechaInicio" />
-            <input type="hidden" asp-for="FechaFin" />
-            <input type="hidden" asp-for="EstadoFiltro" />
-
             <input asp-for="ID_Factura" type="number" class="form-control me-2" placeholder="ID Factura" />
             <button type="submit" class="btn btn-secondary">Buscar</button>
         </div>
@@ -147,43 +143,37 @@ else if (Model.Message != null)
 
     @if (Model.Factura != null)
     {
-        <h6 class="mt-3">Detalle de Factura #@Model.Factura.ID_Factura</h6>
-        <div class="table-responsive">
-            <table class="table table-bordered mt-2">
-                <tr><th>ID</th><td>@Model.Factura.ID_Factura</td></tr>
-                <tr><th>Estudiante</th><td>@Model.Factura.Identificacion_Estudiante</td></tr>
-                <tr><th>Fecha</th><td>@Model.Factura.Fecha_Emision.ToString("dd/MM/yyyy")</td></tr>
-                <tr><th>Monto Base</th><td>@Model.Factura.Monto_Base.ToString("C")</td></tr>
-                <tr><th>Impuesto</th><td>@Model.Factura.Impuesto.ToString("C")</td></tr>
-                <tr><th>Total</th><td>@Model.Factura.Total.ToString("C")</td></tr>
-                <tr><th>Estado</th><td>@Model.Factura.Estado</td></tr>
-            </table>
-        </div>
+        <h6 class="mt-3">Detalle de Factura</h6>
+        <table class="table table-bordered mt-2">
+            <tr><th>ID</th><td>@Model.Factura.ID_Factura</td></tr>
+            <tr><th>Estudiante</th><td>@Model.Factura.Identificacion_Estudiante</td></tr>
+            <tr><th>Fecha</th><td>@Model.Factura.Fecha_Emision.ToString("dd/MM/yyyy")</td></tr>
+            <tr><th>Monto Base</th><td>@Model.Factura.Monto_Base.ToString("C")</td></tr>
+            <tr><th>Impuesto</th><td>@Model.Factura.Impuesto.ToString("C")</td></tr>
+            <tr><th>Total</th><td>@Model.Factura.Total.ToString("C")</td></tr>
+            <tr><th>Estado</th><td>@Model.Factura.Estado</td></tr>
+        </table>
 
         <h6>Detalle</h6>
-        <div class="table-responsive">
-            <table class="table table-sm table-striped">
-                <thead>
+        <table class="table table-sm table-striped">
+            <thead>
+                <tr>
+                    <th>ID Detalle</th>
+                    <th>Descripción</th>
+                    <th>Monto</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var d in Model.Factura.Detalles)
+                {
                     <tr>
-                        <th>ID Detalle</th>
-                        <th>Descripción</th>
-                        <th>Monto</th>
-                        <th>Detalle</th>
+                        <td>@d.ID_Detalle</td>
+                        <td>@d.Descripcion</td>
+                        <td>@d.Monto.ToString("C")</td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var d in Model.Factura.Detalles)
-                    {
-                        <tr>
-                            <td>@d.ID_Detalle</td>
-                            <td>@d.Descripcion</td>
-                            <td>@d.Monto.ToString("C")</td>
-                            <td>@d.Detalle</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                }
+            </tbody>
+        </table>
     }
 </div>
 

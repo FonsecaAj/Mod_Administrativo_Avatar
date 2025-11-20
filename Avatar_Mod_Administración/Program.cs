@@ -24,122 +24,49 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddHttpClient<IUsuarioService, UsuarioService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddHttpClient<IRolService, RolService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddHttpClient<IParametroService, ParametroService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddHttpClient<IInstitucionService, InstitucionService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
 builder.Services.AddHttpClient<IModuloService, ModuloService>(client =>
 {
     client.Timeout = TimeSpan.FromSeconds(30);
+    client.DefaultRequestHeaders.Add("Accept", "application/json");
 });
 
-builder.Services.AddHttpClient<IRubroApiClient, RubroApiClient>(client =>
+// Agregar compresión de respuestas
+builder.Services.AddResponseCompression(options =>
 {
-    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Adm_Notas"]
-        ?? throw new InvalidOperationException("Base URL de Adm_Notas no configurada");
-    client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
+    options.EnableForHttps = true;
 });
-
-builder.Services.AddHttpClient<INotaApiClient, NotaApiClient>(client =>
-{
-    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Adm_Notas"]
-        ?? throw new InvalidOperationException("Base URL de Adm_Notas no configurada");
-    client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
-
-builder.Services.AddHttpClient<IHistorialAcademicoApiClient, HistorialAcademicoApiClient>(client =>
-{
-    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:HistorialAcademico"]
-        ?? throw new InvalidOperationException("Base URL de Historial no configurada");
-    client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
-
-builder.Services.AddHttpClient<IListadoEstudiantesApiClient, ListadoEstudiantesApiClient>(client =>
-{
-    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Listado_Estudiantes"]
-        ?? throw new InvalidOperationException("Base URL de Listado de Estudiantes no configurada");
-    client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
-
-builder.Services.AddHttpClient<IFacturaApiClient, FacturaApiClient>(client =>
-{
-    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Adm_Facturacion"]
-        ?? throw new InvalidOperationException("Base URL de Adm_Facturacion no configurada");
-    client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
-});
-
-builder.Services.AddHttpClient<IPagoApiClient, PagoApiClient>(client =>
-{
-    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Pagos"]
-        ?? "http://localhost:5070";
-    client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = TimeSpan.FromSeconds(30);
-
-});
-
-//  Cliente HTTP para Cursos (Adm_Cursos)
-builder.Services.AddHttpClient<ICursoApiClient, CursoApiClient>(client =>
-{
-    var baseUrl = builder.Configuration["Adm_Cursos:BaseUrl"]
-                  ?? throw new InvalidOperationException("Adm_Cursos:BaseUrl no configurado");
-    client.BaseAddress = new Uri(baseUrl);
-});
-
-
-builder.Services.AddHttpClient<IProfesorApiClient, ProfesorApiClient>(client =>
-{
-    var baseUrl = builder.Configuration["Adm_Profesores:BaseUrl"]
-                  ?? throw new InvalidOperationException("Adm_Profesores:BaseUrl no configurado");
-    client.BaseAddress = new Uri(baseUrl);
-});
-
-
-builder.Services.AddHttpClient<IPeriodoApiClient, PeriodoApiClient>(client =>
-{
-    var baseUrl = builder.Configuration["Adm_Periodos:BaseUrl"]
-                  ?? throw new InvalidOperationException("Adm_Periodos:BaseUrl no configurado");
-    client.BaseAddress = new Uri(baseUrl);
-});
-
-builder.Services.AddHttpClient<IGrupoApiClient, GrupoApiClient>(client =>
-{
-    var baseUrl = builder.Configuration["Adm_Grupos:BaseUrl"]
-                  ?? throw new InvalidOperationException("Adm_Grupos:BaseUrl no configurado");
-    client.BaseAddress = new Uri(baseUrl);
-});
-
-builder.Services.AddHttpClient<IPrematriculaApiClient, PrematriculaApiClient>(client =>
-{
-    var baseUrl = builder.Configuration["Adm_Prematricula:BaseUrl"]
-                  ?? throw new InvalidOperationException("Adm_Prematricula:BaseUrl no configurado");
-    client.BaseAddress = new Uri(baseUrl);
-});
-
 
 var app = builder.Build();
+
+// Usar compresión
+app.UseResponseCompression();
 
 if (!app.Environment.IsDevelopment())
 {
@@ -196,7 +123,8 @@ app.MapGet("/api/rol/{idRol}/modulos", async (
             token = $"Bearer {token}";
         }
 
-        log.LogDebug("Token: {Token}", token.Substring(0, Math.Min(40, token.Length)) + "...");
+        // Eliminar substring innecesario
+        log.LogDebug("Token obtenido correctamente");
 
         var modulos = await rolService.ObtenerModulosPorRolAsync(idRol, token);
 
@@ -270,83 +198,83 @@ app.MapGet("/api/sesion/verificar", async (
 .WithName("VerificarSesion")
 .WithTags("Sesion");
 
-//// POST /api/bitacora
-//app.MapPost("/api/bitacora", async (
-//    HttpContext context,
-//    IAuthService authService,
-//    ILogger<Program> log) =>
-//{
-//    try
-//    {
-//        var sesion = authService.ObtenerSesionActual();
-//        if (sesion == null)
-//        {
-//            log.LogWarning("No hay sesión para registrar bitácora");
-//            return Results.StatusCode(401);
-//        }
+// POST /api/bitacora
+app.MapPost("/api/bitacora", async (
+    HttpContext context,
+    IAuthService authService,
+    ILogger<Program> log) =>
+{
+    try
+    {
+        var sesion = authService.ObtenerSesionActual();
+        if (sesion == null)
+        {
+            log.LogWarning("No hay sesión para registrar bitácora");
+            return Results.StatusCode(401);
+        }
 
-//        using var reader = new StreamReader(context.Request.Body);
-//        var bodyOriginal = await reader.ReadToEndAsync();
+        using var reader = new StreamReader(context.Request.Body);
+        var bodyOriginal = await reader.ReadToEndAsync();
 
-//        log.LogDebug("Body recibido: {Body}", bodyOriginal);
+        log.LogDebug("Body recibido");
 
-//        using var httpClient = new HttpClient();
-//        httpClient.Timeout = TimeSpan.FromSeconds(5);
-//        var gen1Url = builder.Configuration["GEN1ApiUrl"] ?? "http://localhost:5155";
+        using var httpClient = new HttpClient();
+        httpClient.Timeout = TimeSpan.FromSeconds(5);
+        var gen1Url = builder.Configuration["GEN1ApiUrl"] ?? "http://localhost:5155";
 
-//        try
-//        {
-//            var jsonDoc = System.Text.Json.JsonDocument.Parse(bodyOriginal);
-//            var root = jsonDoc.RootElement;
+        try
+        {
+            var jsonDoc = System.Text.Json.JsonDocument.Parse(bodyOriginal);
+            var root = jsonDoc.RootElement;
 
-//            var usuario = root.TryGetProperty("usuario", out var usuarioElem)
-//                ? usuarioElem.GetString()
-//                : sesion.UsuarioID;
+            var usuario = root.TryGetProperty("usuario", out var usuarioElem)
+                ? usuarioElem.GetString()
+                : sesion.UsuarioID;
 
-//            var descripcion = root.TryGetProperty("descripcion", out var descElem)
-//                ? descElem.GetString()
-//                : "{\"accion\":\"Sin descripción\"}";
+            var descripcion = root.TryGetProperty("descripcion", out var descElem)
+                ? descElem.GetString()
+                : "{\"accion\":\"Sin descripción\"}";
 
-//            var payloadGEN1 = new
-//            {
-//                usuario = usuario,
-//                descripcion = descripcion
-//            };
+            var payloadGEN1 = new
+            {
+                usuario = usuario,
+                descripcion = descripcion
+            };
 
-//            var jsonGEN1 = System.Text.Json.JsonSerializer.Serialize(payloadGEN1);
+            var jsonGEN1 = System.Text.Json.JsonSerializer.Serialize(payloadGEN1);
 
-//            log.LogDebug("Enviando a GEN1: {Json}", jsonGEN1);
+            log.LogDebug("Enviando a GEN1");
 
-//            var request = new HttpRequestMessage(HttpMethod.Post, $"{gen1Url}/api/bitacora");
-//            request.Content = new StringContent(jsonGEN1, System.Text.Encoding.UTF8, "application/json");
+            var request = new HttpRequestMessage(HttpMethod.Post, $"{gen1Url}/api/bitacora");
+            request.Content = new StringContent(jsonGEN1, System.Text.Encoding.UTF8, "application/json");
 
-//            var response = await httpClient.SendAsync(request);
+            var response = await httpClient.SendAsync(request);
 
-//            if (response.IsSuccessStatusCode)
-//            {
-//                log.LogDebug("Bitacora registrada");
-//                return Results.StatusCode(201);
-//            }
+            if (response.IsSuccessStatusCode)
+            {
+                log.LogDebug("Bitacora registrada");
+                return Results.StatusCode(201);
+            }
 
-//            var errorContent = await response.Content.ReadAsStringAsync();
-//            log.LogWarning("Error de GEN1: {StatusCode} - {Error}",
-//                response.StatusCode, errorContent);
-//            return Results.StatusCode((int)response.StatusCode);
-//        }
-//        catch (System.Text.Json.JsonException ex)
-//        {
-//            log.LogError(ex, "Error al parsear JSON: {Body}", bodyOriginal);
-//            return Results.BadRequest(new { error = "JSON inválido" });
-//        }
-//    }
-//    catch (Exception ex)
-//    {
-//        log.LogError(ex, "Error al registrar bitácora");
-//        return Results.StatusCode(500);
-//    }
-//})
-//.WithName("RegistrarBitacora")
-//.WithTags("Bitacora");
+            var errorContent = await response.Content.ReadAsStringAsync();
+            log.LogWarning("Error de GEN1: {StatusCode} - {Error}",
+                response.StatusCode, errorContent);
+            return Results.StatusCode((int)response.StatusCode);
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            log.LogError(ex, "Error al parsear JSON");
+            return Results.BadRequest(new { error = "JSON inválido" });
+        }
+    }
+    catch (Exception ex)
+    {
+        log.LogError(ex, "Error al registrar bitácora");
+        return Results.StatusCode(500);
+    }
+})
+.WithName("RegistrarBitacora")
+.WithTags("Bitacora");
 
 // GET /api/modulos
 app.MapGet("/api/modulos", async (

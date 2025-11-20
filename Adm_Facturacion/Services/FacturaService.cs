@@ -35,28 +35,21 @@ namespace Adm_Facturacion.Services
             };
         }
 
-        public async Task<BusinessLogicResponse> ReversarFacturaAsync(int idFactura, string detalle, string? token)
+        public async Task<BusinessLogicResponse> ReversarFacturaAsync(int idFactura, string? token)
         {
             if (!await _authService.ValidarTokenAsync(token))
                 return new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" };
 
             var usuario = await _authService.ObtenerUsuarioDelTokenAsync(token) ?? "sistema";
 
-            var filas = await _facturaRepository.ReversarFacturaAsync(idFactura, detalle);
+            var filas = await _facturaRepository.ReversarFacturaAsync(idFactura);
 
-            await _bitacoraConsumer.RegistrarAccionAsync(usuario, "UPDATE", new
-            {
-                factura = idFactura,
-                accion = "Factura reversada",
-                motivo = detalle
-            });
+            await _bitacoraConsumer.RegistrarAccionAsync(usuario, "UPDATE", new { factura = idFactura, accion = "Reversada" });
 
             return new BusinessLogicResponse
             {
                 StatusCode = filas > 0 ? 200 : 404,
-                Message = filas > 0
-                    ? "Factura anulada correctamente."
-                    : "Factura no encontrada."
+                Message = filas > 0 ? "Factura anulada correctamente." : "Factura no encontrada."
             };
         }
 

@@ -53,46 +53,39 @@ else if (Model.Message != null)
         <div><strong>Total estudiantes:</strong> @Model.Estudiantes.Count()</div>
     </div>
 
-    <div class="table-responsive">
-        <table class="table table-striped shadow-sm" id="tablaEstudiantes">
-            <thead class="table-dark">
-                <tr>
-                    <th onclick="ordenarPor(0)">ID ⬍</th>
-                    <th onclick="ordenarPor(1)">Tipo ⬍</th>
-                    <th onclick="ordenarPor(2)">Identificación ⬍</th>
-                    <th onclick="ordenarPor(3)">Nombre ⬍</th>
-                    <th onclick="ordenarPor(4)">Carrera ⬍</th>
-                    <th onclick="ordenarPor(5)">Curso ⬍</th>
-                    <th onclick="ordenarPor(6)">Grupo ⬍</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var e in Model.Estudiantes)
+    <table class="table table-striped shadow-sm" id="tablaEstudiantes">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th>
+                <th>Tipo</th>
+                <th>Identificación</th>
+                <th>Nombre</th>
+                <th>Carrera</th>
+                <th>Curso</th>
+                <th>Grupo</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var e in Model.Estudiantes)
+            {
+                // aplica filtros de texto (cliente)
+                if ((string.IsNullOrEmpty(Model.Carrera) || e.Carrera.Contains(Model.Carrera, StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrEmpty(Model.Curso) || e.Curso.Contains(Model.Curso, StringComparison.OrdinalIgnoreCase)) &&
+                (string.IsNullOrEmpty(Model.Grupo) || e.Grupo.Contains(Model.Grupo, StringComparison.OrdinalIgnoreCase)))
                 {
-                    if ((string.IsNullOrEmpty(Model.Carrera) || e.Carrera.Contains(Model.Carrera, StringComparison.OrdinalIgnoreCase)) &&
-                    (string.IsNullOrEmpty(Model.Curso) || e.Curso.Contains(Model.Curso, StringComparison.OrdinalIgnoreCase)) &&
-                    (string.IsNullOrEmpty(Model.Grupo) || e.Grupo.Contains(Model.Grupo, StringComparison.OrdinalIgnoreCase)))
-                    {
-                        <tr>
-                            <td>@e.ID_Estudiante</td>
-                            <td>@e.Tipo_Identificacion</td>
-                            <td>@e.Identificacion</td>
-                            <td>@e.Nombre_Completo</td>
-                            <td>@e.Carrera</td>
-                            <td>@e.Curso</td>
-                            <td>@e.Grupo</td>
-                        </tr>
-                    }
+                    <tr>
+                        <td>@e.ID_Estudiante</td>
+                        <td>@e.Tipo_Identificacion</td>
+                        <td>@e.Identificacion</td>
+                        <td>@e.Nombre_Completo</td>
+                        <td>@e.Carrera</td>
+                        <td>@e.Curso</td>
+                        <td>@e.Grupo</td>
+                    </tr>
                 }
-            </tbody>
-        </table>
-    </div>
-
-    <nav class="d-flex justify-content-between align-items-center mt-3">
-        <button id="btnAnterior" class="btn btn-outline-secondary btn-sm">← Anterior</button>
-        <span id="paginaInfo" class="fw-semibold"></span>
-        <button id="btnSiguiente" class="btn btn-outline-secondary btn-sm">Siguiente →</button>
-    </nav>
+            }
+        </tbody>
+    </table>
 }
 else if (Model.Periodo != 0)
 {
@@ -104,73 +97,7 @@ else if (Model.Periodo != 0)
 
     <script>
         // ============================
-        // Paginación y Ordenamiento
-        // ============================
-        let paginaActual = 1;
-        const filasPorPagina = 10;
-        let ordenColumna = -1;
-        let ordenAsc = true;
-
-        document.addEventListener("DOMContentLoaded", () => {
-            mostrarPagina();
-            document.getElementById("btnAnterior").addEventListener("click", anteriorPagina);
-            document.getElementById("btnSiguiente").addEventListener("click", siguientePagina);
-        });
-
-        function mostrarPagina() {
-            const filas = document.querySelectorAll("#tablaEstudiantes tbody tr");
-            const totalFilas = filas.length;
-            const totalPaginas = Math.ceil(totalFilas / filasPorPagina);
-
-            filas.forEach((fila, i) => {
-                fila.style.display = (i >= (paginaActual - 1) * filasPorPagina && i < paginaActual * filasPorPagina)
-                    ? "" : "none";
-            });
-
-            document.getElementById("paginaInfo").innerText = `Página ${paginaActual} de ${totalPaginas}`;
-            document.getElementById("btnAnterior").disabled = paginaActual === 1;
-            document.getElementById("btnSiguiente").disabled = paginaActual === totalPaginas;
-        }
-
-        function siguientePagina() {
-            const filas = document.querySelectorAll("#tablaEstudiantes tbody tr");
-            const totalPaginas = Math.ceil(filas.length / filasPorPagina);
-            if (paginaActual < totalPaginas) {
-                paginaActual++;
-                mostrarPagina();
-            }
-        }
-
-        function anteriorPagina() {
-            if (paginaActual > 1) {
-                paginaActual--;
-                mostrarPagina();
-            }
-        }
-
-        function ordenarPor(indice) {
-            const tabla = document.getElementById("tablaEstudiantes");
-            const filas = Array.from(tabla.querySelectorAll("tbody tr"));
-            const multiplicador = (ordenColumna === indice && ordenAsc) ? -1 : 1;
-            ordenColumna = indice;
-            ordenAsc = multiplicador === 1;
-
-            filas.sort((a, b) => {
-                const valorA = a.children[indice].innerText.toLowerCase();
-                const valorB = b.children[indice].innerText.toLowerCase();
-                return valorA.localeCompare(valorB, 'es') * multiplicador;
-            });
-
-            const cuerpo = tabla.querySelector("tbody");
-            cuerpo.innerHTML = "";
-            filas.forEach(f => cuerpo.appendChild(f));
-
-            paginaActual = 1;
-            mostrarPagina();
-        }
-
-        // ============================
-        // Exportar CSV
+        //  Exportar CSV
         // ============================
         function exportarCSV() {
             const rows = [['ID', 'Tipo', 'Identificación', 'Nombre', 'Carrera', 'Curso', 'Grupo']];
@@ -187,94 +114,40 @@ else if (Model.Periodo != 0)
         }
 
         // ============================
-        // Exportar PDF 
+        //  Exportar PDF (Texto real)
         // ============================
-
         async function exportarPDF() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF("p", "mm", "a4");
+            const doc = new jsPDF();
 
-            // Encabezado
-            doc.setFontSize(18);
-            doc.setFont("helvetica", "bold");
+            // Título
+            doc.setFontSize(16);
             doc.text('Listado de Estudiantes por Período', 14, 15);
-            doc.setFontSize(12);
-            doc.setFont("helvetica", "normal");
-            doc.text('Reporte generado automáticamente', 14, 23);
-            doc.line(14, 25, 196, 25);
-
-            // Datos generales
-            const periodo = document.querySelector('input[name="Periodo"]').value || 'No especificado';
-            const carrera = document.querySelector('input[name="Carrera"]').value || 'Todas';
-            const curso = document.querySelector('input[name="Curso"]').value || 'Todos';
-            const grupo = document.querySelector('input[name="Grupo"]').value || 'Todos';
-            const total = document.querySelectorAll('#tablaEstudiantes tbody tr').length;
-            const fecha = new Date().toLocaleString('es-CR');
-
-            let infoY = 33;
             doc.setFontSize(11);
-            doc.setFont("helvetica", "bold");
-            doc.text("Período:", 14, infoY);
-            doc.text("Carrera:", 14, infoY + 7);
-            doc.text("Curso:", 14, infoY + 14);
-            doc.text("Grupo:", 14, infoY + 21);
-            doc.text("Total Estudiantes:", 14, infoY + 28);
-            doc.text("Fecha:", 14, infoY + 35);
+            doc.text('Reporte generado automáticamente', 14, 22);
 
-            doc.setFont("helvetica", "normal");
-            doc.text(periodo, 60, infoY);
-            doc.text(carrera, 60, infoY + 7);
-            doc.text(curso, 60, infoY + 14);
-            doc.text(grupo, 60, infoY + 21);
-            doc.text(String(total), 60, infoY + 28);
-            doc.text(fecha, 60, infoY + 35);
-            doc.line(14, infoY + 39, 196, infoY + 39);
-
-            // Configuración de tabla con anchos adaptados
+            // Encabezados
             const headers = ['ID', 'Tipo', 'Identificación', 'Nombre', 'Carrera', 'Curso', 'Grupo'];
-            const colWidths = [10, 18, 28, 35, 38, 30, 25]; // más equilibrado
-            const startX = 14;
-            let y = infoY + 47;
+            const colWidths = [10, 25, 30, 40, 40, 35, 25];
+            let y = 30;
 
-            doc.setFontSize(10);
-            doc.setFont("helvetica", "bold");
-            headers.forEach((h, i) => {
-                doc.text(h, startX + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y);
-            });
+            doc.setFont(undefined, 'bold');
+            headers.forEach((h, i) => doc.text(h, 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
+            doc.setFont(undefined, 'normal');
+            y += 7;
 
-            doc.setFont("helvetica", "normal");
-            y += 6;
-
-            const filas = document.querySelectorAll('#tablaEstudiantes tbody tr');
-            filas.forEach((tr, idx) => {
+            // Filas
+            document.querySelectorAll('#tablaEstudiantes tbody tr').forEach(tr => {
                 const cols = [...tr.children].map(td => td.innerText);
-
-                let maxAlturaFila = 6;
-                cols.forEach((c, i) => {
-                    const x = startX + colWidths.slice(0, i).reduce((a, b) => a + b, 0);
-                    const texto = doc.splitTextToSize(String(c), colWidths[i] - 2); // salto de línea
-                    doc.text(texto, x, y);
-                    const altura = texto.length * 5.5;
-                    if (altura > maxAlturaFila) maxAlturaFila = altura;
-                });
-
-                y += maxAlturaFila;
-                if (y > 270 && idx < filas.length - 1) {
+                cols.forEach((c, i) => doc.text(String(c), 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
+                y += 7;
+                if (y > 270) {
                     doc.addPage();
                     y = 20;
                 }
             });
 
-            // Pie de página
-            const totalPages = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= totalPages; i++) {
-                doc.setPage(i);
-                doc.setFontSize(9);
-                doc.text(`Página ${i} de ${totalPages}`, 105, 290, { align: "center" });
-            }
-
-            doc.save(`ListadoEstudiantes_P${periodo}.pdf`);
+            doc.save('ListadoEstudiantes.pdf');
         }
-
     </script>
 }

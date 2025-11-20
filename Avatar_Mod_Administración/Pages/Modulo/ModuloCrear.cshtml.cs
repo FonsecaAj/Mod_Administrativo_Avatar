@@ -1,10 +1,10 @@
-using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_AdministraciÛn.Entities;
-using Avatar_Mod_AdministraciÛn.Services;
+Ôªøusing Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_Administraci√≥n.Entities;
+using Avatar_Mod_Administraci√≥n.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace Avatar_Mod_AdministraciÛn.Pages.Modulo
+namespace Avatar_Mod_Administraci√≥n.Pages.Modulo
 {
     public class ModuloCrearModel : BasePageModel
     {
@@ -40,13 +40,13 @@ namespace Avatar_Mod_AdministraciÛn.Pages.Modulo
 
             if (string.IsNullOrWhiteSpace(Input.Nombre))
             {
-                ModelState.AddModelError("Input.Nombre", "El nombre del mÛdulo es requerido");
+                ModelState.AddModelError("Input.Nombre", "El nombre del m√≥dulo es requerido");
             }
             else
             {
                 var nombreTrimmed = Input.Nombre.Trim();
 
-                if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-Z·ÈÌÛ˙¡…Õ”⁄Ò—\s]+$"))
+                if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-Z√°√©√≠√≥√∫√Å√â√ç√ì√ö√±√ë\s]+$"))
                 {
                     ModelState.AddModelError("Input.Nombre", "El nombre solo puede contener letras y espacios");
                 }
@@ -81,21 +81,23 @@ namespace Avatar_Mod_AdministraciÛn.Pages.Modulo
                     Orden = Input.Orden
                 };
 
-                var moduloCreado = await _moduloService.CrearAsync(dto, token);
+                // Usar mensajes din√°micos de la API
+                var (ok, status, message) = await _moduloService.CrearAsync(dto, token);
 
-                if (moduloCreado != null)
+                if (ok)
                 {
-                    TempData["Mensaje"] = $"MÛdulo '{moduloCreado.Nombre}' creado exitosamente";
+                    TempData["Mensaje"] = message;  // Mensaje de la API
                     return RedirectToPage("/Modulo/Modulos");
                 }
 
-                ModelState.AddModelError(string.Empty, "Error al crear el mÛdulo. Verifique que el nombre no estÈ registrado.");
+                // Mostrar mensaje de error de la API
+                ModelState.AddModelError(string.Empty, message ?? "Error al crear el m√≥dulo");
                 return Page();
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al crear mÛdulo");
-                ModelState.AddModelError(string.Empty, "OcurriÛ un error al crear el mÛdulo. Intente nuevamente.");
+                _logger.LogError(ex, "Error al crear m√≥dulo");
+                ModelState.AddModelError(string.Empty, "Ocurri√≥ un error al crear el m√≥dulo. Intente nuevamente.");
                 return Page();
             }
         }
@@ -110,7 +112,7 @@ namespace Avatar_Mod_AdministraciÛn.Pages.Modulo
         public bool Activo { get; set; } = true;
 
         [Required(ErrorMessage = "El orden es requerido")]
-        [Range(0, int.MaxValue, ErrorMessage = "El orden debe ser un n˙mero mayor o igual a 0")]
+        [Range(0, int.MaxValue, ErrorMessage = "El orden debe ser un n√∫mero mayor o igual a 0")]
         public int Orden { get; set; } = 0;
     }
 }

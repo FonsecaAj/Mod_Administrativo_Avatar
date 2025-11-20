@@ -1,19 +1,15 @@
 using Avatar_Mod_Administración.Entities;
 using Avatar_Mod_Administración.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 
 namespace Avatar_Mod_Administración.Pages.Academico
 {
-    public class ListadoEstudiantesModel : BasePageModel
+    public class ListadoEstudiantesModel : PageModel
     {
         private readonly IListadoEstudiantesApiClient _api;
 
-        public ListadoEstudiantesModel(
-            IListadoEstudiantesApiClient api,
-            IAuthService authService,
-            IUsuarioService usuarioService,
-            ILogger<ListadoEstudiantesModel> logger)
-            : base(authService, usuarioService, logger)
+        public ListadoEstudiantesModel(IListadoEstudiantesApiClient api)
         {
             _api = api;
         }
@@ -34,35 +30,24 @@ namespace Avatar_Mod_Administración.Pages.Academico
         public string? Message { get; set; }
         public string? ErrorMessage { get; set; }
 
-        public async Task<IActionResult> OnGetAsync()
+        public async Task OnGetAsync()
         {
-            var result = await InicializarSesionAsync();
-            if (result != null) return result;
-
-            var token = ObtenerToken();
-            if (string.IsNullOrWhiteSpace(token))
-            {
-                ErrorMessage = "Token no disponible, vuelva a iniciar sesión.";
-                return Page();
-            }
-
             if (Periodo == 0)
             {
                 Message = "Ingrese el número de período para obtener el listado.";
-                return Page();
+                return;
             }
 
-            var (ok, status, msg, data) = await _api.ObtenerListadoAsync(Periodo, token);
+            var (ok, status, msg, data) = await _api.ObtenerListadoAsync(Periodo);
 
             if (!ok)
             {
                 ErrorMessage = msg ?? $"Error {status}: No se pudo obtener el listado.";
-                return Page();
+                return;
             }
 
             Estudiantes = data;
             Message = msg;
-            return Page();
         }
     }
 }

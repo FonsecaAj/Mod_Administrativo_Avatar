@@ -115,16 +115,17 @@ namespace Avatar_Mod_Administración.Pages.Usuario
                 RolDeseado = Input.RolDeseado
             };
 
+            // Usar mensajes dinámicos de la API
+            var (ok, status, message) = await _usuarioService.ActualizarAsync(Email, dto, token);
 
-            var resultado = await _usuarioService.ActualizarAsync(Email, dto, token);
-
-            if (resultado)
+            if (ok)
             {
-                TempData["Mensaje"] = "Usuario actualizado exitosamente";
+                TempData["Mensaje"] = message;  // Mensaje de la API
                 return RedirectToPage("/Usuario/Usuarios");
             }
 
-            ModelState.AddModelError(string.Empty, "Error al actualizar el usuario");
+            // Mostrar mensaje de error de la API
+            ModelState.AddModelError(string.Empty, message ?? "Error al actualizar el usuario");
             await CargarCatalogosAsync(token);
             return Page();
         }

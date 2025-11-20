@@ -15,8 +15,6 @@
         public int ID_Detalle { get; set; }
         public int ID_Pago { get; set; }
         public string Descripcion { get; set; } = string.Empty;
-
-        public string Detalle { get; set; }
     }
 
     public class PagoRequest
