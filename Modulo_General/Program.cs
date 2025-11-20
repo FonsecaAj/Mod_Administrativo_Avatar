@@ -21,14 +21,6 @@ var app = builder.Build();
 app.UseSwagger();
 app.UseSwaggerUI();
 
-// Configure the HTTP request pipeline.
-//if (app.Environment.IsDevelopment())
-//{
-
-//}
-
-
-
 app.MapBitacoraEndpoints();
 app.Run();
 

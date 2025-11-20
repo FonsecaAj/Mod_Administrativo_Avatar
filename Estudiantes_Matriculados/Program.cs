@@ -17,7 +17,7 @@ builder.Services.AddScoped<ListadoRepository>();
 builder.Services.AddScoped<IEstudiantesService, ListadoService>();
 
 builder.Services.AddHttpClient<IAutenticacionService, AutenticacionService>();
-builder.Configuration["AutenticacionApiUrl"] = "http://localhost:5233";
+builder.Configuration["AutenticacionApiUrl"] = "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR5Login/";
 
 builder.Services.AddHttpClient<BitacoraConsumer>();
 

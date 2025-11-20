@@ -21,11 +21,11 @@ builder.Services.AddScoped<INotasServices, NotaService>();
 
 // ==== Bitácora ====
 builder.Services.AddHttpClient<BitacoraConsumer>();
-builder.Configuration["BitacoraService:BaseUrl"] = "http://localhost:5293"; // GEN1
+builder.Configuration["BitacoraService:BaseUrl"] = "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral/"; // GEN1
 
 // ==== Autenticación (USR5) ====
 builder.Services.AddHttpClient<IAutenticacionService, AutenticacionService>();
-builder.Configuration["AutenticacionApiUrl"] = "http://localhost:5233"; // USR5
+builder.Configuration["AutenticacionApiUrl"] = "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR5Login/"; // USR5
 
 var app = builder.Build();
 
