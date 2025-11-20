@@ -1,11 +1,11 @@
 using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci�n.Services;
+using Avatar_Mod_Administración.Services;
 using System.ComponentModel.DataAnnotations;
-using TipoIdentificacionEntity = Avatar_Mod_Administraci�n.Entities.TipoIdentificacion;
-using RolEntity = Avatar_Mod_Administraci�n.Entities.Rol;
-using UsuarioCrearDto = Avatar_Mod_Administraci�n.Entities.UsuarioCrearDto;
+using TipoIdentificacionEntity = Avatar_Mod_Administración.Entities.TipoIdentificacion;
+using RolEntity = Avatar_Mod_Administración.Entities.Rol;
+using UsuarioCrearDto = Avatar_Mod_Administración.Entities.UsuarioCrearDto;
 
-namespace Avatar_Mod_Administraci�n.Pages.Usuario
+namespace Avatar_Mod_Administración.Pages.Usuario
 {
     public class UsuarioCrearModel : BasePageModel
     {

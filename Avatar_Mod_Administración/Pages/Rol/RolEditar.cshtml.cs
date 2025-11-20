@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci�n.Services;
-using Avatar_Mod_Administraci�n.Entities;
+using Avatar_Mod_Administración.Services;
+using Avatar_Mod_Administración.Entities;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace Avatar_Mod_Administraci�n.Pages.Rol
+namespace Avatar_Mod_Administración.Pages.Rol
 {
     public class RolEditarModel : BasePageModel
     {

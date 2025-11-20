@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci�n.Services;
-using UsuarioEntity = Avatar_Mod_Administraci�n.Entities.Usuario;
+using Avatar_Mod_Administración.Services;
+using UsuarioEntity = Avatar_Mod_Administración.Entities.Usuario;
 
-namespace Avatar_Mod_Administraci�n.Pages.Usuario
+namespace Avatar_Mod_Administración.Pages.Usuario
 {
     public class UsuarioDetalleModel : BasePageModel
     {

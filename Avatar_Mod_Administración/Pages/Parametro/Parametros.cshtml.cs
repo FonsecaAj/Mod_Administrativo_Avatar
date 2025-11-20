@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci�n.Services;
-using Avatar_Mod_Administraci�n.Entities;
+using Avatar_Mod_Administración.Services;
+using Avatar_Mod_Administración.Entities;
 
-namespace Avatar_Mod_Administraci�n.Pages.Parametro
+namespace Avatar_Mod_Administración.Pages.Parametro
 {
     public class ParametrosModel : BasePageModel
     {
