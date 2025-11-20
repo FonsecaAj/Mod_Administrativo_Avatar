@@ -5,7 +5,7 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.WebHost.UseUrls("http://127.0.0.1:5088"); // Puerto diferente
+//builder.WebHost.UseUrls("http://127.0.0.1:5088"); // Puerto diferente
 
 builder.Services.AddEndpointsApiExplorer();
 
@@ -44,11 +44,11 @@ builder.Services.AddHttpContextAccessor();
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
+//if (app.Environment.IsDevelopment())
+
     app.UseSwagger();
     app.UseSwaggerUI();
-}
+
 
 app.MapCursoEndpoints();
 
