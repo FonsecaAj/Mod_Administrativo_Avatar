@@ -10,9 +10,16 @@
         public decimal Total { get; set; }
         public string Estado { get; set; } = string.Empty;
 
-        public List<FacturaDetalleDto> Detalles { get; set; } = new();
+        public List<FacturaDetalleDto> Detalles { get; set; } = new List<FacturaDetalleDto>();
 
     }
+
+    //public class EnvelopeResponse<T>
+    //{
+    //    public int StatusCode { get; set; }
+    //    public string? Message { get; set; }
+    //    public T? ResponseObject { get; set; }
+    //}
 
     public class CrearFacturaRequest
     {

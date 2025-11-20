@@ -1,8 +1,8 @@
-锘縰sing Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci贸n.Services;
-using Avatar_Mod_Administraci贸n.Entities;
+using Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_Administraci髇.Services;
+using Avatar_Mod_Administraci髇.Entities;
 
-namespace Avatar_Mod_Administraci贸n.Pages.Rol
+namespace Avatar_Mod_Administraci髇.Pages.Rol
 {
     public class RolesModel : BasePageModel
     {
@@ -30,22 +30,18 @@ namespace Avatar_Mod_Administraci贸n.Pages.Rol
             return Page();
         }
 
-        // Usar mensajes din谩micos de la API
         public async Task<IActionResult> OnPostEliminarAsync(int id)
         {
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
             var token = ObtenerToken()!;
+            var resultado = await _rolService.EliminarAsync(id, token);
 
-            // Recibir (ok, status, message)
-            var (ok, status, message) = await _rolService.EliminarAsync(id, token);
-
-            // Usar el mensaje que viene de la API
-            if (ok)
-                TempData["Mensaje"] = message;  // "Rol eliminado exitosamente"
+            if (resultado)
+                TempData["Mensaje"] = "Rol eliminado exitosamente";
             else
-                TempData["Error"] = message;    // "Rol no encontrado" o mensaje de error
+                TempData["Error"] = "No se pudo eliminar el rol. Verifique dependencias.";
 
             return RedirectToPage();
         }

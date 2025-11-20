@@ -1,10 +1,10 @@
-Ôªøusing Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci√≥n.Entities;
-using Avatar_Mod_Administraci√≥n.Services;
+using Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_AdministraciÛn.Entities;
+using Avatar_Mod_AdministraciÛn.Services;
 using System.ComponentModel.DataAnnotations;
 using System.Text.RegularExpressions;
 
-namespace Avatar_Mod_Administraci√≥n.Pages.Parametro
+namespace Avatar_Mod_AdministraciÛn.Pages.Parametro
 {
     public class ParametroCrearModel : BasePageModel
     {
@@ -40,7 +40,7 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Parametro
 
             if (string.IsNullOrWhiteSpace(Input.IdParametro))
             {
-                ModelState.AddModelError("Input.IdParametro", "El ID del par√°metro es requerido");
+                ModelState.AddModelError("Input.IdParametro", "El ID del par·metro es requerido");
             }
             else
             {
@@ -48,21 +48,21 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Parametro
 
                 if (idTrimmed.Length > 10)
                 {
-                    ModelState.AddModelError("Input.IdParametro", "El ID del par√°metro no puede exceder 10 caracteres");
+                    ModelState.AddModelError("Input.IdParametro", "El ID del par·metro no puede exceder 10 caracteres");
                 }
                 else if (!Regex.IsMatch(idTrimmed, @"^[A-Z_]+$"))
                 {
-                    ModelState.AddModelError("Input.IdParametro", "El ID del par√°metro solo puede contener letras may√∫sculas y guiones bajos");
+                    ModelState.AddModelError("Input.IdParametro", "El ID del par·metro solo puede contener letras may˙sculas y guiones bajos");
                 }
             }
 
             if (string.IsNullOrWhiteSpace(Input.Valor))
             {
-                ModelState.AddModelError("Input.Valor", "El valor del par√°metro es requerido");
+                ModelState.AddModelError("Input.Valor", "El valor del par·metro es requerido");
             }
             else if (Input.Valor.Trim().Length > 500)
             {
-                ModelState.AddModelError("Input.Valor", "El valor del par√°metro no puede exceder 500 caracteres");
+                ModelState.AddModelError("Input.Valor", "El valor del par·metro no puede exceder 500 caracteres");
             }
 
             if (!ModelState.IsValid)
@@ -76,24 +76,22 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Parametro
                 Valor = Input.Valor.Trim()
             };
 
-            // Usar mensajes din√°micos de la API
-            var (ok, status, message) = await _parametroService.CrearAsync(dto, token);
+            var resultado = await _parametroService.CrearAsync(dto, token);
 
-            if (ok)
+            if (resultado)
             {
-                TempData["Mensaje"] = message;  // Mensaje de la API
+                TempData["Mensaje"] = "Par·metro creado exitosamente";
                 return RedirectToPage("/Parametro/Parametros");
             }
 
-            // Mostrar mensaje de error de la API
-            ModelState.AddModelError(string.Empty, message ?? "Error al crear el par√°metro");
+            ModelState.AddModelError(string.Empty, "Error al crear el par·metro. Verifique que el ID no estÈ registrado.");
             return Page();
         }
     }
 
     public class ParametroInputDto
     {
-        [Required(ErrorMessage = "El ID del par√°metro es requerido")]
+        [Required(ErrorMessage = "El ID del par·metro es requerido")]
         public string IdParametro { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El valor es requerido")]

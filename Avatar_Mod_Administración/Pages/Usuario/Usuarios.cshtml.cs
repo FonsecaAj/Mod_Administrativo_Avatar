@@ -115,22 +115,18 @@ namespace Avatar_Mod_Administración.Pages.Usuario
             return ordenados.ToList();
         }
 
-        // Usar el mensaje que devuelve la API
         public async Task<IActionResult> OnPostEliminarAsync(string email)
         {
             var result = await InicializarSesionAsync();
             if (result != null) return result;
 
             var token = ObtenerToken()!;
+            var resultado = await _usuarioService.EliminarAsync(email, token);
 
-            // Recibir (ok, status, message)
-            var (ok, status, message) = await _usuarioService.EliminarAsync(email, token);
-
-            // Usar el mensaje que viene de la API
-            if (ok)
-                TempData["Mensaje"] = message;  // "Usuario eliminado exitosamente"
+            if (resultado)
+                TempData["Mensaje"] = "Usuario eliminado exitosamente";
             else
-                TempData["Error"] = message;    // "Usuario no encontrado" o mensaje de error
+                TempData["Error"] = "No se pudo eliminar el usuario. Verifique dependencias.";
 
             return RedirectToPage();
         }

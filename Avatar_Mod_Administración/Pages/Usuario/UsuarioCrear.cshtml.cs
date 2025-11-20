@@ -1,11 +1,11 @@
-Ôªøusing Microsoft.AspNetCore.Mvc;
-using Avatar_Mod_Administraci√≥n.Services;
+using Microsoft.AspNetCore.Mvc;
+using Avatar_Mod_AdministraciÛn.Services;
 using System.ComponentModel.DataAnnotations;
-using TipoIdentificacionEntity = Avatar_Mod_Administraci√≥n.Entities.TipoIdentificacion;
-using RolEntity = Avatar_Mod_Administraci√≥n.Entities.Rol;
-using UsuarioCrearDto = Avatar_Mod_Administraci√≥n.Entities.UsuarioCrearDto;
+using TipoIdentificacionEntity = Avatar_Mod_AdministraciÛn.Entities.TipoIdentificacion;
+using RolEntity = Avatar_Mod_AdministraciÛn.Entities.Rol;
+using UsuarioCrearDto = Avatar_Mod_AdministraciÛn.Entities.UsuarioCrearDto;
 
-namespace Avatar_Mod_Administraci√≥n.Pages.Usuario
+namespace Avatar_Mod_AdministraciÛn.Pages.Usuario
 {
     public class UsuarioCrearModel : BasePageModel
     {
@@ -42,10 +42,10 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Usuario
 
             var token = ObtenerToken()!;
 
-            // Validaci√≥n manual del nombre (no vac√≠o ni solo espacios)
+            // ValidaciÛn manual del nombre (no vacÌo ni solo espacios)
             if (string.IsNullOrWhiteSpace(Input.Nombre))
             {
-                ModelState.AddModelError("Input.Nombre", "El nombre no puede estar vac√≠o o contener solo espacios");
+                ModelState.AddModelError("Input.Nombre", "El nombre no puede estar vacÌo o contener solo espacios");
             }
 
             if (!ModelState.IsValid)
@@ -63,7 +63,7 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Usuario
                 return Page();
             }
 
-            // Validar y asignar rol seg√∫n dominio
+            // Validar y asignar rol seg˙n dominioa
             if (email.EndsWith("@cuc.cr"))
             {
                 Input.RolDeseado = "estudiante";
@@ -96,17 +96,15 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Usuario
                 RolDeseado = Input.RolDeseado
             };
 
-            // Usar mensajes din√°micos de la API
-            var (ok, status, message) = await _usuarioService.CrearAsync(dto, token);
+            var resultado = await _usuarioService.CrearAsync(dto, token);
 
-            if (ok)
+            if (resultado)
             {
-                TempData["Mensaje"] = message;  // Mensaje de la API
+                TempData["Mensaje"] = "Usuario creado exitosamente";
                 return RedirectToPage("/Usuario/Usuarios");
             }
 
-            // Mostrar mensaje de error de la API
-            ModelState.AddModelError(string.Empty, message ?? "Error al crear el usuario");
+            ModelState.AddModelError(string.Empty, "Error al crear el usuario. Verifique que el email no estÈ registrado.");
             await CargarCatalogosAsync(token);
             return Page();
         }
@@ -121,21 +119,21 @@ namespace Avatar_Mod_Administraci√≥n.Pages.Usuario
     public class UsuarioInputDto
     {
         [Required(ErrorMessage = "El email es requerido")]
-        [EmailAddress(ErrorMessage = "Formato de email inv√°lido")]
+        [EmailAddress(ErrorMessage = "Formato de email inv·lido")]
         public string Email { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "El tipo de identificaci√≥n es requerido")]
-        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un tipo de identificaci√≥n")]
+        [Required(ErrorMessage = "El tipo de identificaciÛn es requerido")]
+        [Range(1, int.MaxValue, ErrorMessage = "Seleccione un tipo de identificaciÛn")]
         public int IdTipoIdentificacion { get; set; }
 
-        [Required(ErrorMessage = "La identificaci√≥n es requerida")]
+        [Required(ErrorMessage = "La identificaciÛn es requerida")]
         public string Identificacion { get; set; } = string.Empty;
 
         [Required(ErrorMessage = "El nombre es requerido")]
         public string Nombre { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "La contrase√±a es requerida")]
-        [MinLength(6, ErrorMessage = "La contrase√±a debe tener al menos 6 caracteres")]
+        [Required(ErrorMessage = "La contraseÒa es requerida")]
+        [MinLength(6, ErrorMessage = "La contraseÒa debe tener al menos 6 caracteres")]
         public string Contrasenna { get; set; } = string.Empty;
 
         public string? RolDeseado { get; set; }

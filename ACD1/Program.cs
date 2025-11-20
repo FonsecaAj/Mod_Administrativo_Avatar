@@ -34,13 +34,13 @@ app.MapPost("/institucion", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
+        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var validacion = ValidarInstitucion(dto);
     if (!validacion.esValido)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = validacion.mensaje }, statusCode: 400);
+        return Results.BadRequest(new { error = validacion.mensaje });
 
     var institucion = new Institucion
     {
@@ -49,9 +49,6 @@ app.MapPost("/institucion", async (
 
     var id = await repository.CrearAsync(institucion);
     var institucionCreada = await repository.ObtenerPorIdAsync(id);
-
-    if (institucionCreada == null)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 500, Message = "Error al recuperar la instituciÛn creada" }, statusCode: 500);
 
     var nuevoRegistro = new
     {
@@ -68,12 +65,7 @@ app.MapPost("/institucion", async (
         "INSERT"
     );
 
-    return Results.Json(new BusinessLogicResponse
-    {
-        StatusCode = 201,
-        Message = $"InstituciÛn '{institucionCreada.Nombre}' creada exitosamente",
-        ResponseObject = institucionCreada
-    }, statusCode: 201);
+    return Results.Created($"/institucion/{id}", institucionCreada);
 })
 .WithName("CrearInstitucion")
 .WithOpenApi();
@@ -88,17 +80,17 @@ app.MapPut("/institucion/{id}", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
+        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var validacion = ValidarInstitucion(dto);
     if (!validacion.esValido)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = validacion.mensaje }, statusCode: 400);
+        return Results.BadRequest(new { error = validacion.mensaje });
 
     var institucionExistente = await repository.ObtenerPorIdAsync(id);
     if (institucionExistente == null)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "InstituciÛn no encontrada" }, statusCode: 404);
+        return Results.NotFound(new { error = "InstituciÛn no encontrada" });
 
     var registroAnterior = new
     {
@@ -117,9 +109,6 @@ app.MapPut("/institucion/{id}", async (
 
     await repository.ActualizarAsync(institucion);
     var institucionActualizada = await repository.ObtenerPorIdAsync(id);
-
-    if (institucionActualizada == null)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 500, Message = "Error al recuperar la instituciÛn actualizada" }, statusCode: 500);
 
     var registroActual = new
     {
@@ -142,12 +131,7 @@ app.MapPut("/institucion/{id}", async (
         "UPDATE"
     );
 
-    return Results.Json(new BusinessLogicResponse
-    {
-        StatusCode = 200,
-        Message = $"InstituciÛn actualizada exitosamente a '{institucionActualizada.Nombre}'",
-        ResponseObject = institucionActualizada
-    }, statusCode: 200);
+    return Results.Ok(institucionActualizada);
 })
 .WithName("ActualizarInstitucion")
 .WithOpenApi();
@@ -162,13 +146,13 @@ app.MapDelete("/institucion/{id}", async (
     ICarreraService carreraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
+        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var institucion = await repository.ObtenerPorIdAsync(id);
     if (institucion == null)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "InstituciÛn no encontrada" }, statusCode: 404);
+        return Results.NotFound(new { error = "InstituciÛn no encontrada" });
 
     try
     {
@@ -182,15 +166,15 @@ app.MapDelete("/institucion/{id}", async (
                 ? $"No se puede eliminar la instituciÛn '{institucion.Nombre}' porque tiene 1 carrera asociada. Primero debe eliminar o reasignar la carrera."
                 : $"No se puede eliminar la instituciÛn '{institucion.Nombre}' porque tiene {cantidadCarreras} carreras asociadas. Primero debe eliminar o reasignar las carreras.";
 
-            return Results.Json(new BusinessLogicResponse { StatusCode = 400, Message = mensaje }, statusCode: 400);
+            return Results.BadRequest(new { error = mensaje });
         }
     }
     catch (InvalidOperationException ex)
     {
         // Si el servicio ACD2 no est· disponible, retornar error claro
         return Results.Json(
-            new BusinessLogicResponse { StatusCode = 503, Message = ex.Message },
-            statusCode: 503);
+            new { error = ex.Message },
+            statusCode: 503); // Service Unavailable
     }
 
     var registroEliminado = new
@@ -210,11 +194,7 @@ app.MapDelete("/institucion/{id}", async (
         "DELETE"
     );
 
-    return Results.Json(new BusinessLogicResponse
-    {
-        StatusCode = 200,
-        Message = $"InstituciÛn '{institucion.Nombre}' eliminada exitosamente"
-    }, statusCode: 200);
+    return Results.NoContent();
 })
 .WithName("EliminarInstitucion")
 .WithOpenApi();
@@ -228,7 +208,7 @@ app.MapGet("/institucion", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
+        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
@@ -256,12 +236,7 @@ app.MapGet("/institucion", async (
         "SELECT"
     );
 
-    return Results.Json(new BusinessLogicResponse
-    {
-        StatusCode = 200,
-        Message = "Instituciones obtenidas correctamente",
-        ResponseObject = instituciones
-    }, statusCode: 200);
+    return Results.Ok(instituciones);
 })
 .WithName("ObtenerTodasInstituciones")
 .WithOpenApi();
@@ -275,13 +250,13 @@ app.MapGet("/institucion/{id}", async (
     IBitacoraService bitacoraService) =>
 {
     if (!await autenticacionService.ValidarTokenAsync(authorization))
-        return Results.Json(new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" }, statusCode: 401);
+        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
 
     var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
     var institucion = await repository.ObtenerPorIdAsync(id);
     if (institucion == null)
-        return Results.Json(new BusinessLogicResponse { StatusCode = 404, Message = "InstituciÛn no encontrada" }, statusCode: 404);
+        return Results.NotFound(new { error = "InstituciÛn no encontrada" });
 
     var registroConsultado = new
     {
@@ -298,12 +273,7 @@ app.MapGet("/institucion/{id}", async (
         "SELECT"
     );
 
-    return Results.Json(new BusinessLogicResponse
-    {
-        StatusCode = 200,
-        Message = "InstituciÛn obtenida correctamente",
-        ResponseObject = institucion
-    }, statusCode: 200);
+    return Results.Ok(institucion);
 })
 .WithName("ObtenerInstitucionPorId")
 .WithOpenApi();
@@ -315,19 +285,8 @@ static (bool esValido, string mensaje) ValidarInstitucion(InstitucionDto dto)
     if (string.IsNullOrWhiteSpace(dto.Nombre))
         return (false, "El nombre de la instituciÛn es requerido");
 
-    var nombreTrimmed = dto.Nombre.Trim();
-
-    if (nombreTrimmed.Length < 3)
-        return (false, "El nombre debe tener al menos 3 caracteres");
-
-    if (nombreTrimmed.Length > 100)
-        return (false, "El nombre no puede exceder los 100 caracteres");
-
-    if (!Regex.IsMatch(nombreTrimmed, @"^[a-zA-Z·ÈÌÛ˙¡…Õ”⁄Ò—\s]+$"))
+    if (!Regex.IsMatch(dto.Nombre.Trim(), @"^[a-zA-Z·ÈÌÛ˙¡…Õ”⁄Ò—\s]+$"))
         return (false, "El nombre de la instituciÛn solo puede contener letras y espacios");
-
-    if (Regex.IsMatch(nombreTrimmed, @"\s{2,}"))
-        return (false, "El nombre no puede contener espacios consecutivos");
 
     return (true, string.Empty);
 }
