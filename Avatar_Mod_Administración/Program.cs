@@ -100,6 +100,16 @@ builder.Services.AddHttpClient<IPagoApiClient, PagoApiClient>(client =>
 
 });
 
+
+builder.Services.AddHttpClient<INotificacionesApiClient, NotificacionesApiClient>(client =>
+{
+    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Notificaciones"]
+        ?? throw new InvalidOperationException("Base URL de Notificaciones no configurada");
+
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
 //  Cliente HTTP para Cursos (Adm_Cursos)
 builder.Services.AddHttpClient<ICursoApiClient, CursoApiClient>(client =>
 {

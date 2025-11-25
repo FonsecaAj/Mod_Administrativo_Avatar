@@ -33,6 +33,8 @@
         { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt', grupo: 'Facturación', prefijo: '/Facturacion/Facturas' },
         { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
 
+        { texto: 'Prueba Notificaciones', url: '/Notificaciones_Correo/Index', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
+
         // RUTAS DE ADMINISTRACIÓN MANTENIMIENTO (Las que deben reemplazar a las originales)
         { texto: 'Cursos', url: '/ADM10_Cursos', icono: 'bi-book', grupo: 'Mantenimiento Adm', prefijo: '/ADM10_Cursos' },
         { texto: 'Profesores', url: '/ADM11_Profesor', icono: 'bi-people', grupo: 'Mantenimiento Adm', prefijo: '/ADM11_Profesor' },
