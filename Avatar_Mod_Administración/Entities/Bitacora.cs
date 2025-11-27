@@ -2,10 +2,11 @@
 {
     public class Bitacora
     {
-        public int IdBitacora { get; set; }
-        public DateTime FechaBitacora { get; set; }
-        public string Usuario { get; set; } = string.Empty;
-        public string Descripcion { get; set; } = string.Empty;
+        public int iD_Bitacora { get; set; }
+        public DateTime fecha_Registro { get; set; }
+        public string usuario { get; set; } = "";
+        public string tipo_Accion { get; set; } = "";
+        public object detalle { get; set; } = new();
     }
 
     public class BitacoraCrearDto
@@ -21,5 +22,7 @@
         public string? Usuario { get; set; }
         public string? Accion { get; set; }
         public string? Modulo { get; set; }
+        public int Pagina { get; set; } = 1;
+        public int PorPagina { get; set; } = 10;
     }
 }

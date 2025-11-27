@@ -110,6 +110,16 @@ builder.Services.AddHttpClient<INotificacionesApiClient, NotificacionesApiClient
     client.Timeout = TimeSpan.FromSeconds(30);
 });
 
+builder.Services.AddHttpClient<IBitacoraService, BitacoraService>(client =>
+{
+    var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Bitacora"]
+        ?? throw new InvalidOperationException("Base URL de Bitacora no configurada");
+
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+
 //  Cliente HTTP para Cursos (Adm_Cursos)
 builder.Services.AddHttpClient<ICursoApiClient, CursoApiClient>(client =>
 {
