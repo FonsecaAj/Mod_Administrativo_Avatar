@@ -1,4 +1,22 @@
 ﻿@page
 @model Avatar_Mod_Administración.Pages.Perfil.IndexModel
-@{
+
+<h2 class="mb-4">Mi Perfil</h2>
+
+@if (Model.Perfil == null)
+{
+    <div class="alert alert-warning">
+        No se pudo cargar el perfil del usuario.
+    </div>
+}
+else
+{
+    <div class="card shadow-sm" style="max-width: 450px;">
+        <div class="card-body">
+            <p><strong>Email:</strong> @Model.Perfil.Email</p>
+            <p><strong>Tipo Identificación:</strong> @Model.Perfil.Tipo_Identificacion</p>
+            <p><strong>Número Identificación:</strong> @Model.Perfil.Identificacion</p>
+            <p><strong>Nombre:</strong> @Model.Perfil.Nombre</p>
+        </div>
+    </div>
 }

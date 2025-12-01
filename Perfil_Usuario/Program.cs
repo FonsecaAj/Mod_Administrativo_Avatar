@@ -1,42 +1,47 @@
+using Perfil_Usuario;
+using Perfil_Usuario.Repository;
+using Perfil_Usuario.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+// =======================
+// Swagger
+// =======================
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// =======================
+// Conexión BD
+// =======================
+builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
+builder.Services.AddScoped<PerfilUsuarioRepository>();
+builder.Services.AddScoped<IPerfilUsuarioService, PerfilUsuarioService>();
+
+// =======================
+// Bitácora (GEN1)
+// =======================
+builder.Services.AddHttpClient<BitacoraConsumer>();
+builder.Configuration["BitacoraService:BaseUrl"] =
+    "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral/";
+
+// =======================
+// Autenticación (USR5)
+// =======================
+builder.Services.AddHttpClient<IAutenticacionService, AutenticacionService>();
+builder.Configuration["AutenticacionApiUrl"] =
+    "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR5Login/";
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+// =======================
+// Swagger
+// =======================
+app.UseSwagger();
+app.UseSwaggerUI();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast = Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast")
-.WithOpenApi();
+// =======================
+// Endpoints
+// =======================
+app.MapPerfilUsuarioEndpoints();
 
 app.Run();
-
-internal record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
