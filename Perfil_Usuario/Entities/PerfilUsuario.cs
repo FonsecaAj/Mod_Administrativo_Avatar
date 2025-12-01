@@ -13,4 +13,12 @@ namespace Perfil_Usuario.Entities
         public string Contraseña { get; set; } = string.Empty;
 
     }
+
+    public class ActualizarContrasenaRequest
+    {
+        public string Email { get; set; } = string.Empty;
+        public string NuevaContrasena { get; set; } = string.Empty;
+    }
+
+
 }

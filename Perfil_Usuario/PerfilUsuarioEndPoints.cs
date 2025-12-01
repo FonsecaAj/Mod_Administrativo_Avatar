@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Perfil_Usuario.Entities;
 using Perfil_Usuario.Services;
 
 
@@ -31,8 +32,32 @@ using Perfil_Usuario.Services;
                 })
                 .WithName("ObtenerPerfilUsuario")
                 .WithOpenApi();
-            }
+
+
+                        group.MapPost("/contrasena", async (
+                [FromHeader(Name = "Authorization")] string? token,
+                [FromBody] ActualizarContrasenaRequest request,
+                [FromServices] IPerfilUsuarioService perfilService,
+                [FromServices] IAutenticacionService auth
+            ) =>
+                        {
+                            // Validar token
+                            if (!await auth.ValidarTokenAsync(token))
+                                return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+
+                            var response = await perfilService.ActualizarContrasenaAsync(
+                                request.Email,
+                                request.NuevaContrasena
+                            );
+
+                            return Results.Json(response, statusCode: response.StatusCode);
+
+                        })
+            .WithName("ActualizarContrasena")
+            .WithOpenApi();
+
         }
+    }
     }
 
 
