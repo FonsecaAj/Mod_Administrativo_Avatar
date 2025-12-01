@@ -41,6 +41,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiACD6", "ApiACD6\ApiACD6.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiMAT1", "ApiMAT1\ApiMAT1.csproj", "{F6E87C1C-59CF-C165-911E-3CF5321404DD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perfil_Usuario", "Perfil_Usuario\Perfil_Usuario.csproj", "{DC1B941A-29FB-47EA-A1E2-12B1A65C5254}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,10 @@ Global
 		{F6E87C1C-59CF-C165-911E-3CF5321404DD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6E87C1C-59CF-C165-911E-3CF5321404DD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6E87C1C-59CF-C165-911E-3CF5321404DD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DC1B941A-29FB-47EA-A1E2-12B1A65C5254}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DC1B941A-29FB-47EA-A1E2-12B1A65C5254}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DC1B941A-29FB-47EA-A1E2-12B1A65C5254}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DC1B941A-29FB-47EA-A1E2-12B1A65C5254}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
