@@ -6,6 +6,10 @@ namespace Avatar_Mod_Administración.Services
     {
         Task<(bool ok, int statusCode, string? message, PerfilUsuarioDto? data)>
             ObtenerPerfilAsync(string email, string token, CancellationToken ct = default);
+
+        Task<(bool ok, int statusCode, string? message)>
+    CambiarContrasenaAsync(string email, string nuevaContrasena, string token);
+
     }
 
 }

@@ -9,8 +9,17 @@ namespace Avatar_Mod_Administración.Pages.Perfil
     {
         private readonly IPerfilUsuarioApiClient _perfilApi;
 
-        // -------- Datos expuestos a la Vista --------
+        [BindProperty]
+        public string NuevaContrasena { get; set; } = "";
+
+        [BindProperty]
+        public string ConfirmarContrasena { get; set; } = "";
+
         public PerfilUsuarioDto? Perfil { get; set; }
+
+        // Mensajes para la vista
+        public string? MensajeExito { get; set; }
+        public string? MensajeError { get; set; }
 
         public IndexModel(
             IAuthService authService,
@@ -22,34 +31,107 @@ namespace Avatar_Mod_Administración.Pages.Perfil
             _perfilApi = perfilApiClient;
         }
 
-        public async Task<IActionResult> OnGet()
+        private async Task CargarPerfilAsync()
         {
-            // validar sesion + renovar token + setear viewdata
-            var validar = await InicializarSesionAsync();
-            if (validar != null)
-                return validar;
-
             try
             {
                 var token = ObtenerToken();
-                var email = UsuarioEmail; // Ya viene por sesión
+                var email = UsuarioEmail;
 
                 var (ok, statusCode, message, data) = await _perfilApi.ObtenerPerfilAsync(email, token);
 
-                if (!ok || data == null)
+                Perfil = ok ? data : null;
+
+                if (!ok && string.IsNullOrEmpty(MensajeError))
                 {
-                    _logger.LogWarning("Error obteniendo perfil: {Message}", message);
-                    Perfil = null;
-                }
-                else
-                {
-                    Perfil = data;
+ 
+                    MensajeError = $"Error al cargar el perfil ({statusCode}): {message ?? "No se recibió un mensaje de error."}";
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error cargando perfil del usuario");
-                Perfil = null;
+                _logger.LogError(ex, "Error cargando perfil");
+                if (string.IsNullOrEmpty(MensajeError))
+                {
+                    MensajeError = "Error inesperado al cargar el perfil.";
+                }
+            }
+        }
+
+
+        public async Task<IActionResult> OnGet()
+        {
+            var validar = await InicializarSesionAsync();
+            if (validar != null)
+                return validar;
+
+            await CargarPerfilAsync();
+
+            return Page();
+        }
+
+        // Cambiar contraseña
+        public async Task<IActionResult> OnPostCambiarContrasena()
+        {
+            var validar = await InicializarSesionAsync();
+            if (validar != null)
+                return validar;
+
+
+            await CargarPerfilAsync();
+
+            if (Perfil == null)
+            {
+                // Si el perfil es null, ya MensajeError fue establecido en CargarPerfilAsync
+                return Page();
+            }
+
+            if (string.IsNullOrWhiteSpace(NuevaContrasena) ||
+                string.IsNullOrWhiteSpace(ConfirmarContrasena))
+            {
+                MensajeError = "Debe completar ambos campos de contraseña.";
+                // Ya se llamó a CargarPerfilAsync arriba
+                return Page();
+            }
+
+            if (NuevaContrasena.Length < 8)
+            {
+                MensajeError = "La nueva contraseña debe tener al menos 8 caracteres.";
+                return Page();
+            }
+
+            if (NuevaContrasena != ConfirmarContrasena)
+            {
+                MensajeError = "Las contraseñas no coinciden. Por favor, revíselas.";
+                return Page();
+            }
+
+            try
+            {
+                var token = ObtenerToken();
+                var email = UsuarioEmail;
+
+                var (ok, statusCode, message) =
+                    await _perfilApi.CambiarContrasenaAsync(email, NuevaContrasena, token);
+
+                if (!ok)
+                {
+               
+                    MensajeError = $"Error al actualizar la contraseña ({statusCode}): {message ?? "No se recibió un mensaje de error."}";
+                }
+                else
+                {
+                    // MEJORADO: Mensaje de éxito más claro
+                    MensajeExito = "¡Contraseña actualizada correctamente!";
+                    // Limpiar los campos después del éxito
+                    NuevaContrasena = "";
+                    ConfirmarContrasena = "";
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al cambiar contraseña");
+                MensajeError = " Ocurrió un error inesperado al cambiar la contraseña. Intente de nuevo más tarde.";
             }
 
             return Page();

@@ -74,5 +74,62 @@ namespace Avatar_Mod_Administración.Services
                 return (false, 500, $"Error procesando respuesta: {ex.Message}", null);
             }
         }
+
+        public async Task<(bool ok, int statusCode, string? message)>
+        CambiarContrasenaAsync(string email, string nuevaContrasena, string token)
+        {
+            try
+            {
+                if (string.IsNullOrWhiteSpace(token))
+                    return (false, 401, "Token no proporcionado");
+
+                // Limpieza del token
+                var tokenLimpio = token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase)
+                    ? token.Substring(7).Trim()
+                    : token.Trim();
+
+                _http.DefaultRequestHeaders.Remove("Authorization");
+                _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenLimpio);
+
+                var url = $"{_baseUrl}api/perfil/contrasena"; 
+
+                var payload = new
+                {
+                    Email = email,
+                    NuevaContrasena = nuevaContrasena
+                };
+
+                var response = await _http.PostAsJsonAsync(url, payload);
+
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    var error = await response.Content.ReadAsStringAsync();
+                    return (false, (int)response.StatusCode, error);
+                }
+
+
+                using var stream = await response.Content.ReadAsStreamAsync();
+                using var doc = await JsonDocument.ParseAsync(stream);
+
+                var root = doc.RootElement;
+
+                int statusCode = root.TryGetProperty("statusCode", out var sc)
+                    ? sc.GetInt32()
+                    : (int)response.StatusCode;
+
+                string message = root.TryGetProperty("message", out var msg)
+                    ? msg.GetString() ?? ""
+                    : "Operación realizada";
+
+                bool ok = statusCode == 200;
+
+                return (ok, statusCode, message);
+            }
+            catch (Exception ex)
+            {
+                return (false, 500, ex.Message);
+            }
+        }
     }
 }

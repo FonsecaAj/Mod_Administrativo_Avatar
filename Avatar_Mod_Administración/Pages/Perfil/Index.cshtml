@@ -1,22 +1,73 @@
 ﻿@page
 @model Avatar_Mod_Administración.Pages.Perfil.IndexModel
 
-<h2 class="mb-4">Mi Perfil</h2>
+<link rel="stylesheet" href="~/css/perfil_usuario.css" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
 
-@if (Model.Perfil == null)
-{
-    <div class="alert alert-warning">
-        No se pudo cargar el perfil del usuario.
+<div class="perfil-container">
+    <div class="perfil-header">
+        <h2><i class="fas fa-user-circle"></i> Mi Perfil</h2>
     </div>
-}
-else
-{
-    <div class="card shadow-sm" style="max-width: 450px;">
-        <div class="card-body">
-            <p><strong>Email:</strong> @Model.Perfil.Email</p>
-            <p><strong>Tipo Identificación:</strong> @Model.Perfil.Tipo_Identificacion</p>
-            <p><strong>Número Identificación:</strong> @Model.Perfil.Identificacion</p>
-            <p><strong>Nombre:</strong> @Model.Perfil.Nombre</p>
+
+    @if (Model.Perfil == null)
+    {
+        <div class="alert alert-warning alert-perfil">
+            <i class="fas fa-exclamation-triangle"></i> No se pudo cargar el perfil del usuario.
         </div>
-    </div>
-}
+    }
+    else
+    {
+        <div class="perfil-info-card">
+            <div class="card-body">
+                <p><strong><i class="fas fa-envelope"></i> Email:</strong> @Model.Perfil.Email</p>
+                <p><strong><i class="fas fa-id-card"></i> Tipo Identificación:</strong> @Model.Perfil.Tipo_Identificacion</p>
+                <p><strong><i class="fas fa-id-badge"></i> Número Identificación:</strong> @Model.Perfil.Identificacion</p>
+                <p><strong><i class="fas fa-user"></i> Nombre:</strong> @Model.Perfil.Nombre</p>
+            </div>
+        </div>
+
+        <div class="seccion-contrasena">
+            <h4><i class="fas fa-key"></i> Cambiar Contraseña</h4>
+
+            @if (!string.IsNullOrEmpty(Model.MensajeExito))
+            {
+                <div class="alert alert-success alert-perfil alert-dismissible fade show" role="alert">
+                    <i class="fas fa-check-circle"></i> @Model.MensajeExito
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+            @if (!string.IsNullOrEmpty(Model.MensajeError))
+            {
+                <div class="alert alert-danger alert-perfil alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle"></i> @Model.MensajeError
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <form method="post" asp-page-handler="CambiarContrasena" class="formulario-contrasena">
+                <div class="mb-4">
+                    <label for="NuevaContrasena" class="form-label">
+                        <i class="fas fa-lock"></i> Nueva Contraseña
+                    </label>
+                    <input type="password" class="form-control" id="NuevaContrasena" asp-for="NuevaContrasena"
+                           required minlength="8" maxlength="50" placeholder="Ingresa tu nueva contraseña" />
+                    <small class="form-text">
+                        <i class="fas fa-info-circle"></i> Debe tener al menos 8 caracteres.
+                    </small>
+                </div>
+
+                <div class="mb-4">
+                    <label for="ConfirmarContrasena" class="form-label">
+                        <i class="fas fa-lock"></i> Confirmar Contraseña
+                    </label>
+                    <input type="password" class="form-control" id="ConfirmarContrasena" asp-for="ConfirmarContrasena"
+                           required minlength="8" maxlength="50" placeholder="Confirma tu nueva contraseña" />
+                </div>
+
+                <button type="submit" class="btn-actualizar-contrasena">
+                    <i class="fas fa-sync-alt"></i> Actualizar Contraseña
+                </button>
+            </form>
+        </div>
+    }
+</div>
