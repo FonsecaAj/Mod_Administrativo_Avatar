@@ -13,27 +13,28 @@
         'Bitácoras': { icono: 'bi-journal-text', url: '/api/Bitacora', grupo: 'Administración', prefijo: '/api/Bitacora' },
         'Instituciones': { icono: 'bi-building', url: '/Institucion/Instituciones', grupo: 'Académico', prefijo: '/Institucion' },
         'Carreras': { icono: 'bi-mortarboard', url: '/Carrera/Carreras', grupo: 'Académico', prefijo: '/Carrera' },
-        'Cursos': { icono: 'bi-book', url: '/Curso/Cursos', grupo: 'Académico', prefijo: '/Curso' }, // <--- Módulo a reemplazar en Admin
-        'Grupos': { icono: 'bi-diagram-3', url: '/Grupo/Grupos', grupo: 'Académico', prefijo: '/Grupo' },
-        'Prematrícula': { icono: 'bi-clipboard-check', url: '/Prematricula/Index', grupo: 'Matrícula', prefijo: '/Prematricula' },
+        'Cursos': { icono: 'bi-book', url: '/ADM10_Cursos', grupo: 'Académico', prefijo: '/Curso' },
+        'Grupos': { icono: 'bi-diagram-3', url: '/ADM13_Grupo', grupo: 'Académico', prefijo: '/Grupo' },
+        'Prematrícula': { icono: 'bi-clipboard-check', url: '/ADM14_Prematricula/Index', grupo: 'Matrícula', prefijo: '/Prematricula' },
         'Matrícula': { icono: 'bi-journal-check', url: '/Matricula/Index', grupo: 'Matrícula', prefijo: '/Matricula' },
         'Mis Cursos': { icono: 'bi-book-half', url: '/MisCursos/Index', grupo: 'Estudiante', prefijo: '/MisCursos' },
         'Desglose y Notas': { icono: 'bi-clipboard-data', url: '/Notas/Index', grupo: 'Evaluación', prefijo: '/Notas' },
         'Promedios': { icono: 'bi-graph-up', url: '/Promedios/Index', grupo: 'Evaluación', prefijo: '/Promedios' },
-        'Reportes': { icono: 'bi-file-earmark-bar-graph', url: '/Reportes/Index', grupo: 'Reportes', prefijo: '/Reportes' }
+        'Reportes': { icono: 'bi-file-earmark-bar-graph', url: '/Reportes/Index', grupo: 'Reportes', prefijo: '/Reportes' },
+        'Profesores': { icono: 'bi-file-earmark-bar-graph', url: '/ADM11_Profesor', grupo: 'Profesores', prefijo: '/Profesores' }
 
     };
 
-    //  OPCIONES PARA EL ROL ADMINISTRADOR (o rol con ID 1)
+    //  OPCIONES PARA EL ROL ADMINISTRADOR (o rol con ID 1)
     const ADMIN_MENU_EXTENSIONS = [
         // Dashboard y otros
         { texto: 'Home', url: '/Index', icono: 'bi-house', grupo: 'Principal', esDashboard: true, prefijo: '/Index' },
         { texto: 'Historial Académico', url: '/Academico/HistorialAcademico', icono: 'bi-journal-text', grupo: 'Académico', prefijo: '/Academico/HistorialAcademico' },
         { texto: 'Listados por periodo', url: '/Academico/ListadoEstudiantes', icono: 'bi-people', grupo: 'Académico', prefijo: '/Academico/ListadoEstudiantes' },
-        { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt', grupo: 'Facturación', prefijo: '/Facturacion/Facturas' },
-        { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
+        { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt', grupo: 'Facturación', prefijo: '/Facturacion' },
+        { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos' },
 
-        { texto: 'Prueba Notificaciones', url: '/Notificaciones_Correo/Index', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
+        { texto: 'Prueba Notificaciones', url: '/Notificaciones_Correo/Index', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Notificaciones_Correo' },
 
         // RUTAS DE ADMINISTRACIÓN MANTENIMIENTO (Las que deben reemplazar a las originales)
         { texto: 'Cursos', url: '/ADM10_Cursos', icono: 'bi-book', grupo: 'Mantenimiento Adm', prefijo: '/ADM10_Cursos' },
@@ -68,7 +69,6 @@
         } catch (error) { return false; }
     }
 
-    // La función cargarModulosPorRol está duplicada, se deja una
     async function cargarModulosPorRol(rolId, token) {
         try {
             const rolIdNum = parseInt(rolId);
@@ -95,27 +95,23 @@
             if (!modulos || modulos.length === 0) { mostrarMenuPorDefecto(); return; }
             modulosCargados = modulos;
             if (loader) loader.remove();
-            construirMenu(modulos, datosUsuario.rol); //  Pasar el rol a construirMenu
+            construirMenu(modulos, datosUsuario.rol);
             actualizarBreadcrumbs();
         } catch (error) { mostrarMenuPorDefecto(); }
     }
 
-    // Recibe el rol del usuario
     function construirMenu(modulos, rolUsuario) {
         const sidebarNav = document.querySelector('.sidebar-nav');
         if (!sidebarNav) return;
         sidebarNav.innerHTML = '';
 
-        // 1. Agrupar módulos dinámicos primero
         let grupos = agruparModulos(modulos);
 
         agregarDashboard(sidebarNav);
 
-        // 2. Lógica para incluir las opciones extra si el rol es 'Administrador'
         if (rolUsuario && rolUsuario.toLowerCase() === 'administrador') {
             ADMIN_MENU_EXTENSIONS.forEach(item => {
                 if (!item.esDashboard) {
-                    // Crea un nuevo objeto módulo con la configuración de la extensión
                     const extensionModule = {
                         nombreModulo: item.texto,
                         moduloActivo: true,
@@ -127,25 +123,22 @@
                         }
                     };
 
-                    // Lógica de reemplazo/adición:
                     const existingGroup = grupos[item.grupo];
 
                     if (!existingGroup) {
                         grupos[item.grupo] = [extensionModule];
                     } else {
-                        // Busca si existe un módulo con el mismo nombre y lo reemplaza (Ej. Cursos)
                         const index = existingGroup.findIndex(m => m.nombreModulo === item.texto);
                         if (index !== -1) {
-                            existingGroup[index] = extensionModule; // Reemplaza el módulo dinámico (el que tiene la ruta rota)
+                            existingGroup[index] = extensionModule;
                         } else {
-                            existingGroup.push(extensionModule); // Simplemente lo añade
+                            existingGroup.push(extensionModule);
                         }
                     }
                 }
             });
         }
 
-        // 3. Renderizar el menú
         Object.keys(grupos).sort().forEach(nombreGrupo => {
             const modulosGrupo = grupos[nombreGrupo];
             const tituloSeccion = document.createElement('div');
@@ -154,7 +147,6 @@
             sidebarNav.appendChild(tituloSeccion);
 
             modulosGrupo.forEach(modulo => {
-                // Prioriza la configuración de la extensión (modulo.config) si existe.
                 const config = modulo.config || MODULOS_CONFIG[modulo.nombreModulo];
                 if (config && modulo.moduloActivo) {
                     agregarItemMenu(sidebarNav, modulo.nombreModulo, config);
@@ -164,12 +156,11 @@
         marcarRutaActiva();
     }
 
-    // Agrupa módulos dinámicos. Es buena práctica asegurarte de que solo se usen módulos activos.
     function agruparModulos(modulos) {
         const grupos = {};
         modulos.forEach(modulo => {
             const config = MODULOS_CONFIG[modulo.nombreModulo];
-            if (config && modulo.moduloActivo) { // <-- Se añadió la verificación modulo.moduloActivo
+            if (config && modulo.moduloActivo) {
                 if (!grupos[config.grupo]) grupos[config.grupo] = [];
                 grupos[config.grupo].push(modulo);
             }
@@ -180,14 +171,13 @@
     function agregarDashboard(container) {
         const navItem = document.createElement('div');
         navItem.className = 'nav-item';
-        navItem.innerHTML = '<a href="/Index" class="nav-link"><i class="bi bi-house"></i><span>Home</span></a>'; // Cambiado a 'Home' y 'bi-house'
+        navItem.innerHTML = '<a href="/Index" class="nav-link"><i class="bi bi-house"></i><span>Home</span></a>';
         container.appendChild(navItem);
     }
 
     function agregarItemMenu(container, nombre, config) {
         const navItem = document.createElement('div');
         navItem.className = 'nav-item';
-        // Se usa config.url y config.icono
         navItem.innerHTML = '<a href="' + config.url + '" class="nav-link"><i class="bi ' + config.icono + '"></i><span>' + nombre + '</span></a>';
         container.appendChild(navItem);
     }
@@ -216,7 +206,7 @@
         if (!breadcrumbOl) return;
 
         const ruta = window.location.pathname;
-        let html = '<li class="breadcrumb-item"><a href="/Index"><i class="bi bi-house-door"></i> Inicio</a></li>'; // Cambiado a /Index
+        let html = '<li class="breadcrumb-item"><a href="/Index"><i class="bi bi-house-door"></i> Inicio</a></li>';
 
         if (ruta === '/' || ruta === '/Index') {
             breadcrumbOl.innerHTML = html;
@@ -225,8 +215,6 @@
 
         let moduloMatch = null;
 
-        // Búsqueda en MODULOS_CONFIG (Modulos de la API)
-        // Priorizamos coincidencia con prefijo para URL base (ej. /Usuario -> /Usuario/Crear)
         for (const nombre in MODULOS_CONFIG) {
             const config = MODULOS_CONFIG[nombre];
             if (ruta.startsWith(config.prefijo + '/')) {
@@ -235,27 +223,20 @@
             }
         }
 
-        // Búsqueda en ADMIN_MENU_EXTENSIONS (Módulos manuales)
-        // Esta sección es CRUCIAL. Si el usuario es Administrador, debemos preferir la extensión.
         if (!moduloMatch) {
-
             const extensionMatch = ADMIN_MENU_EXTENSIONS.find(item => {
                 const prefix = item.prefijo || item.url;
-                return ruta.startsWith(prefix + '/');
+                return ruta.startsWith(prefix + '/') || ruta === prefix;
             });
 
             if (extensionMatch) {
-                // Sobrescribe si ya existía un match por nombre en MODULOS_CONFIG que ahora es extensión
                 moduloMatch = { nombre: extensionMatch.texto, url: extensionMatch.url, grupo: extensionMatch.grupo, prefijo: extensionMatch.prefijo };
             }
         }
 
-        // CORRECCIÓN: Si el rol es administrador y se encontró un módulo dinámico,
-        // verificamos si existe una extensión con el mismo nombre y la usamos.
         if (moduloMatch && obtenerDatosUsuario()?.rol.toLowerCase() === 'administrador') {
             const adminOverride = ADMIN_MENU_EXTENSIONS.find(item => item.texto === moduloMatch.nombre);
             if (adminOverride) {
-                // Reemplazamos la información del módulo dinámico con la información de la extensión
                 moduloMatch = {
                     nombre: adminOverride.texto,
                     url: adminOverride.url,
@@ -265,7 +246,6 @@
             }
         }
 
-
         if (!moduloMatch) {
             breadcrumbOl.innerHTML = html;
             return;
@@ -273,7 +253,6 @@
 
         html += '<li class="breadcrumb-item">' + moduloMatch.grupo + '</li>';
 
-        // Comprobar si la ruta actual es la ruta base del módulo
         if (ruta === moduloMatch.url || ruta === moduloMatch.url + '/') {
             html += '<li class="breadcrumb-item active" aria-current="page">' + moduloMatch.nombre + '</li>';
         } else {
@@ -288,39 +267,50 @@
     function obtenerNombreSubpagina(ruta) {
         const r = ruta.toLowerCase();
 
+        // Instituciones
         if (r.includes('institucioncrear')) return 'Crear Institución';
         if (r.includes('institucioneditar')) return 'Editar Institución';
 
+        // Usuarios
         if (r.includes('usuariocrear')) return 'Crear Usuario';
         if (r.includes('usuarioeditar')) return 'Editar Usuario';
 
-        if (r.includes('carreracrear')) return 'Crear Carrera';
-        if (r.includes('carreraeditar')) return 'Editar Carrera';
+        // Carreras
+        if (r.includes('/carrera/carreracrear')) return 'Crear Carrera';
+        if (r.includes('/carrera/carreraeditar')) return 'Editar Carrera';
 
-        if (r.includes('cursocrear')) return 'Crear Curso';
-        if (r.includes('cursoeditar')) return 'Editar Curso';
+        // Cursos (ADM10)
+        if (r.includes('/adm10_cursos/crear')) return 'Crear Curso';
+        if (r.includes('/adm10_cursos/editar')) return 'Editar Curso';
+        if (r.includes('/adm10_cursos/eliminar')) return 'Eliminar Curso';
 
+        // Roles
         if (r.includes('rolcrear')) return 'Crear Rol';
         if (r.includes('roleditar')) return 'Editar Rol';
 
+        // Grupos
         if (r.includes('grupocrear')) return 'Crear Grupo';
         if (r.includes('grupoeditar')) return 'Editar Grupo';
 
+        // Parámetros
         if (r.includes('parametrocrear')) return 'Crear Parámetro';
         if (r.includes('parametroeditar')) return 'Editar Parámetro';
 
+        // Módulos
         if (r.includes('modulocrear')) return 'Crear Módulo';
         if (r.includes('moduloeditar')) return 'Editar Módulo';
 
+        // Genéricos
         if (r.includes('crear')) return 'Crear';
         if (r.includes('editar')) return 'Editar';
+        if (r.includes('eliminar')) return 'Eliminar';
         if (r.includes('detalle')) return 'Detalle';
 
-        // Nuevas páginas
+        // Páginas específicas
         if (r.includes('historialacademico')) return 'Historial Académico';
         if (r.includes('listadoestudiantes')) return 'Listados por Periodo';
-        if (r.includes('facturas')) return 'Administración de Facturas';
-        if (r.includes('pagos')) return 'Consulta de Pagos';
+        if (r.includes('/facturacion/facturas')) return 'Administración de Facturas';
+        if (r.includes('/pagos/pagos')) return 'Consulta de Pagos';
 
         // Módulos de Mantenimiento Adm (ADM)
         if (r.includes('adm10_cursos')) return 'Mantenimiento Cursos';
@@ -328,7 +318,6 @@
         if (r.includes('adm12_periodo')) return 'Mantenimiento Periodos';
         if (r.includes('adm13_grupo')) return 'Mantenimiento Grupos';
         if (r.includes('adm14_prematricula')) return 'Mantenimiento Prematrícula';
-
 
         return 'Página';
     }

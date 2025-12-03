@@ -17,7 +17,6 @@ namespace Avatar_Mod_Administración.Services
         {
             try
             {
-                // Validaciones requeridas
                 if (string.IsNullOrWhiteSpace(request.Usuario))
                     return new BusinessLogicResponse
                     {
@@ -32,12 +31,10 @@ namespace Avatar_Mod_Administración.Services
                         Message = "El campo 'Descripción' es requerida y no puede estar vacía."
                     };
 
-                // "INSERT"
                 var tipoAccion = string.IsNullOrWhiteSpace(request.Tipo_Accion)
                     ? "INSERT"
                     : request.Tipo_Accion.Trim().ToUpper();
 
-                // Validar formato JSON solo para operaciones CRUD (no SELECT ni GENERICA)
                 if (tipoAccion != "SELECT" && tipoAccion != "GENERICA" && !IsValidJson(request.Descripcion))
                     return new BusinessLogicResponse
                     {
@@ -45,7 +42,6 @@ namespace Avatar_Mod_Administración.Services
                         Message = "El campo 'Descripción' debe tener un formato JSON válido para operaciones de tipo INSERT, UPDATE o DELETE."
                     };
 
-                // Construir entidad Bitácora
                 var bitacora = new Bitacora
                 {
                     Usuario = request.Usuario.Trim(),
@@ -54,10 +50,8 @@ namespace Avatar_Mod_Administración.Services
                     Fecha_Registro = DateTime.Now
                 };
 
-                // Registrar bitácora
                 var id = await _bitacoraRepository.Registrar(bitacora);
 
-                
                 return new BusinessLogicResponse
                 {
                     StatusCode = 201,
@@ -73,7 +67,6 @@ namespace Avatar_Mod_Administración.Services
             }
             catch (Exception ex)
             {
-                // Manejo de errores 
                 return new BusinessLogicResponse
                 {
                     StatusCode = 500,
@@ -82,7 +75,29 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        // Método auxiliar para validar si la descripción es JSON válido
+        public async Task<BusinessLogicResponse> ObtenerTodas()
+        {
+            try
+            {
+                var bitacoras = await _bitacoraRepository.ObtenerTodas();
+
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 200,
+                    Message = "Bitácoras obtenidas exitosamente.",
+                    ResponseObject = bitacoras
+                };
+            }
+            catch (Exception ex)
+            {
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 500,
+                    Message = $"Error al obtener bitácoras: {ex.Message}"
+                };
+            }
+        }
+
         private bool IsValidJson(string str)
         {
             try

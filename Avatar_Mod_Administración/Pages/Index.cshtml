@@ -8,7 +8,7 @@
     <link rel="stylesheet" href="~/css/dashboard.css" asp-append-version="true" />
 }
 
-<!-- Mensaje de bienvenida con información del usuario -->
+<!-- Mensaje de bienvenida -->
 <div class="row mb-4">
     <div class="col-12">
         <div class="alert alert-info d-flex align-items-center" role="alert">
@@ -34,7 +34,7 @@
     </div>
 </div>
 
-<!-- Mostrar errores si existen -->
+<!-- Mostrar errores -->
 @if (TempData["Error"] != null)
 {
     <div class="row mb-4">
@@ -48,122 +48,7 @@
     </div>
 }
 
-<!-- Estadísticas Rápidas -->
-<div class="row g-4 mb-4">
-    <!-- Card de Usuarios -->
-    <div class="col-md-6 col-lg-3">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="text-muted mb-2">Usuarios</h6>
-                        <h2 class="mb-0 fw-bold stat-number">@Model.TotalUsuarios</h2>
-                        <small class="text-success mt-1 d-block">
-                            <i class="bi bi-check-circle me-1"></i>Activos
-                        </small>
-                    </div>
-                    <div class="stat-icon bg-primary bg-opacity-10 p-3 rounded-3">
-                        <i class="bi bi-people fs-1 text-primary"></i>
-                    </div>
-                </div>
-            </div>
-            @if (Model.UsuarioRolPublic == "Administrador")
-            {
-                <div class="card-footer bg-transparent border-0 pt-0">
-                    <a href="/Usuario/Usuarios" class="btn btn-sm btn-outline-primary w-100">
-                        <i class="bi bi-arrow-right me-1"></i> Ver todos
-                    </a>
-                </div>
-            }
-        </div>
-    </div>
-
-    <!-- Card de Carreras -->
-    <div class="col-md-6 col-lg-3">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="text-muted mb-2">Carreras</h6>
-                        <h2 class="mb-0 fw-bold stat-number">@Model.TotalCarreras</h2>
-                        <small class="text-warning mt-1 d-block">
-                            <i class="bi bi-mortarboard me-1"></i>Activas
-                        </small>
-                    </div>
-                    <div class="stat-icon bg-warning bg-opacity-10 p-3 rounded-3">
-                        <i class="bi bi-mortarboard fs-1 text-warning"></i>
-                    </div>
-                </div>
-            </div>
-            @if (Model.UsuarioRolPublic == "Administrador")
-            {
-                <div class="card-footer bg-transparent border-0 pt-0">
-                    <a href="/Carrera/Carreras" class="btn btn-sm btn-outline-warning w-100">
-                        <i class="bi bi-arrow-right me-1"></i> Ver todas
-                    </a>
-                </div>
-            }
-        </div>
-    </div>
-
-    <!-- Card de Cursos -->
-    <div class="col-md-6 col-lg-3">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="text-muted mb-2">Cursos</h6>
-                        <h2 class="mb-0 fw-bold stat-number">@Model.TotalCursos</h2>
-                        <small class="text-info mt-1 d-block">
-                            <i class="bi bi-book me-1"></i>Disponibles
-                        </small>
-                    </div>
-                    <div class="stat-icon bg-info bg-opacity-10 p-3 rounded-3">
-                        <i class="bi bi-book fs-1 text-info"></i>
-                    </div>
-                </div>
-            </div>
-            @if (Model.UsuarioRolPublic == "Administrador" || Model.UsuarioRolPublic == "Profesor")
-            {
-                <div class="card-footer bg-transparent border-0 pt-0">
-                    <a href="/Curso/Cursos" class="btn btn-sm btn-outline-info w-100">
-                        <i class="bi bi-arrow-right me-1"></i> Ver todos
-                    </a>
-                </div>
-            }
-        </div>
-    </div>
-
-    <!-- Card de Instituciones -->
-    <div class="col-md-6 col-lg-3">
-        <div class="card stat-card h-100">
-            <div class="card-body">
-                <div class="d-flex align-items-center justify-content-between">
-                    <div>
-                        <h6 class="text-muted mb-2">Instituciones</h6>
-                        <h2 class="mb-0 fw-bold stat-number">@Model.TotalInstituciones</h2>
-                        <small class="text-success mt-1 d-block">
-                            <i class="bi bi-building me-1"></i>Registradas
-                        </small>
-                    </div>
-                    <div class="stat-icon bg-success bg-opacity-10 p-3 rounded-3">
-                        <i class="bi bi-building fs-1 text-success"></i>
-                    </div>
-                </div>
-            </div>
-            @if (Model.UsuarioRolPublic == "Administrador")
-            {
-                <div class="card-footer bg-transparent border-0 pt-0">
-                    <a href="/Institucion/Instituciones" class="btn btn-sm btn-outline-success w-100">
-                        <i class="bi bi-arrow-right me-1"></i> Ver todas
-                    </a>
-                </div>
-            }
-        </div>
-    </div>
-</div>
-
-<!-- Widgets según rol de usuario -->
+<!-- Widgets según rol -->
 <div class="row g-4">
     @if (Model.UsuarioRolPublic == "Administrador")
     {
@@ -172,9 +57,9 @@
             <div class="card quick-access-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="bi bi-lightning-charge-fill me-2"></i>Accesos Rápidos - Administrador
+                        <i class="bi bi-lightning-charge-fill me-2"></i>Accesos Rápidos
                     </h5>
-                    <span class="badge bg-primary">Admin</span>
+                    <span class="badge bg-primary">Administrador</span>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
@@ -183,7 +68,7 @@
                                 <i class="bi bi-people-fill fs-2 me-3"></i>
                                 <div class="text-start flex-grow-1">
                                     <span class="fw-bold d-block">Usuarios</span>
-                                    <small class="text-muted">Gestionar usuarios del sistema</small>
+                                    <small class="text-muted">@Model.TotalUsuarios usuarios</small>
                                 </div>
                             </a>
                         </div>
@@ -192,25 +77,25 @@
                                 <i class="bi bi-mortarboard-fill fs-2 me-3"></i>
                                 <div class="text-start flex-grow-1">
                                     <span class="fw-bold d-block">Carreras</span>
-                                    <small class="text-muted">Administrar carreras</small>
+                                    <small class="text-muted">@Model.TotalCarreras carreras</small>
                                 </div>
                             </a>
                         </div>
                         <div class="col-md-6">
-                            <a href="/Curso/Cursos" class="btn btn-outline-info quick-access-btn w-100">
+                            <a href="/ADM10_Cursos" class="btn btn-outline-info quick-access-btn w-100">
                                 <i class="bi bi-book-fill fs-2 me-3"></i>
                                 <div class="text-start flex-grow-1">
                                     <span class="fw-bold d-block">Cursos</span>
-                                    <small class="text-muted">Gestionar cursos disponibles</small>
+                                    <small class="text-muted">@Model.TotalCursos cursos</small>
                                 </div>
                             </a>
                         </div>
                         <div class="col-md-6">
-                            <a href="/Periodo/Periodos" class="btn btn-outline-success quick-access-btn w-100">
+                            <a href="/ADM12_Periodo" class="btn btn-outline-success quick-access-btn w-100">
                                 <i class="bi bi-calendar-range-fill fs-2 me-3"></i>
                                 <div class="text-start flex-grow-1">
-                                    <span class="fw-bold d-block">Períodos Activos</span>
-                                    <small class="text-muted">Gestionar períodos académicos</small>
+                                    <span class="fw-bold d-block">Períodos</span>
+                                    <small class="text-muted">@Model.TotalPeriodosActivos activos</small>
                                 </div>
                             </a>
                         </div>
@@ -228,14 +113,23 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center justify-content-between mb-3">
                         <div>
-                            <h3 class="mb-0 fw-bold text-danger">15</h3>
-                            <small class="text-muted">Facturas sin procesar</small>
+                            <h3 class="mb-0 fw-bold text-danger">@Model.TotalFacturasPendientes</h3>
+                            <small class="text-muted">Últimos 3 meses</small>
                         </div>
                         <i class="bi bi-exclamation-triangle-fill fs-1 text-danger opacity-25"></i>
                     </div>
-                    <a href="/Factura/Pendientes" class="btn btn-sm btn-outline-danger w-100">
-                        <i class="bi bi-arrow-right me-1"></i> Ver facturas pendientes
-                    </a>
+                    @if (Model.TotalFacturasPendientes > 0)
+                    {
+                        <a href="/Facturacion/Facturas" class="btn btn-sm btn-outline-danger w-100">
+                            <i class="bi bi-arrow-right me-1"></i> Ver facturas pendientes
+                        </a>
+                    }
+                    else
+                    {
+                        <div class="text-center text-success">
+                            <i class="bi bi-check-circle me-1"></i> No hay facturas pendientes
+                        </div>
+                    }
                 </div>
             </div>
         </div>
@@ -249,17 +143,17 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="/Configuracion/Sistema" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-sliders me-2"></i>Configuración
+                        <a href="/ADM11_Profesor" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-people me-2"></i>Profesores
                         </a>
-                        <a href="/Reportes/Index" class="btn btn-sm btn-outline-info">
-                            <i class="bi bi-file-earmark-bar-graph me-2"></i>Reportes
+                        <a href="/ADM13_Grupo" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-diagram-3 me-2"></i>Grupos
                         </a>
-                        <a href="/Ayuda/Index" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-book me-2"></i>Manual de Usuario
+                        <a href="/ADM14_Prematricula" class="btn btn-sm btn-outline-warning">
+                            <i class="bi bi-clipboard-check me-2"></i>Prematrícula
                         </a>
-                        <a href="/Soporte/Index" class="btn btn-sm btn-outline-warning">
-                            <i class="bi bi-headset me-2"></i>Soporte Técnico
+                        <a href="/Institucion/Instituciones" class="btn btn-sm btn-outline-success">
+                            <i class="bi bi-building me-2"></i>Instituciones
                         </a>
                     </div>
                 </div>
@@ -273,72 +167,70 @@
             <div class="card quick-access-card mb-4">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h5 class="mb-0">
-                        <i class="bi bi-lightning-charge-fill me-2"></i>Accesos Rápidos - Profesor
+                        <i class="bi bi-lightning-charge-fill me-2"></i>Mi Panel de Trabajo
                     </h5>
                     <span class="badge bg-primary">Profesor</span>
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-6">
-                            <a href="/Profesor/MisGrupos" class="btn btn-outline-primary quick-access-btn w-100">
-                                <i class="bi bi-people-fill fs-2 me-3"></i>
-                                <div class="text-start flex-grow-1">
-                                    <span class="fw-bold d-block">Mis Grupos</span>
-                                    <small class="text-muted">Ver grupos asignados</small>
+                            <div class="card border-primary">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-people-fill fs-1 text-primary mb-2"></i>
+                                    <h3 class="mb-0 fw-bold">@Model.TotalGruposAsignados</h3>
+                                    <p class="text-muted mb-0">Grupos Asignados</p>
                                 </div>
-                            </a>
+                            </div>
                         </div>
                         <div class="col-md-6">
-                            <a href="/Profesor/CursosImpartidos" class="btn btn-outline-info quick-access-btn w-100">
-                                <i class="bi bi-book-fill fs-2 me-3"></i>
-                                <div class="text-start flex-grow-1">
-                                    <span class="fw-bold d-block">Cursos que Imparto</span>
-                                    <small class="text-muted">En el período actual</small>
+                            <div class="card border-info">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-book-fill fs-1 text-info mb-2"></i>
+                                    <h3 class="mb-0 fw-bold">@Model.TotalCursosImpartidos</h3>
+                                    <p class="text-muted mb-0">Cursos que Imparto</p>
                                 </div>
-                            </a>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="/Profesor/CargaAcademica" class="btn btn-outline-warning quick-access-btn w-100">
-                                <i class="bi bi-file-earmark-text-fill fs-2 me-3"></i>
-                                <div class="text-start flex-grow-1">
-                                    <span class="fw-bold d-block">Carga Académica</span>
-                                    <small class="text-muted">Desglose y notas</small>
-                                </div>
-                            </a>
-                        </div>
-                        <div class="col-md-6">
-                            <a href="/Profesor/Horario" class="btn btn-outline-success quick-access-btn w-100">
-                                <i class="bi bi-calendar-week-fill fs-2 me-3"></i>
-                                <div class="text-start flex-grow-1">
-                                    <span class="fw-bold d-block">Mi Horario</span>
-                                    <small class="text-muted">Ver horario semanal</small>
-                                </div>
-                            </a>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Información del período actual -->
-            <div class="card info-card">
-                <div class="card-header">
-                    <h5 class="mb-0">
-                        <i class="bi bi-calendar-check me-2"></i>Período Actual
-                    </h5>
-                </div>
-                <div class="card-body">
-                    <p class="mb-2">
-                        <strong>Período:</strong> <span class="text-primary">I Cuatrimestre 2024</span>
-                    </p>
-                    <p class="mb-2">
-                        <strong>Inicio:</strong> 15/01/2024 | <strong>Fin:</strong> 30/04/2024
-                    </p>
-                    <div class="progress mb-2" style="height: 8px;">
-                        <div class="progress-bar" role="progressbar" style="width: 65%;" aria-valuenow="65" aria-valuemin="0" aria-valuemax="100"></div>
+            @if (!string.IsNullOrEmpty(Model.PeriodoActual))
+            {
+                <div class="card info-card">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-check me-2"></i>Período Actual
+                        </h5>
                     </div>
-                    <small class="text-muted">65% completado</small>
+                    <div class="card-body">
+                        <p class="mb-2">
+                            <strong>Período:</strong> <span class="text-primary">@Model.PeriodoActual</span>
+                        </p>
+                        @if (Model.PeriodoFechaInicio.HasValue && Model.PeriodoFechaFin.HasValue)
+                        {
+                            <p class="mb-2">
+                                <strong>Inicio:</strong> @Model.PeriodoFechaInicio.Value.ToString("dd/MM/yyyy") |
+                                <strong>Fin:</strong> @Model.PeriodoFechaFin.Value.ToString("dd/MM/yyyy")
+                            </p>
+                            <div class="progress mb-2" style="height: 8px;">
+                                <div class="progress-bar" role="progressbar" style="width: @Model.PorcentajePeriodo%;"
+                                     aria-valuenow="@Model.PorcentajePeriodo" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                            <small class="text-muted">@Model.PorcentajePeriodo% completado</small>
+                        }
+                    </div>
                 </div>
-            </div>
+            }
+            else
+            {
+                <div class="card info-card">
+                    <div class="card-body text-center text-muted">
+                        <i class="bi bi-info-circle fs-1 mb-2"></i>
+                        <p class="mb-0">No hay período académico activo</p>
+                    </div>
+                </div>
+            }
         </div>
 
         <div class="col-lg-4">
@@ -350,17 +242,17 @@
                 </div>
                 <div class="card-body">
                     <div class="d-grid gap-2">
-                        <a href="/Profesor/Material" class="btn btn-sm btn-outline-primary">
-                            <i class="bi bi-folder-fill me-2"></i>Material Didáctico
+                        <a href="/Academico/ListadoEstudiantes" class="btn btn-sm btn-outline-primary">
+                            <i class="bi bi-people me-2"></i>Mis Estudiantes
                         </a>
-                        <a href="/Profesor/Evaluaciones" class="btn btn-sm btn-outline-info">
-                            <i class="bi bi-clipboard-check me-2"></i>Evaluaciones
+                        <a href="/Academico/HistorialAcademico" class="btn btn-sm btn-outline-info">
+                            <i class="bi bi-journal-text me-2"></i>Historial Académico
                         </a>
                         <a href="/Ayuda/Index" class="btn btn-sm btn-outline-secondary">
-                            <i class="bi bi-book me-2"></i>Manual de Usuario
+                            <i class="bi bi-book me-2"></i>Ayuda
                         </a>
                         <a href="/Soporte/Index" class="btn btn-sm btn-outline-warning">
-                            <i class="bi bi-headset me-2"></i>Soporte Técnico
+                            <i class="bi bi-headset me-2"></i>Soporte
                         </a>
                     </div>
                 </div>
@@ -369,7 +261,7 @@
     }
     else
     {
-        <!-- Widgets para otros roles (Estudiante, etc.) -->
+        <!-- Widgets para otros roles -->
         <div class="col-lg-8">
             <div class="card info-card">
                 <div class="card-header">
@@ -379,10 +271,10 @@
                 </div>
                 <div class="card-body">
                     <p class="mb-3">
-                        <strong>Sistema Avatar</strong> - Plataforma de gestión académica para la Universidad CUC
+                        <strong>Sistema Avatar</strong> - Plataforma de gestión académica
                     </p>
                     <p class="mb-2">
-                        Bienvenido al sistema de gestión académica. Desde aquí podrás acceder a todas las funcionalidades disponibles según tu rol.
+                        Bienvenido al sistema de gestión académica. Utiliza el menú lateral para acceder a las funcionalidades disponibles.
                     </p>
                     <p class="mb-0 text-muted">
                         <i class="bi bi-calendar3 me-2"></i>
@@ -412,6 +304,88 @@
             </div>
         </div>
     }
+</div>
+
+<!-- Panel de Actividad Reciente -->
+<div class="row g-4 mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="bi bi-clock-history me-2"></i>Actividad Reciente del Sistema
+                </h5>
+                <span class="badge bg-secondary">Últimos 20 registros</span>
+            </div>
+            <div class="card-body">
+                <!-- Loading inicial -->
+                <div id="loading-actividades" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Cargando...</span>
+                    </div>
+                    <p class="mt-3 text-muted">Cargando actividades...</p>
+                </div>
+
+                <!-- Contenido dinámico -->
+                <div id="actividades-container" style="display: none;">
+                    <ul class="nav nav-tabs mb-3" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="notif-tab" data-bs-toggle="tab"
+                                    data-bs-target="#notif-panel" type="button">
+                                <i class="bi bi-envelope me-1"></i>Notificaciones
+                                <span class="badge bg-success ms-1" id="count-notif">0</span>
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="bitacora-tab" data-bs-toggle="tab"
+                                    data-bs-target="#bitacora-panel" type="button">
+                                <i class="bi bi-journal-text me-1"></i>Bitácoras
+                                <span class="badge bg-info ms-1" id="count-bitacora">0</span>
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Tab: Notificaciones -->
+                        <div class="tab-pane fade show active" id="notif-panel">
+                            <div id="lista-notificaciones"></div>
+                        </div>
+
+                        <!-- Tab: Bitácoras -->
+                        <div class="tab-pane fade" id="bitacora-panel">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th style="width: 15%">Fecha</th>
+                                            <th style="width: 20%">Usuario</th>
+                                            <th style="width: 20%">Acción</th>
+                                            <th style="width: 45%">Descripción</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="tabla-bitacoras"></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Empty state -->
+                <div id="empty-actividades" style="display: none;" class="text-center py-5 text-muted">
+                    <i class="bi bi-inbox fs-1 mb-3 d-block opacity-50"></i>
+                    <p class="mb-0">No hay actividad registrada</p>
+                </div>
+
+                <!-- Error state -->
+                <div id="error-actividades" style="display: none;" class="text-center py-5 text-danger">
+                    <i class="bi bi-exclamation-triangle fs-1 mb-3 d-block opacity-50"></i>
+                    <p class="mb-0">Error al cargar actividades</p>
+                    <button class="btn btn-sm btn-outline-primary mt-3" onclick="cargarActividades()">
+                        <i class="bi bi-arrow-clockwise me-1"></i>Reintentar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 
 @section Scripts {

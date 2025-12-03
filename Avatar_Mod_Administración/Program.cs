@@ -149,6 +149,15 @@ builder.Services.AddHttpClient<IPrematriculaApiClient, PrematriculaApiClient>(cl
 });
 
 
+builder.Services.AddHttpClient<IBitacoraService, BitacoraService>(client =>
+{
+    var baseUrl = builder.Configuration["ApiUrls:GEN1"]
+        ?? throw new InvalidOperationException("Base URL de GEN1 no configurada");
+    client.BaseAddress = new Uri(baseUrl);
+    client.Timeout = TimeSpan.FromSeconds(30);
+});
+
+
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -169,6 +178,95 @@ app.UseAuthorization();
 app.MapRazorPages();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
+
+app.MapGet("/api/dashboard/actividades", async (
+    IBitacoraService bitacoraService,
+    IAuthService authService,
+    ILogger<Program> log) =>
+{
+    try
+    {
+        var sesion = authService.ObtenerSesionActual();
+        if (sesion == null)
+        {
+            log.LogWarning("Dashboard: No hay sesión activa");
+            return Results.Json(new
+            {
+                notificaciones = new List<object>(),
+                bitacoras = new List<object>()
+            });
+        }
+
+        log.LogInformation("Dashboard: Obteniendo actividades");
+
+        // Obtener todas las bitácoras
+        var todasBitacoras = await bitacoraService.ObtenerTodosAsync(sesion.AccessToken);
+
+        if (todasBitacoras == null || !todasBitacoras.Any())
+        {
+            log.LogInformation("Dashboard: No hay bitácoras");
+            return Results.Ok(new
+            {
+                notificaciones = new List<object>(),
+                bitacoras = new List<object>()
+            });
+        }
+
+        // Separar notificaciones (SEND_MAIL) de bitácoras normales
+        // Tomar las últimas 20 de cada tipo ordenadas por fecha descendente
+        var notificaciones = todasBitacoras
+            .Where(b => !string.IsNullOrEmpty(b.Tipo_Accion) &&
+                       b.Tipo_Accion.Equals("SEND_MAIL", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(b => b.Fecha_Registro)
+            .Take(20)
+            .Select(b => new
+            {
+                b.ID_Bitacora,
+                b.Fecha_Registro,
+                b.Usuario,
+                b.Descripcion,
+                b.Tipo_Accion
+            })
+            .ToList();
+
+        var bitacoras = todasBitacoras
+            .Where(b => string.IsNullOrEmpty(b.Tipo_Accion) ||
+                       !b.Tipo_Accion.Equals("SEND_MAIL", StringComparison.OrdinalIgnoreCase))
+            .OrderByDescending(b => b.Fecha_Registro)
+            .Take(20)
+            .Select(b => new
+            {
+                b.ID_Bitacora,
+                b.Fecha_Registro,
+                b.Usuario,
+                b.Descripcion,
+                b.Tipo_Accion
+            })
+            .ToList();
+
+        log.LogInformation("Dashboard: {NotifCount} notificaciones, {BitCount} bitácoras",
+            notificaciones.Count, bitacoras.Count);
+
+        return Results.Ok(new
+        {
+            notificaciones,
+            bitacoras
+        });
+    }
+    catch (Exception ex)
+    {
+        log.LogError(ex, "Dashboard: Error al obtener actividades");
+        return Results.Ok(new
+        {
+            notificaciones = new List<object>(),
+            bitacoras = new List<object>()
+        });
+    }
+})
+.WithName("ObtenerActividadesDashboard")
+.WithTags("Dashboard")
+.Produces(200);
+
 
 // GET /api/rol/{idRol}/modulos
 app.MapGet("/api/rol/{idRol}/modulos", async (

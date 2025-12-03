@@ -5,10 +5,8 @@ namespace Avatar_Mod_Administración.Repository
 {
     public class BitacoraRepository
     {
-
         private readonly IDbConnectionFactory _dbConnectionFactory;
 
-            
         public BitacoraRepository(IDbConnectionFactory dbConnectionFactory)
         {
             _dbConnectionFactory = dbConnectionFactory;
@@ -31,7 +29,17 @@ namespace Avatar_Mod_Administración.Repository
             }
         }
 
+        public async Task<List<Bitacora>> ObtenerTodas()
+        {
+            using (var connection = _dbConnectionFactory.CreateConnection())
+            {
+                var sql = @"SELECT ID_Bitacora, Fecha_Registro, Usuario, Descripcion, Tipo_Accion 
+                            FROM Bitacora 
+                            ORDER BY Fecha_Registro DESC";
 
-
+                var result = await connection.QueryAsync<Bitacora>(sql);
+                return result.ToList();
+            }
+        }
     }
 }
