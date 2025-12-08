@@ -43,6 +43,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiMAT1", "ApiMAT1\ApiMAT1.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Perfil_Usuario", "Perfil_Usuario\Perfil_Usuario.csproj", "{DC1B941A-29FB-47EA-A1E2-12B1A65C5254}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiMAT2", "ApiMAT2\ApiMAT2.csproj", "{0C6C9673-0619-51A3-302D-2E9F309B1BFD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiMAT3", "ApiMAT3\ApiMAT3.csproj", "{27319F8E-E4D7-ADE1-797E-2677EE1ABD1A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -129,6 +133,14 @@ Global
 		{DC1B941A-29FB-47EA-A1E2-12B1A65C5254}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DC1B941A-29FB-47EA-A1E2-12B1A65C5254}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DC1B941A-29FB-47EA-A1E2-12B1A65C5254}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0C6C9673-0619-51A3-302D-2E9F309B1BFD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0C6C9673-0619-51A3-302D-2E9F309B1BFD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0C6C9673-0619-51A3-302D-2E9F309B1BFD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0C6C9673-0619-51A3-302D-2E9F309B1BFD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27319F8E-E4D7-ADE1-797E-2677EE1ABD1A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27319F8E-E4D7-ADE1-797E-2677EE1ABD1A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27319F8E-E4D7-ADE1-797E-2677EE1ABD1A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27319F8E-E4D7-ADE1-797E-2677EE1ABD1A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
