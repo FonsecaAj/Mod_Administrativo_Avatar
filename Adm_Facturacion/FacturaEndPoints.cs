@@ -49,6 +49,17 @@ namespace Adm_Facturacion
                 var response = await service.ObtenerFacturasPorPeriodoAsync(inicio, fin, token);
                 return Results.Json(response, statusCode: response.StatusCode);
             });
+
+            group.MapGet("/usuario/{identificacion}", async (
+                [FromHeader(Name = "Authorization")] string? token,
+                string identificacion,
+                [FromServices] IFacturaService service) =>
+            {
+                var response = await service.Facturas_UsuarioAsync(identificacion, token);
+                return Results.Json(response, statusCode: response.StatusCode);
+            }).WithName("Facturas_Usuario");
+
+
         }
 
     }

@@ -166,5 +166,71 @@ namespace Adm_Facturacion.Repository
 
             return facturaDict.Values;
         }
+        public async Task<IEnumerable<Factura>> Facturas_UsuarioAsync(string identificacion)
+        {
+            using var connection = _dbConnectionFactory.CreateConnection();
+
+            // Consulta que trae datos de Estudiante, Factura y Factura_Detalle
+            var sql = @"
+        SELECT 
+            e.ID_Estudiante,
+            e.Identificacion,
+            e.Nombre + ' ' + e.Apellido1 + ' ' + e.Apellido2 AS Nombre_Completo,
+            f.ID_Factura,
+            f.Fecha_Emision,
+            f.Monto_Base,
+            f.Impuesto,
+            f.Total,
+            f.Estado,
+            fd.ID_Detalle,
+            fd.Descripcion,
+            fd.Monto AS Monto_Detalle,
+            fd.Detalle
+        FROM Estudiante e
+        JOIN Factura f ON e.Identificacion = f.Identificacion_Estudiante
+        LEFT JOIN Factura_Detalle fd ON f.ID_Factura = fd.ID_Factura
+        WHERE e.Identificacion = @Identificacion
+        ORDER BY f.Fecha_Emision DESC, fd.ID_Detalle;";
+
+            var facturaDict = new Dictionary<int, Factura>();
+
+            // Definimos el mapeo para Estudiante, Factura y FacturaDetalle
+            // Aquí Factura actuará como contenedor del Estudiante y la lista de Detalles
+            await connection.QueryAsync<Estudiante, Factura, FacturaDetalle, Factura>(
+                sql,
+                (estudiante, factura, detalle) =>
+                {
+                    if (!facturaDict.TryGetValue(factura.ID_Factura, out var currentFactura))
+                    {
+                        // Si la factura no existe en el diccionario, la agregamos
+                        currentFactura = factura;
+                        currentFactura.Estudiante = estudiante; // Asignamos los datos del estudiante
+                        currentFactura.Detalles = new List<FacturaDetalle>();
+                        facturaDict.Add(currentFactura.ID_Factura, currentFactura);
+                    }
+
+                    // Aseguramos que la factura tenga asignado el estudiante si viene en la fila
+                    if (currentFactura.Estudiante == null)
+                    {
+                        currentFactura.Estudiante = estudiante;
+                    }
+
+
+                    if (detalle != null)
+                    {
+                        // El alias 'Monto_Detalle' debe mapear correctamente a 'Monto' en FacturaDetalle.
+                        // Y 'Detalle' en la consulta SQL debe mapear a 'Detalle' en FacturaDetalle si existe esa propiedad.
+                        currentFactura.Detalles.Add(detalle);
+                    }
+
+                    return currentFactura;
+                },
+                new { Identificacion = identificacion },
+                splitOn: "ID_Factura, ID_Detalle" // Separamos las columnas donde empieza el siguiente objeto (Factura y FacturaDetalle)
+            );
+
+            return facturaDict.Values;
+        }
+
     }
 }

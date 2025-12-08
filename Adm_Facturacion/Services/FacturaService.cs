@@ -91,5 +91,32 @@ namespace Adm_Facturacion.Services
             };
         }
 
+        public async Task<BusinessLogicResponse> Facturas_UsuarioAsync(string identificacion, string? token)
+        {
+
+            if (!await _authService.ValidarTokenAsync(token))
+                return new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" };
+
+            // 2. Obtener datos del Repositorio
+            var facturas = await _facturaRepository.Facturas_UsuarioAsync(identificacion);
+
+            // 3. Devolver Respuesta
+            if (facturas == null || !facturas.Any())
+            {
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 404,
+                    Message = $"No se encontraron facturas para la identificación {identificacion}."
+                };
+            }
+
+            return new BusinessLogicResponse
+            {
+                StatusCode = 200,
+                Message = $"Facturas obtenidas correctamente para la identificación {identificacion}.",
+                ResponseObject = facturas
+            };
+        }
+
     }
 }
