@@ -255,5 +255,56 @@ namespace ApiACD3.Services
                 };
             }
         }
+
+
+        public async Task<BusinessLogicResponse> ObtenerMisCursos(string id)
+        {
+            try
+            {
+                // 1. Validación para string: verifica si la cadena es nula o está vacía/espacios en blanco.
+                if (string.IsNullOrWhiteSpace(id))
+                {
+                    return new BusinessLogicResponse
+                    {
+                        StatusCode = 400,
+                        Message = "La identificación del estudiante ('id') debe ser proporcionada."
+                    };
+                }
+
+                // Se asume que _repo.ObtenerMisCursos(id) devuelve List<Curso>
+                var cursos = await _repo.ObtenerMisCursos(id);
+
+                // 2. Validación para lista: verifica si la lista es nula o está vacía (cero elementos).
+                if (cursos == null || cursos.Count == 0)
+                {
+                    return new BusinessLogicResponse
+                    {
+                        StatusCode = 404,
+                        // Mensaje ajustado para reflejar que no se encontraron cursos para la identificación.
+                        Message = $"No se encontraron cursos para el estudiante con identificación: {id}."
+                    };
+                }
+
+                // 3. Respuesta exitosa (200 OK)
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 200,
+                    Message = "Cursos obtenidos correctamente.",
+                    // El objeto de respuesta ahora es la lista de cursos.
+                    ResponseObject = cursos
+                };
+            }
+            catch (Exception ex)
+            {
+                // 4. Manejo de errores internos (500)
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 500,
+                    Message = $"Error interno del servidor al obtener cursos: {ex.Message}"
+                };
+            }
+        }
+
+
     }
 }

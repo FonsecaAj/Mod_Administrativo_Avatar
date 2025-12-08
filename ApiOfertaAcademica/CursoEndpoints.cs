@@ -30,6 +30,17 @@ public static class CursoEndpoints
             return Results.Json(result, statusCode: result.StatusCode);
         });
 
+        group.MapGet("/miscursos", async (string id, ICursoService service, IAutenticacionService auth, HttpContext http) =>
+        {
+            var token = http.Request.Headers["Authorization"].ToString();
+            if (!await auth.ValidarTokenAsync(token))
+                return Results.Unauthorized();
+
+            var result = await service.ObtenerMisCursos(id);
+            return Results.Json(result, statusCode: result.StatusCode);
+        });
+
+
         group.MapGet("/carrera/{idCarrera:int}", async (int idCarrera, ICursoService service, IAutenticacionService auth, HttpContext http) =>
         {
             var token = http.Request.Headers["Authorization"].ToString();

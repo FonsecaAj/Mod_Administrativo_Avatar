@@ -7,6 +7,8 @@ namespace ApiACD3.Services
         Task<BusinessLogicResponse> ObtenerTodos();
         Task<BusinessLogicResponse> ObtenerPorId(int id);
         Task<BusinessLogicResponse> ObtenerPorCarrera(int idCarrera);
+
+        Task<BusinessLogicResponse> ObtenerMisCursos(string id);
         Task<BusinessLogicResponse> Crear(Curso curso);
         Task<BusinessLogicResponse> Actualizar(Curso curso);
         Task<BusinessLogicResponse> Eliminar(int id);

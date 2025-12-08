@@ -39,6 +39,14 @@ builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<CursoRepository>();
 builder.Services.AddScoped<ICursoService, CursoService>();
 
+// 1. Registrar ambas implementaciones de la Factoría:
+builder.Services.AddScoped<DbConnectionFactory>();
+builder.Services.AddScoped<CursoDbConnectionFactory>();
+
+// 2. Registrar CursoRepository. El DI se encargará de resolver ambas factorías
+//    y pasarlas al constructor del repositorio.
+builder.Services.AddScoped<CursoRepository>();
+
 builder.Services.AddHttpClient<IAutenticacionService, AutenticacionService>();
 builder.Services.AddHttpContextAccessor();
 
