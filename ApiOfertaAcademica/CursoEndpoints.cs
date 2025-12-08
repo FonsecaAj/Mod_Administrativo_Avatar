@@ -91,5 +91,8 @@ public static class CursoEndpoints
             var result = await service.ObtenerLookups();
             return Results.Json(result, statusCode: result.StatusCode);
         });
+
+
+
     }
 }
