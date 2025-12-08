@@ -1,0 +1,6 @@
+@ApiMAT3_HostAddress = http://localhost:5101
+
+GET {{ApiMAT3_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
