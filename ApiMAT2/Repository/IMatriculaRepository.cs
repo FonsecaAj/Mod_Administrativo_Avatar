@@ -13,6 +13,7 @@ namespace ApiMAT2.Repository
         bool PeriodoEsActivo(int idPeriodo);
         bool GrupoPerteneceACurso(int idGrupo, int idCurso);
 
-        IEnumerable<object> ObtenerPorCursoYGrupo(int idCurso, int idGrupo);
+        IEnumerable<MatriculaListadoDto> ObtenerPorCursoYGrupo(int idCurso, int idGrupo);
+
     }
 }

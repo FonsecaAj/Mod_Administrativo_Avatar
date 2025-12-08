@@ -64,23 +64,24 @@ namespace ApiMAT2.Repository
             return connection.ExecuteScalar<int>(sql, new { idGrupo, idCurso }) > 0;
         }
 
-        public IEnumerable<object> ObtenerPorCursoYGrupo(int idCurso, int idGrupo)
+        public IEnumerable<MatriculaListadoDto> ObtenerPorCursoYGrupo(int idCurso, int idGrupo)
         {
             using var connection = _connectionFactory.CreateConnection();
             var sql = @"
-                SELECT 
-                    E.Identificacion,
-                    CONCAT(E.Nombre, ' ', E.Apellido1, ' ', E.Apellido2) AS NombreCompleto,
-                    C.Nombre_Curso,
-                    G.Nombre_Grupo,
-                    M.Fecha_Matricula
-                FROM Matricula M
-                INNER JOIN Estudiante E ON M.ID_Estudiante = E.ID_Estudiante
-                INNER JOIN Grupo G ON M.ID_Grupo = G.ID_Grupo
-                INNER JOIN Curso C ON G.ID_Curso = C.ID_Curso
-                WHERE G.ID_Curso = @idCurso AND M.ID_Grupo = @idGrupo";
+        SELECT 
+            E.Identificacion,
+            CONCAT(E.Nombre, ' ', E.Apellido1, ' ', E.Apellido2) AS NombreCompleto,
+            C.Nombre_Curso AS NombreCurso,
+            G.Nombre_Grupo AS NombreGrupo,
+            M.Fecha_Matricula
+        FROM Matricula M
+        INNER JOIN Estudiante E ON M.ID_Estudiante = E.ID_Estudiante
+        INNER JOIN Grupo G ON M.ID_Grupo = G.ID_Grupo
+        INNER JOIN Curso C ON G.ID_Curso = C.ID_Curso
+        WHERE G.ID_Curso = @idCurso AND M.ID_Grupo = @idGrupo";
 
-            return connection.Query<object>(sql, new { idCurso, idGrupo });
+            return connection.Query<MatriculaListadoDto>(sql, new { idCurso, idGrupo });
         }
+
     }
 }

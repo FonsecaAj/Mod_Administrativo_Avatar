@@ -8,8 +8,15 @@ namespace ApiMAT2
     {
         public static void MapMatriculaEndpoints(this WebApplication app)
         {
-           
-            app.MapPost("/matricula", async ([FromBody] MatriculaRequest request, [FromServices] IMatriculaService service, IAutenticacionService auth, HttpContext http) =>
+            // Grupo base
+            var group = app.MapGroup("/api/matricula").WithTags("Matricula");
+
+            // ================== POST: CREAR ==================
+            group.MapPost("/", async (
+                [FromBody] MatriculaRequest request,
+                [FromServices] IMatriculaService service,
+                IAutenticacionService auth,
+                HttpContext http) =>
             {
                 var authorization = http.Request.Headers["Authorization"].ToString();
                 if (!await auth.ValidarTokenAsync(authorization))
@@ -18,16 +25,35 @@ namespace ApiMAT2
                 try
                 {
                     service.Crear(request);
-                    return Results.Ok(new { message = "Matrícula creada correctamente." });
+
+                    var response = new BusinessLogicResponse
+                    {
+                        StatusCode = 201,
+                        Message = "Matrícula creada correctamente.",
+                        ResponseObject = null
+                    };
+
+                    return Results.Json(response, statusCode: response.StatusCode);
                 }
                 catch (Exception ex)
                 {
-                    return Results.BadRequest(new { error = ex.Message });
+                    var response = new BusinessLogicResponse
+                    {
+                        StatusCode = 400,
+                        Message = ex.Message,
+                        ResponseObject = null
+                    };
+
+                    return Results.Json(response, statusCode: response.StatusCode);
                 }
             });
 
-           
-            app.MapPut("/matricula", async ([FromBody] MatriculaRequest request, [FromServices] IMatriculaService service, IAutenticacionService auth, HttpContext http) =>
+            // ================== PUT: ACTUALIZAR ==================
+            group.MapPut("/", async (
+                [FromBody] MatriculaRequest request,
+                [FromServices] IMatriculaService service,
+                IAutenticacionService auth,
+                HttpContext http) =>
             {
                 var authorization = http.Request.Headers["Authorization"].ToString();
                 if (!await auth.ValidarTokenAsync(authorization))
@@ -36,17 +62,35 @@ namespace ApiMAT2
                 try
                 {
                     service.Actualizar(request);
-                    return Results.Ok(new { message = "Matrícula modificada correctamente." });
+
+                    var response = new BusinessLogicResponse
+                    {
+                        StatusCode = 200,
+                        Message = "Matrícula modificada correctamente.",
+                        ResponseObject = null
+                    };
+
+                    return Results.Json(response, statusCode: response.StatusCode);
                 }
                 catch (Exception ex)
                 {
-                    return Results.BadRequest(new { error = ex.Message });
+                    var response = new BusinessLogicResponse
+                    {
+                        StatusCode = 400,
+                        Message = ex.Message,
+                        ResponseObject = null
+                    };
+
+                    return Results.Json(response, statusCode: response.StatusCode);
                 }
             });
 
-           
-       
-            app.MapDelete("/matricula/{id}", async ([FromRoute] int id, [FromServices] IMatriculaService service, IAutenticacionService auth, HttpContext http) =>
+            // ================== DELETE: ELIMINAR ==================
+            group.MapDelete("/{id:int}", async (
+                [FromRoute] int id,
+                [FromServices] IMatriculaService service,
+                IAutenticacionService auth,
+                HttpContext http) =>
             {
                 var authorization = http.Request.Headers["Authorization"].ToString();
                 if (!await auth.ValidarTokenAsync(authorization))
@@ -55,16 +99,36 @@ namespace ApiMAT2
                 try
                 {
                     service.Eliminar(id);
-                    return Results.Ok(new { message = "Matrícula eliminada correctamente." });
+
+                    var response = new BusinessLogicResponse
+                    {
+                        StatusCode = 200,
+                        Message = "Matrícula eliminada correctamente.",
+                        ResponseObject = null
+                    };
+
+                    return Results.Json(response, statusCode: response.StatusCode);
                 }
                 catch (Exception ex)
                 {
-                    return Results.BadRequest(new { error = ex.Message });
+                    var response = new BusinessLogicResponse
+                    {
+                        StatusCode = 400,
+                        Message = ex.Message,
+                        ResponseObject = null
+                    };
+
+                    return Results.Json(response, statusCode: response.StatusCode);
                 }
             });
 
-
-            app.MapGet("/matricula/{idCurso}/{idGrupo}", async ([FromRoute] int idCurso, [FromRoute] int idGrupo, [FromServices] IMatriculaService service, IAutenticacionService auth, HttpContext http) =>
+            // ================== GET: LISTADO POR CURSO / GRUPO ==================
+            group.MapGet("/{idCurso:int}/{idGrupo:int}", async (
+                [FromRoute] int idCurso,
+                [FromRoute] int idGrupo,
+                [FromServices] IMatriculaService service,
+                IAutenticacionService auth,
+                HttpContext http) =>
             {
                 var authorization = http.Request.Headers["Authorization"].ToString();
                 if (!await auth.ValidarTokenAsync(authorization))
@@ -73,11 +137,27 @@ namespace ApiMAT2
                 try
                 {
                     var resultado = service.ObtenerPorCursoYGrupo(idCurso, idGrupo);
-                    return Results.Ok(resultado);
+                    // resultado debería ser IEnumerable<MatriculaListadoDto>
+
+                    var response = new BusinessLogicResponse
+                    {
+                        StatusCode = 200,
+                        Message = "Listado de matrículas obtenido correctamente.",
+                        ResponseObject = resultado
+                    };
+
+                    return Results.Json(response, statusCode: response.StatusCode);
                 }
                 catch (Exception ex)
                 {
-                    return Results.BadRequest(new { error = ex.Message });
+                    var response = new BusinessLogicResponse
+                    {
+                        StatusCode = 400,
+                        Message = ex.Message,
+                        ResponseObject = null
+                    };
+
+                    return Results.Json(response, statusCode: response.StatusCode);
                 }
             });
         }
