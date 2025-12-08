@@ -10,5 +10,8 @@ namespace ApiMAT1.Repository
         void Crear(Prematricula entidad);
         void Actualizar(Prematricula entidad);
         void Eliminar(int id);
+
+        // Nuevo método Jocs
+        Task<IEnumerable<PrematriculaDetallada>> Obtener_Prematri_Estudiante(string identificacion);
     }
 }
