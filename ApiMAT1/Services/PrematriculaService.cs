@@ -243,5 +243,44 @@ namespace ApiMAT1.Services
 
             return response;
         }
+
+
+        public async Task<BusinessLogicResponse> Obtener_Prematri_Estudiante(string identificacion)
+        {
+            var response = new BusinessLogicResponse();
+
+            if (string.IsNullOrWhiteSpace(identificacion))
+            {
+                response.StatusCode = 400;
+                response.Message = "La identificación del estudiante es requerida.";
+                return response;
+            }
+
+            try
+            {
+                // Llama al método del repositorio para obtener los datos detallados
+                var prematriculas = await _repository.Obtener_Prematri_Estudiante(identificacion);
+
+                if (prematriculas == null || !prematriculas.Any())
+                {
+                    await RegistrarBitacoraAsync("CONSULTA", new { detalle = $"Prematrículas no encontradas para ID {identificacion}" });
+                    response.StatusCode = 404;
+                    response.Message = $"No se encontraron prematrículas registradas para la identificación {identificacion}.";
+                    return response;
+                }
+
+                await RegistrarBitacoraAsync("CONSULTA", new { detalle = $"Consulta de {prematriculas.Count()} prematrículas para ID {identificacion}" });
+                response.StatusCode = 200;
+                response.Message = $"Historial de prematrículas para {identificacion} obtenido correctamente.";
+                response.ResponseObject = prematriculas;
+            }
+            catch (Exception ex)
+            {
+                response.StatusCode = 500;
+                response.Message = $"Error interno: {ex.Message}";
+            }
+
+            return response;
+        }
     }
 }

@@ -58,6 +58,16 @@ namespace ApiMAT1.Endpoints
                 var result = await service.Eliminar(id);
                 return Results.Ok(result);
             });
+
+            group.MapGet("/estudiante/{identificacion}", async (
+                string identificacion,
+                IPrematriculaService service) =>
+            {
+                var response = await service.Obtener_Prematri_Estudiante(identificacion);
+                return Results.Json(response, statusCode: response.StatusCode);
+            }).WithName("Obtener_Prematri_Estudiante");
+
+
         }
     }
 }
