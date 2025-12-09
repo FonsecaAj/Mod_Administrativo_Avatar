@@ -60,21 +60,35 @@ namespace ApiMAT2.Services
                 throw new Exception("Debe indicar un periodo válido.");
         }
 
-       
+
         public void Crear(MatriculaRequest request)
         {
+            // 1. Validaciones básicas del request
             ValidarCampos(request);
 
+            // 2. Buscar estudiante por identificación
             var idEstudiante = _repository.ObtenerIdEstudiantePorIdentificacion(request.Identificacion);
             if (idEstudiante == null)
-                throw new Exception("No se encontró el estudiante.");
+                throw new Exception("No se encontró un estudiante con esa identificación.");
 
+            // 3. Validar que el periodo esté ACTIVO
             if (!_repository.PeriodoEsActivo(request.ID_Periodo))
-                throw new Exception("El periodo no está activo.");
+                throw new Exception("Solo se permite matricular en períodos activos.");
 
+            // 4. Validar que el grupo pertenezca al curso
             if (!_repository.GrupoPerteneceACurso(request.ID_Grupo, request.ID_Curso))
-                throw new Exception("El grupo no pertenece al curso.");
+                throw new Exception("El grupo seleccionado no pertenece al curso indicado.");
 
+            // 5. Validar DUPLICIDAD (misma combinación estudiante–curso–grupo)
+            if (_repository.ExisteMatricula(idEstudiante.Value, request.ID_Curso, request.ID_Grupo))
+                throw new Exception("Ya existe una matrícula para este estudiante en ese curso y grupo.");
+
+            // 6. Validar CUPO disponible en el grupo (si el backend lo provee)
+            var cupoDisponible = _repository.ObtenerCupoDisponible(request.ID_Grupo);
+            if (cupoDisponible <= 0)
+                throw new Exception("El grupo seleccionado ya no tiene cupos disponibles.");
+
+            // 7. Crear la matrícula
             var matricula = new Matricula
             {
                 ID_Estudiante = idEstudiante.Value,
@@ -84,14 +98,19 @@ namespace ApiMAT2.Services
 
             _repository.Crear(matricula);
 
+            // 8. Registrar en bitácora
             _ = RegistrarBitacoraAsync("CREAR", new
             {
                 accion = "INSERT",
-                resultado = matricula
+                identificacion = request.Identificacion,
+                idEstudiante = idEstudiante.Value,
+                idCurso = request.ID_Curso,
+                idGrupo = request.ID_Grupo,
+                fecha = matricula.Fecha_Matricula
             });
         }
 
-      
+
         public void Actualizar(MatriculaRequest request)
         {
             ValidarCampos(request);
@@ -154,5 +173,21 @@ namespace ApiMAT2.Services
         {
             throw new NotImplementedException();
         }
+
+
+        public MatriculaLookupsDto ObtenerLookups()
+        {
+            var periodos = _repository.ObtenerPeriodos();
+            var cursos = _repository.ObtenerCursos();
+            var grupos = _repository.ObtenerGrupos();
+
+            return new MatriculaLookupsDto
+            {
+                Periodos = periodos,
+                Cursos = cursos,
+                Grupos = grupos
+            };
+        }
+
     }
 }

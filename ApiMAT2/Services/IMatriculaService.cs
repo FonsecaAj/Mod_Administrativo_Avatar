@@ -9,5 +9,9 @@ namespace ApiMAT2.Services
         void Actualizar(MatriculaRequest request);
         void Eliminar(int id);
         IEnumerable<object> ObtenerPorCursoYGrupo(int idCurso, int idGrupo);
+
+        MatriculaLookupsDto ObtenerLookups();
+
+
     }
 }

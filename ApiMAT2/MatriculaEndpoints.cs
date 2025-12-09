@@ -160,6 +160,29 @@ namespace ApiMAT2
                     return Results.Json(response, statusCode: response.StatusCode);
                 }
             });
+
+            group.MapGet("/lookups", async (
+              IMatriculaService service,
+              IAutenticacionService auth,
+              HttpContext http) =>
+            {
+                var authorization = http.Request.Headers["Authorization"].ToString();
+                if (!await auth.ValidarTokenAsync(authorization))
+                    return Results.Unauthorized();
+
+                var lookups = service.ObtenerLookups();
+
+                var response = new BusinessLogicResponse
+                {
+                    StatusCode = 200,
+                    Message = "Catálogos de matrícula obtenidos correctamente.",
+                    ResponseObject = lookups   
+                };
+
+                return Results.Json(response, statusCode: response.StatusCode);
+            });
+
+
         }
     }
 }

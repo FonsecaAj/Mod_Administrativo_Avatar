@@ -83,5 +83,80 @@ namespace ApiMAT2.Repository
             return connection.Query<MatriculaListadoDto>(sql, new { idCurso, idGrupo });
         }
 
+        public IEnumerable<PeriodoMatriculaDto> ObtenerPeriodos()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            var sql = @"SELECT ID_Periodo, Año, Numero_Periodo, Fecha_Inicio, Fecha_Fin
+                FROM Periodo";
+            return connection.Query<PeriodoMatriculaDto>(sql);
+        }
+
+        public IEnumerable<CursoMatriculaDto> ObtenerCursos()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            var sql = @"SELECT ID_Curso, Nombre_Curso, Codigo_Curso
+                FROM Curso";
+            return connection.Query<CursoMatriculaDto>(sql);
+        }
+
+        public IEnumerable<GrupoMatriculaDto> ObtenerGrupos()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            var sql = @"
+        SELECT 
+            g.ID_Grupo,
+            g.ID_Curso,
+            g.Nombre_Grupo,
+            c.Nombre_Curso,
+            g.Cupo_Maximo,
+            g.Cupo_Maximo - COUNT(m.ID_Matricula) AS Cupo_Disponible
+        FROM Grupo g
+        LEFT JOIN Matricula m ON g.ID_Grupo = m.ID_Grupo
+        INNER JOIN Curso c ON g.ID_Curso = c.ID_Curso
+        GROUP BY g.ID_Grupo, g.ID_Curso, g.Nombre_Grupo, c.Nombre_Curso, g.Cupo_Maximo";
+
+            return connection.Query<GrupoMatriculaDto>(sql);
+        }
+
+        public bool ExisteMatricula(int idEstudiante, int idCurso, int idGrupo)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            var sql = @"
+        SELECT COUNT(*)
+        FROM Matricula M
+        INNER JOIN Grupo G ON M.ID_Grupo = G.ID_Grupo
+        WHERE M.ID_Estudiante = @idEstudiante
+          AND M.ID_Grupo      = @idGrupo
+          AND G.ID_Curso      = @idCurso";
+
+            var count = connection.ExecuteScalar<int>(sql, new
+            {
+                idEstudiante,
+                idCurso,
+                idGrupo
+            });
+
+            return count > 0;
+        }
+
+        public int ObtenerCupoDisponible(int idGrupo)
+{
+    using var connection = _connectionFactory.CreateConnection();
+
+    var sql = @"
+        SELECT g.Cupo_Maximo - COUNT(m.ID_Matricula) AS CupoDisponible
+        FROM Grupo g
+        LEFT JOIN Matricula m ON g.ID_Grupo = m.ID_Grupo
+        WHERE g.ID_Grupo = @idGrupo
+        GROUP BY g.Cupo_Maximo";
+
+    var result = connection.ExecuteScalar<int?>(sql, new { idGrupo });
+    return result ?? 0;
+}
+
+
+
     }
 }

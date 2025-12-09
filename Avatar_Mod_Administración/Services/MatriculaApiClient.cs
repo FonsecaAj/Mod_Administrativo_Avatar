@@ -19,9 +19,14 @@ namespace Avatar_Mod_Administración.Services
             _config = config;
             _authService = authService;
 
-       
-            _baseUrl = $"{_config["Mat_Matricula:BaseUrl"]}/api/matricula";
+            var baseUrl = _config["Mat_Matricula:BaseUrl"]
+                          ?? throw new InvalidOperationException("Mat_Matricula:BaseUrl no configurado");
+
+            // Queda algo como http://localhost:5049/api/matricula
+            _baseUrl = $"{baseUrl.TrimEnd('/')}/api/matricula";
         }
+
+        // ================= TOKEN =================
 
         private string ObtenerTokenLimpio()
         {
@@ -51,6 +56,8 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
+        // ================= LISTADO POR CURSO / GRUPO =================
+
         public async Task<IEnumerable<MatriculaDto>> ObtenerPorCursoYGrupoAsync(int idCurso, int idGrupo)
         {
             AplicarToken();
@@ -74,6 +81,32 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
+        // ================= LOOKUPS (PERIODOS / CURSOS / GRUPOS) =================
+
+        public async Task<MatriculaLookupsResponse?> ObtenerLookupsAsync()
+        {
+            AplicarToken();
+
+            try
+            {
+                var response = await _http.GetAsync($"{_baseUrl}/lookups");
+
+                if (!response.IsSuccessStatusCode)
+                    return null;
+
+                var data = await response.Content
+                    .ReadFromJsonAsync<BusinessLogicResponse<MatriculaLookupsResponse>>();
+
+                return data?.ResponseObject;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        // ================= CREAR =================
+
         public async Task<(bool ok, int statusCode, string message)> CrearAsync(MatriculaRequestDto request)
         {
             AplicarToken();
@@ -86,6 +119,7 @@ namespace Avatar_Mod_Administración.Services
                     "application/json"
                 );
 
+                // POST /api/matricula
                 var response = await _http.PostAsync(_baseUrl, contenido);
                 var json = await response.Content.ReadAsStringAsync();
 
@@ -93,6 +127,7 @@ namespace Avatar_Mod_Administración.Services
                 int status = doc.RootElement.GetProperty("statusCode").GetInt32();
                 string message = doc.RootElement.GetProperty("message").GetString() ?? "";
 
+                // En MAT2 pusimos StatusCode = 201 al crear
                 return (status == 201, status, message);
             }
             catch (Exception ex)
@@ -100,6 +135,8 @@ namespace Avatar_Mod_Administración.Services
                 return (false, 500, $"Error procesando respuesta: {ex.Message}");
             }
         }
+
+        // ================= ACTUALIZAR =================
 
         public async Task<(bool ok, int statusCode, string message)> ActualizarAsync(MatriculaRequestDto request)
         {
@@ -113,6 +150,7 @@ namespace Avatar_Mod_Administración.Services
                     "application/json"
                 );
 
+                // PUT /api/matricula  (el ID va en el body)
                 var response = await _http.PutAsync(_baseUrl, contenido);
                 var json = await response.Content.ReadAsStringAsync();
 
@@ -128,12 +166,15 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
+        // ================= ELIMINAR =================
+
         public async Task<(bool ok, int statusCode, string message)> EliminarAsync(int id)
         {
             AplicarToken();
 
             try
             {
+                // DELETE /api/matricula/{id}
                 var response = await _http.DeleteAsync($"{_baseUrl}/{id}");
                 var json = await response.Content.ReadAsStringAsync();
 

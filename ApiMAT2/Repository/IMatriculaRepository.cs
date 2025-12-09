@@ -15,5 +15,12 @@ namespace ApiMAT2.Repository
 
         IEnumerable<MatriculaListadoDto> ObtenerPorCursoYGrupo(int idCurso, int idGrupo);
 
+        IEnumerable<PeriodoMatriculaDto> ObtenerPeriodos();
+        IEnumerable<CursoMatriculaDto> ObtenerCursos();
+        IEnumerable<GrupoMatriculaDto> ObtenerGrupos();
+
+        bool ExisteMatricula(int idEstudiante, int idCurso, int idGrupo);
+        int ObtenerCupoDisponible(int idGrupo);
+
     }
 }
