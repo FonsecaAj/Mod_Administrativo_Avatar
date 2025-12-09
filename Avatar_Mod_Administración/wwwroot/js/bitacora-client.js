@@ -1,7 +1,6 @@
 ﻿(function () {
     'use strict';
 
-    // Pantallas críticas que se deben registrar
     const PANTALLAS_CRITICAS = [
         '/Usuario/Usuarios',
         '/Usuario/UsuarioCrear',
@@ -25,7 +24,6 @@
         '/Modulo/ModuloEditar'
     ];
 
-    // Obtener datos del usuario desde el DOM
     function obtenerDatosUsuario() {
         const appData = document.getElementById('app-data');
         if (!appData) {
@@ -40,7 +38,6 @@
         };
     }
 
-    // Registrar en bitácora
     async function registrarBitacora(tipoAccion, descripcionTexto, detalles = {}) {
         try {
             const datosUsuario = obtenerDatosUsuario();
@@ -49,7 +46,6 @@
                 return;
             }
 
-            // Construir objeto de descripción
             const descripcionObj = {
                 accion: tipoAccion,
                 descripcion: descripcionTexto,
@@ -59,7 +55,6 @@
                 ...detalles
             };
 
-            // Payload para el backend
             const payload = {
                 usuario: datosUsuario.email,
                 descripcion: JSON.stringify(descripcionObj)
@@ -87,23 +82,17 @@
         }
     }
 
-    // Verificar si la ruta actual es crítica (mejorado)
     function esPantallaCritica(ruta) {
-        // Normalizar la ruta (eliminar query strings y trailing slashes)
         const rutaNormalizada = ruta.split('?')[0].replace(/\/$/, '');
 
-        // Buscar coincidencia exacta o por prefijo
         return PANTALLAS_CRITICAS.some(critica => {
             const criticaNormalizada = critica.toLowerCase();
             const rutaLower = rutaNormalizada.toLowerCase();
 
-            // Coincidencia exacta
             if (rutaLower === criticaNormalizada) {
                 return true;
             }
 
-            // Coincidencia por prefijo (para rutas con parámetros)
-            // Ejemplo: /Usuario/UsuarioEditar?email=test@cuc.cr
             if (rutaLower.startsWith(criticaNormalizada.toLowerCase())) {
                 return true;
             }
@@ -112,11 +101,9 @@
         });
     }
 
-    // Obtener nombre descriptivo de la pantalla
     function obtenerNombrePantalla(ruta) {
         const rutaLower = ruta.toLowerCase();
 
-        // Mapeo de rutas a nombres descriptivos
         const mapeoNombres = {
             '/usuario/usuarios': 'Listado de Usuarios',
             '/usuario/usuariocrear': 'Crear Usuario',
@@ -140,7 +127,6 @@
             '/modulo/moduloeditar': 'Editar Módulo'
         };
 
-        // Buscar coincidencia
         for (const [key, value] of Object.entries(mapeoNombres)) {
             if (rutaLower.includes(key)) {
                 return value;
@@ -150,7 +136,6 @@
         return ruta;
     }
 
-    // Registrar cambio de ruta en pantallas críticas
     function registrarCambioRuta() {
         const rutaActual = window.location.pathname;
         const rutaNormalizada = rutaActual.split('?')[0];
@@ -162,7 +147,6 @@
 
         const rutaAnterior = sessionStorage.getItem('ruta_anterior') || '/';
 
-        // No registrar si es la misma ruta (evitar duplicados)
         if (rutaAnterior === rutaNormalizada) {
             console.log('Misma ruta, no se registra nuevamente');
             return;
@@ -186,7 +170,6 @@
         sessionStorage.setItem('ruta_anterior', rutaNormalizada);
     }
 
-    // Registrar error de UI
     function registrarError(tipo, mensaje, detalles = {}) {
         console.log('Error de UI capturado:', tipo, mensaje);
 
@@ -203,71 +186,39 @@
         );
     }
 
-    // Inicializar observador de cambios de ruta
+    // Eliminar delays innecesarios
     function inicializarObservadorRutas() {
         console.log('Inicializando observador de rutas críticas');
         console.log('Pantallas críticas registradas:', PANTALLAS_CRITICAS.length);
 
-        // Registrar ruta inicial si es crítica
-        setTimeout(() => {
-            registrarCambioRuta();
-        }, 500); // Pequeño delay para asegurar que el DOM está listo
-
-
-
-
+        // Registrar ruta inicial inmediatamente (sin delay de 500ms)
+        registrarCambioRuta();
 
         let ultimaRuta = window.location.pathname;
 
-        // Detectar con eventos nativos
         window.addEventListener('popstate', () => {
-            setTimeout(() => registrarCambioRuta(), 100);
+            registrarCambioRuta(); // Inmediato, sin delay de 100ms
         });
 
-        // Interceptar clicks en enlaces
+        // Eliminar timeout de 100ms
         document.addEventListener('click', (event) => {
             const link = event.target.closest('a[href]');
             if (link && !link.href.includes('javascript:')) {
                 const href = link.getAttribute('href');
                 if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
-                    // Esperar a que la navegación ocurra
-                    setTimeout(() => {
+                    // Usar requestAnimationFrame en lugar de setTimeout
+                    requestAnimationFrame(() => {
                         const nuevaRuta = window.location.pathname;
                         if (nuevaRuta !== ultimaRuta) {
                             ultimaRuta = nuevaRuta;
                             registrarCambioRuta();
                         }
-                    }, 100);
+                    });
                 }
             }
         }, true);
-
-
-
-
-
-        // También detectar con popstate (navegación con botones del navegador)
-        window.addEventListener('popstate', () => {
-            console.log('↩️ Navegación con botones del navegador');
-            setTimeout(() => {
-                registrarCambioRuta();
-            }, 100);
-        });
-
-        // Detectar clicks en enlaces para registro inmediato
-        document.addEventListener('click', (event) => {
-            const link = event.target.closest('a[href]');
-            if (link && !link.href.includes('javascript:')) {
-                const href = link.getAttribute('href');
-                if (href && !href.startsWith('#') && !href.startsWith('javascript:')) {
-                    console.log('Click en enlace:', href);
-                    // El registro se hará cuando cambie la URL
-                }
-            }
-        });
     }
 
-    // Capturar errores JavaScript globales
     window.addEventListener('error', (event) => {
         registrarError('JavaScript', event.message, {
             archivo: event.filename,
@@ -277,24 +228,20 @@
         });
     });
 
-    // Capturar promesas rechazadas
     window.addEventListener('unhandledrejection', (event) => {
         registrarError('Promise Rechazada', event.reason?.message || String(event.reason), {
             reason: String(event.reason)
         });
     });
 
-    // Interceptar fetch para capturar errores HTTP
     const originalFetch = window.fetch;
     window.fetch = async function (...args) {
         try {
             const response = await originalFetch.apply(this, args);
 
-            // Registrar errores HTTP
             if (!response.ok && response.status >= 400) {
                 const url = typeof args[0] === 'string' ? args[0] : args[0]?.url;
 
-                // Evitar loop infinito
                 if (!url.includes('/api/bitacora')) {
                     registrarError('HTTP', `Error ${response.status} ${response.statusText}`, {
                         url: url,
@@ -320,7 +267,6 @@
         }
     };
 
-    // Capturar errores de validación de formularios
     document.addEventListener('invalid', (event) => {
         if (event.target instanceof HTMLInputElement ||
             event.target instanceof HTMLTextAreaElement ||
@@ -335,7 +281,6 @@
         }
     }, true);
 
-    // Inicializar cuando el DOM esté listo
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', inicializarObservadorRutas);
     } else {

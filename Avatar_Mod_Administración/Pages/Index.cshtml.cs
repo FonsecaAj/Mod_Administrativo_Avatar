@@ -13,23 +13,17 @@ namespace Avatar_Mod_Administración.Pages
         private readonly IFacturaApiClient _facturaApiClient;
         private readonly IProfesorApiClient _profesorApiClient;
 
-        // Propiedades públicas para la vista
         public string UsuarioEmailPublic => UsuarioEmail;
         public string UsuarioNombrePublic => UsuarioNombre;
         public string UsuarioRolPublic => UsuarioRol;
         public int UsuarioRolIdPublic => UsuarioRolId;
 
-        // Estadísticas generales
         public int TotalUsuarios { get; set; } = 0;
         public int TotalInstituciones { get; set; } = 0;
         public int TotalCarreras { get; set; } = 0;
         public int TotalCursos { get; set; } = 0;
-
-        // Estadísticas específicas para Administrador
         public int TotalPeriodosActivos { get; set; } = 0;
         public int TotalFacturasPendientes { get; set; } = 0;
-
-        // Estadísticas específicas para Profesor
         public int TotalGruposAsignados { get; set; } = 0;
         public int TotalCursosImpartidos { get; set; } = 0;
         public string PeriodoActual { get; set; } = string.Empty;
@@ -85,21 +79,40 @@ namespace Avatar_Mod_Administración.Pages
             }
         }
 
+        // Paralelizar las llamadas en lugar de secuenciales
         private async Task CargarEstadisticasAsync(string token)
         {
             try
             {
-                // Estadísticas comunes a todos los roles
-                await CargarEstadisticasGeneralesAsync(token);
-
-                // Estadísticas según el rol
                 if (UsuarioRol.Equals("Administrador", StringComparison.OrdinalIgnoreCase))
                 {
-                    await CargarEstadisticasAdministradorAsync(token);
+                    // Cargar todas las estadísticas en paralelo
+                    await Task.WhenAll(
+                        CargarUsuariosAsync(token),
+                        CargarInstitucionesAsync(token),
+                        CargarCursosYCarrerasAsync(token),
+                        CargarPeriodosActivosAsync(token),
+                        CargarFacturasPendientesAsync(token)
+                    );
                 }
                 else if (UsuarioRol.Equals("Profesor", StringComparison.OrdinalIgnoreCase))
                 {
-                    await CargarEstadisticasProfesorAsync(token);
+                    // Profesor: estadísticas generales + específicas en paralelo
+                    await Task.WhenAll(
+                        CargarUsuariosAsync(token),
+                        CargarInstitucionesAsync(token),
+                        CargarCursosYCarrerasAsync(token),
+                        CargarEstadisticasProfesorAsync(token)
+                    );
+                }
+                else
+                {
+                    // Otros roles: solo estadísticas generales en paralelo
+                    await Task.WhenAll(
+                        CargarUsuariosAsync(token),
+                        CargarInstitucionesAsync(token),
+                        CargarCursosYCarrerasAsync(token)
+                    );
                 }
 
                 _logger.LogDebug("Estadísticas cargadas correctamente");
@@ -110,7 +123,7 @@ namespace Avatar_Mod_Administración.Pages
             }
         }
 
-        private async Task CargarEstadisticasGeneralesAsync(string token)
+        private async Task CargarUsuariosAsync(string token)
         {
             try
             {
@@ -121,7 +134,10 @@ namespace Avatar_Mod_Administración.Pages
             {
                 _logger.LogWarning(ex, "Error al obtener total de usuarios");
             }
+        }
 
+        private async Task CargarInstitucionesAsync(string token)
+        {
             try
             {
                 var instituciones = await _institucionService.ObtenerTodosAsync(token);
@@ -131,29 +147,28 @@ namespace Avatar_Mod_Administración.Pages
             {
                 _logger.LogWarning(ex, "Error al obtener total de instituciones");
             }
+        }
 
+        private async Task CargarCursosYCarrerasAsync(string token)
+        {
             try
             {
-                var cursos = await _cursoApiClient.ObtenerTodosAsync();
-                TotalCursos = cursos?.Count() ?? 0;
+                // Paralelizar las 2 llamadas de cursos
+                var cursosTask = _cursoApiClient.ObtenerTodosAsync();
+                var lookupsTask = _cursoApiClient.ObtenerLookupsAsync();
+
+                await Task.WhenAll(cursosTask, lookupsTask);
+
+                TotalCursos = cursosTask.Result?.Count() ?? 0;
+                TotalCarreras = lookupsTask.Result?.Carreras?.Count() ?? 0;
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Error al obtener total de cursos");
-            }
-
-            try
-            {
-                var lookups = await _cursoApiClient.ObtenerLookupsAsync();
-                TotalCarreras = lookups?.Carreras?.Count() ?? 0;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "Error al obtener total de carreras");
+                _logger.LogWarning(ex, "Error al obtener cursos y carreras");
             }
         }
 
-        private async Task CargarEstadisticasAdministradorAsync(string token)
+        private async Task CargarPeriodosActivosAsync(string token)
         {
             try
             {
@@ -165,7 +180,10 @@ namespace Avatar_Mod_Administración.Pages
             {
                 _logger.LogWarning(ex, "Error al obtener períodos activos");
             }
+        }
 
+        private async Task CargarFacturasPendientesAsync(string token)
+        {
             try
             {
                 var fechaFin = DateTime.Today;
@@ -193,8 +211,18 @@ namespace Avatar_Mod_Administración.Pages
         {
             try
             {
-                var profesores = await _profesorApiClient.ObtenerTodosAsync();
+                // Paralelizar obtención de profesores, grupos y periodos
+                var profesoresTask = _profesorApiClient.ObtenerTodosAsync();
+                var gruposTask = _grupoApiClient.ObtenerTodosAsync();
+                var periodosTask = _periodoApiClient.ObtenerTodosAsync();
 
+                await Task.WhenAll(profesoresTask, gruposTask, periodosTask);
+
+                var profesores = profesoresTask.Result;
+                var grupos = gruposTask.Result;
+                var periodos = periodosTask.Result;
+
+                // Procesar datos del profesor
                 var profesorActual = profesores?.FirstOrDefault(p =>
                     !string.IsNullOrWhiteSpace(p.Email) &&
                     p.Email.Equals(UsuarioEmail, StringComparison.OrdinalIgnoreCase)
@@ -202,8 +230,6 @@ namespace Avatar_Mod_Administración.Pages
 
                 if (profesorActual != null)
                 {
-                    var grupos = await _grupoApiClient.ObtenerTodosAsync();
-
                     var gruposProfesor = grupos?
                         .Where(g => g.IdProfesor == profesorActual.IdProfesor)
                         .ToList() ?? new List<GrupoDto>();
@@ -218,21 +244,8 @@ namespace Avatar_Mod_Administración.Pages
                     _logger.LogDebug("Profesor {Email}: {Grupos} grupos, {Cursos} cursos",
                         UsuarioEmail, TotalGruposAsignados, TotalCursosImpartidos);
                 }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error al obtener estadísticas del profesor");
-            }
 
-            await ObtenerPeriodoActualAsync();
-        }
-
-        private async Task ObtenerPeriodoActualAsync()
-        {
-            try
-            {
-                var periodos = await _periodoApiClient.ObtenerTodosAsync();
-
+                // Procesar periodo actual
                 var periodoActivo = periodos?.FirstOrDefault(p =>
                     p.Estado.Equals("Activo", StringComparison.OrdinalIgnoreCase));
 
@@ -258,7 +271,7 @@ namespace Avatar_Mod_Administración.Pages
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Error al obtener período actual");
+                _logger.LogError(ex, "Error al obtener estadísticas del profesor");
             }
         }
 

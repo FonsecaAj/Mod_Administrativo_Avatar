@@ -1,8 +1,9 @@
-﻿// dashboard.js - Optimizado para carga rápida
+﻿// dashboard.js - Optimizado para rendimiento máximo
 (function () {
     'use strict';
 
     let cargaInicial = true;
+    const fechaCache = new Map();
 
     document.addEventListener('DOMContentLoaded', function () {
         cargarActividades();
@@ -14,7 +15,6 @@
         const emptyDiv = document.getElementById('empty-actividades');
         const errorDiv = document.getElementById('error-actividades');
 
-        // Solo mostrar loading en la primera carga
         if (cargaInicial && loadingDiv) {
             loadingDiv.style.display = 'block';
         }
@@ -23,9 +23,9 @@
         if (errorDiv) errorDiv.style.display = 'none';
 
         try {
-            // Timeout de 5 segundos para evitar esperas largas
+            // Reducir timeout de 5s a 3s
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000);
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
 
             const response = await fetch('/api/dashboard/actividades', {
                 signal: controller.signal,
@@ -42,7 +42,6 @@
             const notificaciones = data.notificaciones || [];
             const bitacoras = data.bitacoras || [];
 
-            // Actualizar contadores
             const countNotif = document.getElementById('count-notif');
             const countBitacora = document.getElementById('count-bitacora');
             if (countNotif) countNotif.textContent = notificaciones.length;
@@ -54,9 +53,11 @@
                 return;
             }
 
-            // Renderizar usando fragments para mejor performance
-            renderizarNotificaciones(notificaciones);
-            renderizarBitacoras(bitacoras);
+            // Renderizar en paralelo usando Promise.all
+            await Promise.all([
+                renderizarNotificaciones(notificaciones),
+                renderizarBitacoras(bitacoras)
+            ]);
 
             if (loadingDiv) loadingDiv.style.display = 'none';
             if (containerDiv) containerDiv.style.display = 'block';
@@ -69,7 +70,8 @@
         }
     }
 
-    function renderizarNotificaciones(notificaciones) {
+    // Hacer async para paralelizar con bitacoras
+    async function renderizarNotificaciones(notificaciones) {
         const container = document.getElementById('lista-notificaciones');
         if (!container) return;
 
@@ -83,7 +85,6 @@
             return;
         }
 
-        // Usar fragment para mejor performance
         const fragment = document.createDocumentFragment();
 
         notificaciones.forEach(notif => {
@@ -127,7 +128,8 @@
         container.appendChild(fragment);
     }
 
-    function renderizarBitacoras(bitacoras) {
+    // Hacer async para paralelizar con notificaciones
+    async function renderizarBitacoras(bitacoras) {
         const tbody = document.getElementById('tabla-bitacoras');
         if (!tbody) return;
 
@@ -143,7 +145,6 @@
             return;
         }
 
-        // Usar fragment para mejor performance
         const fragment = document.createDocumentFragment();
 
         bitacoras.forEach(bit => {
@@ -182,9 +183,6 @@
         tbody.appendChild(fragment);
     }
 
-    // Cache de fechas para evitar recalcular
-    const fechaCache = new Map();
-
     function formatearFecha(fecha) {
         const key = fecha.toString();
         if (fechaCache.has(key)) {
@@ -217,26 +215,29 @@
         return resultado;
     }
 
+    // Usar objeto en lugar de múltiples ifs
+    const ICONOS_ACCION = {
+        'INSERT': 'bi-plus-circle',
+        'UPDATE': 'bi-pencil-square',
+        'DELETE': 'bi-trash',
+        'SELECT': 'bi-eye',
+        'GENERICA': 'bi-gear'
+    };
+
     function obtenerIconoAccion(tipo) {
-        const iconos = {
-            'INSERT': 'bi-plus-circle',
-            'UPDATE': 'bi-pencil-square',
-            'DELETE': 'bi-trash',
-            'SELECT': 'bi-eye',
-            'GENERICA': 'bi-gear'
-        };
-        return iconos[tipo] || 'bi-question-circle';
+        return ICONOS_ACCION[tipo] || 'bi-question-circle';
     }
 
+    const COLORES_ACCION = {
+        'INSERT': 'success',
+        'UPDATE': 'warning',
+        'DELETE': 'danger',
+        'SELECT': 'info',
+        'GENERICA': 'secondary'
+    };
+
     function obtenerColorAccion(tipo) {
-        const colores = {
-            'INSERT': 'success',
-            'UPDATE': 'warning',
-            'DELETE': 'danger',
-            'SELECT': 'info',
-            'GENERICA': 'secondary'
-        };
-        return colores[tipo] || 'secondary';
+        return COLORES_ACCION[tipo] || 'secondary';
     }
 
     function truncarTexto(texto, maxLength) {
@@ -245,13 +246,14 @@
         return texto.substring(0, maxLength) + '...';
     }
 
+    // OPTIMIZACIÓN: Cachear el div para no crearlo múltiples veces
+    let divEscape = null;
     function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text || '';
-        return div.innerHTML;
+        if (!divEscape) divEscape = document.createElement('div');
+        divEscape.textContent = text || '';
+        return divEscape.innerHTML;
     }
 
-    // Exponer globalmente para botón reintentar
     window.cargarActividades = cargarActividades;
 
 })();

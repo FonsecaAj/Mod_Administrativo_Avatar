@@ -3,7 +3,6 @@
 
     console.log('menu-dinamico.js CARGADO');
 
-    // Módulos que se cargan dinámicamente según la API de roles
     const MODULOS_CONFIG = {
         'Usuarios': { icono: 'bi-people', url: '/Usuario/Usuarios', grupo: 'Administración', prefijo: '/Usuario' },
         'Roles': { icono: 'bi-shield-check', url: '/Rol/Roles', grupo: 'Administración', prefijo: '/Rol' },
@@ -23,21 +22,15 @@
         'Reportes': { icono: 'bi-file-earmark-bar-graph', url: '/Reportes/Index', grupo: 'Reportes', prefijo: '/Reportes' },
         'Profesores': { icono: 'bi-file-earmark-bar-graph', url: '/ADM11_Profesor', grupo: 'Profesores', prefijo: '/Profesores' },
         'Notificaciones': { icono: 'bi-envelope', url: '/Notificaciones_Correo/Index', grupo: 'Comunicación', prefijo: '/Notificaciones_Correo' }
-
     };
 
-    //  OPCIONES PARA EL ROL ADMINISTRADOR (o rol con ID 1)
     const ADMIN_MENU_EXTENSIONS = [
-        // Dashboard y otros
         { texto: 'Home', url: '/Index', icono: 'bi-house', grupo: 'Principal', esDashboard: true, prefijo: '/Index' },
         { texto: 'Historial Académico', url: '/Academico/HistorialAcademico', icono: 'bi-journal-text', grupo: 'Académico', prefijo: '/Academico/HistorialAcademico' },
         { texto: 'Listados por periodo', url: '/Academico/ListadoEstudiantes', icono: 'bi-people', grupo: 'Académico', prefijo: '/Academico/ListadoEstudiantes' },
         { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt', grupo: 'Facturación', prefijo: '/Facturacion' },
         { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos' },
-
         { texto: 'Prueba Notificaciones', url: '/Notificaciones_Correo/Index', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Notificaciones_Correo' },
-
-        // RUTAS DE ADMINISTRACIÓN MANTENIMIENTO (Las que deben reemplazar a las originales)
         { texto: 'Cursos', url: '/ADM10_Cursos', icono: 'bi-book', grupo: 'Mantenimiento Adm', prefijo: '/ADM10_Cursos' },
         { texto: 'Profesores', url: '/ADM11_Profesor', icono: 'bi-people', grupo: 'Mantenimiento Adm', prefijo: '/ADM11_Profesor' },
         { texto: 'Periodo', url: '/ADM12_Periodo', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm', prefijo: '/ADM12_Periodo' },
@@ -268,52 +261,31 @@
     function obtenerNombreSubpagina(ruta) {
         const r = ruta.toLowerCase();
 
-        // Instituciones
         if (r.includes('institucioncrear')) return 'Crear Institución';
         if (r.includes('institucioneditar')) return 'Editar Institución';
-
-        // Usuarios
         if (r.includes('usuariocrear')) return 'Crear Usuario';
         if (r.includes('usuarioeditar')) return 'Editar Usuario';
-
-        // Carreras
         if (r.includes('/carrera/carreracrear')) return 'Crear Carrera';
         if (r.includes('/carrera/carreraeditar')) return 'Editar Carrera';
-
-        // Cursos (ADM10)
         if (r.includes('/adm10_cursos/crear')) return 'Crear Curso';
         if (r.includes('/adm10_cursos/editar')) return 'Editar Curso';
         if (r.includes('/adm10_cursos/eliminar')) return 'Eliminar Curso';
-
-        // Roles
         if (r.includes('rolcrear')) return 'Crear Rol';
         if (r.includes('roleditar')) return 'Editar Rol';
-
-        // Grupos
         if (r.includes('grupocrear')) return 'Crear Grupo';
         if (r.includes('grupoeditar')) return 'Editar Grupo';
-
-        // Parámetros
         if (r.includes('parametrocrear')) return 'Crear Parámetro';
         if (r.includes('parametroeditar')) return 'Editar Parámetro';
-
-        // Módulos
         if (r.includes('modulocrear')) return 'Crear Módulo';
         if (r.includes('moduloeditar')) return 'Editar Módulo';
-
-        // Genéricos
         if (r.includes('crear')) return 'Crear';
         if (r.includes('editar')) return 'Editar';
         if (r.includes('eliminar')) return 'Eliminar';
         if (r.includes('detalle')) return 'Detalle';
-
-        // Páginas específicas
         if (r.includes('historialacademico')) return 'Historial Académico';
         if (r.includes('listadoestudiantes')) return 'Listados por Periodo';
         if (r.includes('/facturacion/facturas')) return 'Administración de Facturas';
         if (r.includes('/pagos/pagos')) return 'Consulta de Pagos';
-
-        // Módulos de Mantenimiento Adm (ADM)
         if (r.includes('adm10_cursos')) return 'Mantenimiento Cursos';
         if (r.includes('adm11_profesor')) return 'Mantenimiento Profesores';
         if (r.includes('adm12_periodo')) return 'Mantenimiento Periodos';
@@ -367,18 +339,31 @@
         init();
     }
 
-    window.addEventListener('popstate', function () {
-        marcarRutaActiva();
-        actualizarBreadcrumbs();
-    });
-
+    // En su lugar, usar MutationObserver para detectar cambios de ruta
     let ultimaRuta = window.location.pathname;
-    setInterval(function () {
+
+    // Detectar cambios de URL con popstate (botones navegador)
+    window.addEventListener('popstate', function () {
         if (window.location.pathname !== ultimaRuta) {
             ultimaRuta = window.location.pathname;
             marcarRutaActiva();
             actualizarBreadcrumbs();
         }
-    }, 200);
+    });
+
+    // Detectar cambios de URL usando MutationObserver en lugar de polling
+    const observer = new MutationObserver(function () {
+        if (window.location.pathname !== ultimaRuta) {
+            ultimaRuta = window.location.pathname;
+            marcarRutaActiva();
+            actualizarBreadcrumbs();
+        }
+    });
+
+    observer.observe(document.querySelector('title'), {
+        childList: true,
+        characterData: true,
+        subtree: true
+    });
 
 })();
