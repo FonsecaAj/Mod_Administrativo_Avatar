@@ -15,7 +15,7 @@ namespace Avatar_Mod_Administración.Services
             ILogger<BitacoraService> logger)
         {
             _httpClient = httpClient;
-            _apiUrl = configuration["ApiUrls:GEN1"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral/";
+            _apiUrl = configuration["ApiUrls:GEN1"] ?? "http://localhost:5155";
             _logger = logger;
         }
 
@@ -78,7 +78,7 @@ namespace Avatar_Mod_Administración.Services
                 }
 
                 var queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
-                var url = $"{_apiUrl}/api/bitacora{queryString}";
+                var url = $"{_apiUrl}api/bitacora{queryString}";
 
                 var request = new HttpRequestMessage(HttpMethod.Get, url);
                 request.Headers.Add("Authorization", token);

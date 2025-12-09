@@ -29,15 +29,29 @@ namespace Avatar_Mod_Administración.Repository
             }
         }
 
-        public async Task<List<Bitacora>> ObtenerTodas()
+        public async Task<List<Bitacora>> ObtenerTodas(string? usuario = null)
         {
             using (var connection = _dbConnectionFactory.CreateConnection())
             {
-                var sql = @"SELECT ID_Bitacora, Fecha_Registro, Usuario, Descripcion, Tipo_Accion 
+                string sql;
+                object? parametros = null;
+
+                if (!string.IsNullOrWhiteSpace(usuario))
+                {
+                    sql = @"SELECT ID_Bitacora, Fecha_Registro, Usuario, Descripcion, Tipo_Accion 
+                            FROM Bitacora 
+                            WHERE Usuario = @Usuario
+                            ORDER BY Fecha_Registro DESC";
+                    parametros = new { Usuario = usuario };
+                }
+                else
+                {
+                    sql = @"SELECT ID_Bitacora, Fecha_Registro, Usuario, Descripcion, Tipo_Accion 
                             FROM Bitacora 
                             ORDER BY Fecha_Registro DESC";
+                }
 
-                var result = await connection.QueryAsync<Bitacora>(sql);
+                var result = await connection.QueryAsync<Bitacora>(sql, parametros);
                 return result.ToList();
             }
         }

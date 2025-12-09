@@ -1,4 +1,5 @@
-﻿using Avatar_Mod_Administración.Services;
+﻿using Avatar_Mod_Administración.Entities;
+using Avatar_Mod_Administración.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -197,14 +198,19 @@ app.MapGet("/api/dashboard/actividades", async (
             });
         }
 
-        log.LogInformation("Dashboard: Obteniendo actividades");
+        log.LogInformation("Dashboard: Obteniendo actividades para usuario {Usuario}", sesion.UsuarioID);
 
-        // Obtener todas las bitácoras
-        var todasBitacoras = await bitacoraService.ObtenerTodosAsync(sesion.AccessToken);
+        // Filtrar por usuario actual
+        var filtro = new BitacoraFiltroDto
+        {
+            Usuario = sesion.UsuarioID
+        };
+
+        var todasBitacoras = await bitacoraService.ObtenerTodosAsync(sesion.AccessToken, filtro);
 
         if (todasBitacoras == null || !todasBitacoras.Any())
         {
-            log.LogInformation("Dashboard: No hay bitácoras");
+            log.LogInformation("Dashboard: No hay bitácoras para usuario {Usuario}", sesion.UsuarioID);
             return Results.Ok(new
             {
                 notificaciones = new List<object>(),
@@ -213,7 +219,6 @@ app.MapGet("/api/dashboard/actividades", async (
         }
 
         // Separar notificaciones (SEND_MAIL) de bitácoras normales
-        // Tomar las últimas 20 de cada tipo ordenadas por fecha descendente
         var notificaciones = todasBitacoras
             .Where(b => !string.IsNullOrEmpty(b.Tipo_Accion) &&
                        b.Tipo_Accion.Equals("SEND_MAIL", StringComparison.OrdinalIgnoreCase))
@@ -244,8 +249,8 @@ app.MapGet("/api/dashboard/actividades", async (
             })
             .ToList();
 
-        log.LogInformation("Dashboard: {NotifCount} notificaciones, {BitCount} bitácoras",
-            notificaciones.Count, bitacoras.Count);
+        log.LogInformation("Dashboard: Usuario {Usuario} - {NotifCount} notificaciones, {BitCount} bitácoras",
+            sesion.UsuarioID, notificaciones.Count, bitacoras.Count);
 
         return Results.Ok(new
         {

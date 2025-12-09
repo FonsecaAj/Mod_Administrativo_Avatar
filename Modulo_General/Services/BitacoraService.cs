@@ -75,11 +75,11 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        public async Task<BusinessLogicResponse> ObtenerTodas()
+        public async Task<BusinessLogicResponse> ObtenerTodas(string? usuario = null)
         {
             try
             {
-                var bitacoras = await _bitacoraRepository.ObtenerTodas();
+                var bitacoras = await _bitacoraRepository.ObtenerTodas(usuario);
 
                 return new BusinessLogicResponse
                 {

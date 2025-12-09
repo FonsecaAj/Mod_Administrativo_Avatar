@@ -21,7 +21,8 @@
         'Desglose y Notas': { icono: 'bi-clipboard-data', url: '/Notas/Index', grupo: 'Evaluación', prefijo: '/Notas' },
         'Promedios': { icono: 'bi-graph-up', url: '/Promedios/Index', grupo: 'Evaluación', prefijo: '/Promedios' },
         'Reportes': { icono: 'bi-file-earmark-bar-graph', url: '/Reportes/Index', grupo: 'Reportes', prefijo: '/Reportes' },
-        'Profesores': { icono: 'bi-file-earmark-bar-graph', url: '/ADM11_Profesor', grupo: 'Profesores', prefijo: '/Profesores' }
+        'Profesores': { icono: 'bi-file-earmark-bar-graph', url: '/ADM11_Profesor', grupo: 'Profesores', prefijo: '/Profesores' },
+        'Notificaciones': { icono: 'bi-envelope', url: '/Notificaciones_Correo/Index', grupo: 'Comunicación', prefijo: '/Notificaciones_Correo' }
 
     };
 

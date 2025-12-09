@@ -5,6 +5,6 @@ namespace Avatar_Mod_Administración.Services
     public interface IBitacoraService
     {
         Task<BusinessLogicResponse> Registrar(BitacoraRequest request);
-        Task<BusinessLogicResponse> ObtenerTodas();
+        Task<BusinessLogicResponse> ObtenerTodas(string? usuario = null);
     }
 }

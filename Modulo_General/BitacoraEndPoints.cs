@@ -19,10 +19,10 @@ namespace Avatar_Mod_Administración
             .WithName("RegistrarBitacora")
             .WithOpenApi();
 
-            // GET /api/bitacora
-            group.MapGet("/", async ([FromServices] IBitacoraService service) =>
+            // GET /api/bitacora?usuario=email@ejemplo.com
+            group.MapGet("/", async ([FromQuery] string? usuario, [FromServices] IBitacoraService service) =>
             {
-                var response = await service.ObtenerTodas();
+                var response = await service.ObtenerTodas(usuario);
                 return Results.Json(response.ResponseObject, statusCode: response.StatusCode);
             })
             .WithName("ObtenerBitacoras")
