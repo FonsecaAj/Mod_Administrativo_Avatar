@@ -20,7 +20,7 @@ namespace Avatar_Mod_Administración.Pages.ADM15_Matricula
             _matriculaClient = matriculaClient;
         }
 
-        // ===== Datos para registrar matrícula =====
+
 
         [BindProperty]
         public MatriculaRequestDto NuevaMatricula { get; set; } = new();
@@ -33,20 +33,24 @@ namespace Avatar_Mod_Administración.Pages.ADM15_Matricula
         [BindProperty(SupportsGet = true)]
         public int? GrupoFiltro { get; set; }
 
-        // ===== Combos =====
+        // ===== Combos básicos =====
+
         public List<SelectListItem> Periodos { get; set; } = new();
         public List<SelectListItem> Cursos { get; set; } = new();
-        public List<SelectListItem> GruposCrear { get; set; } = new();
-        public List<SelectListItem> GruposFiltro { get; set; } = new();
 
-        // ===== Listado de estudiantes matriculados =====
+
+
+        public List<MatriculaGrupoLookupDto> GruposCrear { get; set; } = new();
+        public List<MatriculaGrupoLookupDto> GruposFiltro { get; set; } = new();
+
+
 
         public List<MatriculaDto> Matriculados { get; set; } = new();
 
         [TempData] public string? Mensaje { get; set; }
         [TempData] public string? MensajeError { get; set; }
 
-        // ================== GET ==================
+
 
         public async Task<IActionResult> OnGetAsync()
         {
@@ -65,7 +69,7 @@ namespace Avatar_Mod_Administración.Pages.ADM15_Matricula
             return Page();
         }
 
-        // ================== POST (crear matrícula) ==================
+
 
         public async Task<IActionResult> OnPostAsync()
         {
@@ -74,7 +78,7 @@ namespace Avatar_Mod_Administración.Pages.ADM15_Matricula
 
             await CargarCombosAsync();
 
-            // Validaciones básicas en el modelo
+       
             if (string.IsNullOrWhiteSpace(NuevaMatricula.Identificacion))
                 ModelState.AddModelError("NuevaMatricula.Identificacion", "La identificación es obligatoria.");
 
@@ -87,7 +91,7 @@ namespace Avatar_Mod_Administración.Pages.ADM15_Matricula
             if (NuevaMatricula.ID_Grupo <= 0)
                 ModelState.AddModelError("NuevaMatricula.ID_Grupo", "Debe seleccionar un grupo.");
 
-            // Si había filtros, recargar listado (para que no se vea vacío al fallar)
+
             if (CursoFiltro.HasValue && GrupoFiltro.HasValue &&
                 CursoFiltro.Value > 0 && GrupoFiltro.Value > 0)
             {
@@ -109,7 +113,6 @@ namespace Avatar_Mod_Administración.Pages.ADM15_Matricula
 
             Mensaje = message;
 
-            // Después de crear, usamos el curso/grupo de la nueva matrícula como filtros
             return RedirectToPage(new
             {
                 CursoFiltro = NuevaMatricula.ID_Curso,
@@ -117,7 +120,6 @@ namespace Avatar_Mod_Administración.Pages.ADM15_Matricula
             });
         }
 
-        // ================== Cargar combos desde MAT2 ==================
 
         private async Task CargarCombosAsync()
         {
@@ -150,41 +152,25 @@ namespace Avatar_Mod_Administración.Pages.ADM15_Matricula
                 })
                 .ToList();
 
-            var gruposBase = lookups.Grupos;
-
-           
-            GruposCrear = gruposBase
-                .Where(g =>
-                    NuevaMatricula != null &&
-                    NuevaMatricula.ID_Curso > 0
-                        ? g.ID_Curso == NuevaMatricula.ID_Curso 
-                        : true
-                )
-                .Select(g => new SelectListItem
+            // ===== Grupos directamente desde MAT2 (mapeando al tipo Lookup) =====
+            var gruposLista = lookups.Grupos
+                .Select(g => new MatriculaGrupoLookupDto
                 {
-                    Value = g.ID_Grupo.ToString(),
-                    Text = $"{g.Nombre_Curso} - {g.Nombre_Grupo} " +
-                            $"({g.Cupo_Disponible} cupos, {g.EstadoGrupo})"
+                    ID_Grupo = g.ID_Grupo,
+                    ID_Curso = g.ID_Curso,
+                    Nombre_Curso = g.Nombre_Curso,
+                    Nombre_Grupo = g.Nombre_Grupo,
+                    Cupo_Disponible = g.Cupo_Disponible,
+                    EstadoGrupo = g.EstadoGrupo
                 })
                 .ToList();
 
-            GruposFiltro = gruposBase
-                .Where(g =>
-                    CursoFiltro.HasValue && CursoFiltro.Value > 0
-                        ? g.ID_Curso == CursoFiltro.Value      
-                        : true
-                )
-                .Select(g => new SelectListItem
-                {
-                    Value = g.ID_Grupo.ToString(),
-                    Text = $"{g.Nombre_Curso} - {g.Nombre_Grupo} " +
-                            $"({g.Cupo_Disponible} cupos, {g.EstadoGrupo})"
-                })
-                .ToList();
+            GruposCrear = gruposLista;
+            GruposFiltro = gruposLista;
+
         }
 
-
-
+        // ================== Exportar CSV ==================
 
         public async Task<IActionResult> OnGetExportarCsvAsync(int? cursoFiltro, int? grupoFiltro)
         {
@@ -201,28 +187,19 @@ namespace Avatar_Mod_Administración.Pages.ADM15_Matricula
                 .ObtenerPorCursoYGrupoAsync(cursoFiltro.Value, grupoFiltro.Value)).ToList();
 
             var sb = new StringBuilder();
-
- 
-            sb.AppendLine("sep=;");
-
-
-            sb.AppendLine("Identificación;Nombre completo;Curso;Grupo;Fecha matrícula");
+            sb.AppendLine("Identificación;NombreCompleto;Curso;Grupo;FechaMatrícula");
 
             foreach (var m in lista)
             {
                 sb.AppendLine(
-                    $"{m.Identificacion};" +
-                    $"\"{m.NombreCompleto}\";" +
-                    $"\"{m.NombreCurso}\";" +
-                    $"\"{m.NombreGrupo}\";" +
-                    $"{m.Fecha_Matricula:yyyy-MM-dd}");
+                    $"{m.Identificacion};\"{m.NombreCompleto}\";\"{m.NombreCurso}\";\"{m.NombreGrupo}\";{m.Fecha_Matricula:yyyy-MM-dd}");
             }
 
-            var utf8Bom = new UTF8Encoding(encoderShouldEmitUTF8Identifier: true);
-            var bytes = utf8Bom.GetBytes(sb.ToString());
+            var csv = sb.ToString();
+            var bom = Encoding.UTF8.GetPreamble();
+            var bytes = bom.Concat(Encoding.UTF8.GetBytes(csv)).ToArray();
 
             return File(bytes, "text/csv", "Matriculados.csv");
         }
-
     }
 }

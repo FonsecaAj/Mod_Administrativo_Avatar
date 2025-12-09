@@ -83,9 +83,16 @@
                             <i class="fas fa-users"></i>Grupo:
                         </label>
                         <select asp-for="NuevaMatricula.ID_Grupo"
-                                asp-items="Model.GruposCrear"
-                                class="form-select">
+                                class="form-select"
+                                id="NuevaMatricula_ID_Grupo">
                             <option value="">Seleccione un grupo</option>
+                            @foreach (var g in Model.GruposCrear)
+                            {
+                                <option value="@g.ID_Grupo"
+                                        data-curso-id="@g.ID_Curso">
+                                    @g.Nombre_Curso - @g.Nombre_Grupo (@g.Cupo_Disponible cupos, @g.EstadoGrupo)
+                                </option>
+                            }
                         </select>
                         <span asp-validation-for="NuevaMatricula.ID_Grupo" class="text-danger"></span>
                     </div>
@@ -114,7 +121,8 @@
                         </label>
                         <select asp-for="CursoFiltro"
                                 asp-items="Model.Cursos"
-                                class="form-select">
+                                class="form-select"
+                                id="CursoFiltro">
                             <option value="">Todos los cursos</option>
                         </select>
                     </div>
@@ -123,10 +131,17 @@
                             <i class="fas fa-users"></i>Grupo:
                         </label>
                         <select asp-for="GrupoFiltro"
-                                asp-items="Model.GruposFiltro"
-                                class="form-select">
+                                class="form-select"
+                                id="GrupoFiltro">
                             <option value="">Todos los grupos</option>
-                        </select> 
+                            @foreach (var g in Model.GruposFiltro)
+                            {
+                                <option value="@g.ID_Grupo"
+                                        data-curso-id="@g.ID_Curso">
+                                    @g.Nombre_Curso - @g.Nombre_Grupo (@g.Cupo_Disponible cupos, @g.EstadoGrupo)
+                                </option>
+                            }
+                        </select>
                     </div>
                 </div>
 
@@ -204,4 +219,73 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // ====== REGISTRAR MATRÍCULA (arriba) ======
+            const selectCursoCrear = document.getElementById('NuevaMatricula_ID_Curso');
+            const selectGrupoCrear = document.getElementById('NuevaMatricula_ID_Grupo');
+
+            // ====== FILTROS (abajo) ======
+            const selectCursoFiltro = document.getElementById('CursoFiltro');
+            const selectGrupoFiltro = document.getElementById('GrupoFiltro');
+
+            function filtrarGruposPorCurso(selectGrupos, idCurso) {
+                if (!selectGrupos) return;
+
+                const numCurso = parseInt(idCurso, 10);
+
+                Array.from(selectGrupos.options).forEach(opt => {
+                    if (opt.value === "") {
+                        // opción "Seleccione..." o "Todos los grupos"
+                        opt.hidden = false;
+                        return;
+                    }
+
+                    const cursoOpt = parseInt(opt.dataset.cursoId || "0", 10);
+
+                    if (!numCurso || Number.isNaN(numCurso)) {
+                        opt.hidden = false; // sin curso → mostrar todos
+                    } else {
+                        opt.hidden = (cursoOpt !== numCurso);
+                    }
+                });
+
+                // Si el grupo seleccionado ya no aplica, resetear
+                const selected = selectGrupos.selectedOptions[0];
+                if (selected && selected.hidden) {
+                    selectGrupos.value = "";
+                }
+            }
+
+            // Eventos para registrar matrícula
+            if (selectCursoCrear && selectGrupoCrear) {
+                selectCursoCrear.addEventListener('change', function () {
+                    filtrarGruposPorCurso(selectGrupoCrear, this.value);
+                });
+
+                // Si viene ya seleccionado al entrar (por validación), filtrar
+                if (selectCursoCrear.value) {
+                    filtrarGruposPorCurso(selectGrupoCrear, selectCursoCrear.value);
+                }
+            }
+
+            // Eventos para filtros de listado
+            if (selectCursoFiltro && selectGrupoFiltro) {
+                selectCursoFiltro.addEventListener('change', function () {
+                    filtrarGruposPorCurso(selectGrupoFiltro, this.value);
+                });
+
+                // Al cargar la página respetar valores de filtros actuales
+                if (selectCursoFiltro.value) {
+                    filtrarGruposPorCurso(selectGrupoFiltro, selectCursoFiltro.value);
+                    const grupoActual = '@(Model.GrupoFiltro?.ToString() ?? "")';
+                    if (grupoActual) {
+                        selectGrupoFiltro.value = grupoActual;
+                    }
+                }
+            }
+        });
+    </script>
 }
