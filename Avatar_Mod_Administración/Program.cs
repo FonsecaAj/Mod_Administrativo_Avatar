@@ -171,6 +171,14 @@ builder.Services.AddHttpClient<IMatriculaApiClient, MatriculaApiClient>(client =
     client.BaseAddress = new Uri(baseUrl);
 });
 
+builder.Services.AddHttpClient<IExpedienteApiClient, ExpedienteApiClient>(client =>
+{
+    var baseUrl = builder.Configuration["Mat_Expediente:BaseUrl"]
+                  ?? throw new InvalidOperationException("Mat_Expediente:BaseUrl no configurado");
+
+    client.BaseAddress = new Uri(baseUrl);
+});
+
 
 
 var app = builder.Build();
