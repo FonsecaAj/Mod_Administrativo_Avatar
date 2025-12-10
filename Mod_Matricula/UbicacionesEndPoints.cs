@@ -13,22 +13,22 @@ namespace Mod_Matricula
             //// ======== PROVINCIAS ========
             var provincias = routes.MapGroup("/api/provincias").WithTags(nameof(Provincia));
 
-            //provincias.MapGet("/", async (
-            //    [FromHeader(Name = "Authorization")] string? authorization,
-            //    [FromServices] IUbicacionesServices ubicacionesServices,
-            //    [FromServices] IAutenticacionService autenticacionService) =>
-            //{
-            //    if (!await autenticacionService.ValidarTokenAsync(authorization))
-            //        return Results.Json(new { error = "No autorizado" }, statusCode: 401);
+            provincias.MapGet("/", async (
+                [FromHeader(Name = "Authorization")] string? authorization,
+                [FromServices] IUbicacionesServices ubicacionesServices,
+                [FromServices] IAutenticacionService autenticacionService) =>
+            {
+                if (!await autenticacionService.ValidarTokenAsync(authorization))
+                    return Results.Json(new { error = "No autorizado" }, statusCode: 401);
 
-            //    var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
+                var usuario = await autenticacionService.ObtenerUsuarioDelTokenAsync(authorization) ?? "sistema";
 
-            //    var response = await ubicacionesServices.Obtener_Provincias();
+                var response = await ubicacionesServices.Obtener_Provincias();
 
-            //    return Results.Json(response, statusCode: response.StatusCode);
-            //})
-            //.WithName("GetAllProvincias")
-            //.WithOpenApi();
+                return Results.Json(response, statusCode: response.StatusCode);
+            })
+            .WithName("GetAllProvincias")
+            .WithOpenApi();
 
             provincias.MapGet("/test", async (
                 [FromServices] IUbicacionesServices ubicacionesServices) => // Solo inyectamos el servicio

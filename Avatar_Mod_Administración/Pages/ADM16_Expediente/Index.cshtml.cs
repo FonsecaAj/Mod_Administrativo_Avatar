@@ -271,5 +271,28 @@ namespace Avatar_Mod_Administración.Pages.ADM16_Expediente
                 new() { Value = "Pasaporte", Text = "Pasaporte" }
             };
         }
+
+
+        // =========================================================
+        // AJAX Handlers para cascada de ubicaciones
+        // =========================================================
+
+        public async Task<JsonResult> OnGetCantonesAsync(int idProvincia)
+        {
+            var cantones = await _ubicacionesClient.ObtenerCantonesAsync(idProvincia);
+            return new JsonResult(cantones.Select(c => new {
+                value = c.ID_Canton.ToString(),
+                text = c.Nombre_Canton
+            }));
+        }
+
+        public async Task<JsonResult> OnGetDistritosAsync(int idProvincia, int idCanton)
+        {
+            var distritos = await _ubicacionesClient.ObtenerDistritosAsync(idProvincia, idCanton);
+            return new JsonResult(distritos.Select(d => new {
+                value = d.ID_Distrito.ToString(),
+                text = d.Nombre_Distrito
+            }));
+        }
     }
 }

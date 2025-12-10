@@ -246,4 +246,62 @@
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        $(document).ready(function() {
+            // Evento cuando cambia la provincia
+            $('#ExpedienteForm_ID_Provincia').change(function() {
+                var idProvincia = $(this).val();
+
+                // Limpiar cantones y distritos
+                $('#ExpedienteForm_ID_Canton').html('<option value="">Seleccione un cantón</option>');
+                $('#ExpedienteForm_DistritoID').html('<option value="">Seleccione un distrito</option>');
+
+                if (idProvincia) {
+                    // Cargar cantones
+                    $.get('@Url.Page("./Index", "Cantones")', { idProvincia: idProvincia })
+                        .done(function(data) {
+                            var cantonSelect = $('#ExpedienteForm_ID_Canton');
+                            $.each(data, function(i, item) {
+                                cantonSelect.append($('<option></option>')
+                                    .attr('value', item.value)
+                                    .text(item.text));
+                            });
+                        })
+                        .fail(function() {
+                            console.error('Error al cargar cantones');
+                        });
+                }
+            });
+
+            // Evento cuando cambia el cantón
+            $('#ExpedienteForm_ID_Canton').change(function() {
+                var idProvincia = $('#ExpedienteForm_ID_Provincia').val();
+                var idCanton = $(this).val();
+
+                // Limpiar distritos
+                $('#ExpedienteForm_DistritoID').html('<option value="">Seleccione un distrito</option>');
+
+                if (idProvincia && idCanton) {
+                    // Cargar distritos
+                    $.get('@Url.Page("./Index", "Distritos")', {
+                        idProvincia: idProvincia,
+                        idCanton: idCanton
+                    })
+                        .done(function(data) {
+                            var distritoSelect = $('#ExpedienteForm_DistritoID');
+                            $.each(data, function(i, item) {
+                                distritoSelect.append($('<option></option>')
+                                    .attr('value', item.value)
+                                    .text(item.text));
+                            });
+                        })
+                        .fail(function() {
+                            console.error('Error al cargar distritos');
+                        });
+                }
+            });
+        });
+    </script>
+
 }
