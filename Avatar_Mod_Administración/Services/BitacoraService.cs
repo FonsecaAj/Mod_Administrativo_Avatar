@@ -15,7 +15,7 @@ namespace Avatar_Mod_Administración.Services
             ILogger<BitacoraService> logger)
         {
             _httpClient = httpClient;
-            _apiUrl = configuration["ApiUrls:GEN1"] ?? "http://localhost:5155";
+            _apiUrl = configuration["ApiUrls:GEN1"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral/";
             _logger = logger;
         }
 
