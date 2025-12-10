@@ -1,5 +1,6 @@
 ﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Text.Json;
 using Avatar_Mod_Administración.Entities;
 
 namespace Avatar_Mod_Administración.Services
@@ -7,13 +8,25 @@ namespace Avatar_Mod_Administración.Services
     public class UbicacionesApiClient : IUbicacionesApiClient
     {
         private readonly HttpClient _http;
+        private readonly IConfiguration _config;
         private readonly IAuthService _authService;
 
-        public UbicacionesApiClient(HttpClient http, IAuthService authService)
+        // Solo para debug (para ver qué hay en appsettings)
+        private readonly string _baseUrlFromConfig;
+
+        public UbicacionesApiClient(HttpClient http, IConfiguration config, IAuthService authService)
         {
             _http = http;
+            _config = config;
             _authService = authService;
+
+            _baseUrlFromConfig = _config["Adm_Direcciones:BaseUrl"] ?? "(NO CONFIG)";
+
+            // OJO: el BaseAddress ya lo estás seteando en Program.cs con AddHttpClient
+            // así que aquí NO volvemos a tocarlo.
         }
+
+        // ================= TOKEN =================
 
         private string ObtenerTokenLimpio()
         {
@@ -43,65 +56,121 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        // ============ PROVINCIAS ============
+        // ================= PROVINCIAS =================
 
         public async Task<IEnumerable<ProvinciaDto>> ObtenerProvinciasAsync()
         {
             AplicarToken();
 
-            var response = await _http.GetAsync("api/provincias");
+            var relativeUrl = "api/provincias";
 
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                // opcional: log rápido para depurar
-                Console.WriteLine($"[UbicacionesApiClient] Provincias Status: {response.StatusCode}");
+                var response = await _http.GetAsync(relativeUrl);
+                var raw = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine("=== DEBUG PROVINCIAS ===");
+                Console.WriteLine($"BaseAddress        : {_http.BaseAddress}");
+                Console.WriteLine($"Config BaseUrl     : {_baseUrlFromConfig}");
+                Console.WriteLine($"Relative URL       : {relativeUrl}");
+                Console.WriteLine($"Status             : {(int)response.StatusCode} ({response.StatusCode})");
+                Console.WriteLine($"Raw Content        : {raw}");
+                Console.WriteLine("========================");
+
+                if (!response.IsSuccessStatusCode)
+                    return Enumerable.Empty<ProvinciaDto>();
+
+                var wrapper = JsonSerializer.Deserialize<BusinessLogicResponse<IEnumerable<ProvinciaDto>>>(
+                    raw,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                return wrapper?.ResponseObject ?? Enumerable.Empty<ProvinciaDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("=== ERROR PROVINCIAS ===");
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine("========================");
                 return Enumerable.Empty<ProvinciaDto>();
             }
-
-            var wrapper = await response.Content
-                .ReadFromJsonAsync<BusinessLogicResponse<IEnumerable<ProvinciaDto>>>();
-
-            return wrapper?.ResponseObject ?? Enumerable.Empty<ProvinciaDto>();
         }
 
-        // ============ CANTONES ============
+        // ================= CANTONES =================
 
         public async Task<IEnumerable<CantonDto>> ObtenerCantonesAsync(int idProvincia)
         {
             AplicarToken();
 
-            var response = await _http.GetAsync($"api/cantones?provincia={idProvincia}");
+            var relativeUrl = $"api/cantones?provincia={idProvincia}";
 
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                Console.WriteLine($"[UbicacionesApiClient] Cantones Status: {response.StatusCode}");
+                var response = await _http.GetAsync(relativeUrl);
+                var raw = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine("=== DEBUG CANTONES ===");
+                Console.WriteLine($"BaseAddress        : {_http.BaseAddress}");
+                Console.WriteLine($"Config BaseUrl     : {_baseUrlFromConfig}");
+                Console.WriteLine($"Relative URL       : {relativeUrl}");
+                Console.WriteLine($"Status             : {(int)response.StatusCode} ({response.StatusCode})");
+                Console.WriteLine($"Raw Content        : {raw}");
+                Console.WriteLine("=======================");
+
+                if (!response.IsSuccessStatusCode)
+                    return Enumerable.Empty<CantonDto>();
+
+                var wrapper = JsonSerializer.Deserialize<BusinessLogicResponse<IEnumerable<CantonDto>>>(
+                    raw,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                return wrapper?.ResponseObject ?? Enumerable.Empty<CantonDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("=== ERROR CANTONES ===");
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine("=======================");
                 return Enumerable.Empty<CantonDto>();
             }
-
-            var wrapper = await response.Content
-                .ReadFromJsonAsync<BusinessLogicResponse<IEnumerable<CantonDto>>>();
-
-            return wrapper?.ResponseObject ?? Enumerable.Empty<CantonDto>();
         }
 
-        // ============ DISTRITOS ============
+        // ================= DISTRITOS =================
 
         public async Task<IEnumerable<DistritoDto>> ObtenerDistritosAsync(int idProvincia, int idCanton)
         {
             AplicarToken();
 
-            var response = await _http.GetAsync($"api/distritos?provincia={idProvincia}&canton={idCanton}");
+            var relativeUrl = $"api/distritos?provincia={idProvincia}&canton={idCanton}";
 
-            if (!response.IsSuccessStatusCode)
+            try
             {
-                Console.WriteLine($"[UbicacionesApiClient] Distritos Status: {response.StatusCode}");
+                var response = await _http.GetAsync(relativeUrl);
+                var raw = await response.Content.ReadAsStringAsync();
+
+                Console.WriteLine("=== DEBUG DISTRITOS ===");
+                Console.WriteLine($"BaseAddress        : {_http.BaseAddress}");
+                Console.WriteLine($"Config BaseUrl     : {_baseUrlFromConfig}");
+                Console.WriteLine($"Relative URL       : {relativeUrl}");
+                Console.WriteLine($"Status             : {(int)response.StatusCode} ({response.StatusCode})");
+                Console.WriteLine($"Raw Content        : {raw}");
+                Console.WriteLine("========================");
+
+                if (!response.IsSuccessStatusCode)
+                    return Enumerable.Empty<DistritoDto>();
+
+                var wrapper = JsonSerializer.Deserialize<BusinessLogicResponse<IEnumerable<DistritoDto>>>(
+                    raw,
+                    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+
+                return wrapper?.ResponseObject ?? Enumerable.Empty<DistritoDto>();
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("=== ERROR DISTRITOS ===");
+                Console.WriteLine(ex.ToString());
+                Console.WriteLine("========================");
                 return Enumerable.Empty<DistritoDto>();
             }
-
-            var wrapper = await response.Content
-                .ReadFromJsonAsync<BusinessLogicResponse<IEnumerable<DistritoDto>>>();
-
-            return wrapper?.ResponseObject ?? Enumerable.Empty<DistritoDto>();
         }
     }
 }
