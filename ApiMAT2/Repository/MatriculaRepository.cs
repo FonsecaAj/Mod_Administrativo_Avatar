@@ -157,6 +157,49 @@ namespace ApiMAT2.Repository
 }
 
 
+        public async Task<IEnumerable<MatriculaEstudianteDto>> Obtener_Matricula_Estudiante(string identificacion)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            var sql = @"
+        SELECT 
+            -- Información del estudiante
+            e.Carrera AS Carrera_Estudiante,
+            
+            -- Información de matrícula
+            m.Fecha_Matricula,
+            
+            -- Información del grupo y curso (Verificación de existencia)
+            g.Nombre_Grupo,
+            c.Nombre_Curso,
+            c.Codigo_Curso,
+            
+            -- Información del período académico actual (Subconsulta escalar)
+            (SELECT TOP 1 CONCAT('Año ', p.Año, ' - Periodo ', p.Numero_Periodo)
+             FROM Periodo p 
+             WHERE GETDATE() BETWEEN p.Fecha_Inicio AND p.Fecha_Fin
+             ORDER BY p.Fecha_Inicio DESC) AS Periodo_Actual
+            
+        FROM Estudiante e
+        JOIN Matricula m ON e.ID_Estudiante = m.ID_Estudiante
+        JOIN Grupo g ON m.ID_Grupo = g.ID_Grupo
+        JOIN Curso c ON g.ID_Curso = c.ID_Curso
+        WHERE e.Identificacion = @Identificacion 
+        ORDER BY m.Fecha_Matricula DESC, c.Nombre_Curso;";
+
+            return await connection.QueryAsync<MatriculaEstudianteDto>(sql, new
+            {
+                Identificacion = identificacion
+            });
+        }
+
+
 
     }
+
+
+
+
+
+
 }
