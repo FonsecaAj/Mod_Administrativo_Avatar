@@ -1,0 +1,6 @@
+@Mod_Matricula_HostAddress = http://localhost:5008
+
+GET {{Mod_Matricula_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
