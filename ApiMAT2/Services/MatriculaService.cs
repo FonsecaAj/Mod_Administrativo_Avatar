@@ -175,6 +175,57 @@ namespace ApiMAT2.Services
         }
 
 
+        public async Task<BusinessLogicResponse> Obtener_Matricula_Estudiante(string identificacion)
+        {
+            const string accion = "Obtener_Matricula_Estudiante";
+
+            if (string.IsNullOrWhiteSpace(identificacion))
+            {
+                _ = RegistrarBitacoraAsync("ERROR", new { accion, detalle = "Identificación no proporcionada." });
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 400,
+                    Message = "Debe especificar una identificación de estudiante válida."
+                };
+            }
+
+            try
+            {
+                var matriculas = await _repository.Obtener_Matricula_Estudiante(identificacion);
+
+                if (matriculas == null || !matriculas.Any())
+                {
+                    _ = RegistrarBitacoraAsync("SELECT", new { accion, identificacion, detalle = "No se encontraron matrículas." });
+                    return new BusinessLogicResponse
+                    {
+                        StatusCode = 404,
+                        Message = $"No se encontró información de matrícula para el estudiante con identificación {identificacion}."
+                    };
+                }
+
+                // Bitácora exitosa
+                _ = RegistrarBitacoraAsync("SELECT", new { accion, identificacion, encontrado = true, total = matriculas.Count() });
+
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 200,
+                    Message = "Información de matrícula obtenida correctamente.",
+                    ResponseObject = matriculas
+                };
+            }
+            catch (Exception ex)
+            {
+                _ = RegistrarBitacoraAsync("ERROR", new { accion, mensaje = ex.Message, identificacion });
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 500,
+                    Message = $"Error interno al consultar matrícula: {ex.Message}"
+                };
+            }
+        }
+
+
+
         public MatriculaLookupsDto ObtenerLookups()
         {
             var periodos = _repository.ObtenerPeriodos();

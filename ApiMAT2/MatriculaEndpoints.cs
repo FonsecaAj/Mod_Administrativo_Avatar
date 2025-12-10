@@ -183,6 +183,26 @@ namespace ApiMAT2
             });
 
 
+            group.MapGet("/estudiante/{identificacion}", async (
+                [FromRoute] string identificacion,
+                [FromServices] IMatriculaService service,
+                IAutenticacionService auth,
+                HttpContext http) =>
+            {
+                var authorization = http.Request.Headers["Authorization"].ToString();
+                if (!await auth.ValidarTokenAsync(authorization))
+                    return Results.Unauthorized();
+
+                // Llamada al Service asíncrono
+                var response = await service.Obtener_Matricula_Estudiante(identificacion);
+
+                // El Service ya devuelve BusinessLogicResponse con el código de estado correcto (200, 404, 500)
+                return Results.Json(response, statusCode: response.StatusCode);
+            })
+            .WithName("ObtenerMatriculaEstudiante")
+            .WithOpenApi();
+
+
         }
     }
 }

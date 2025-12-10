@@ -22,5 +22,9 @@ namespace ApiMAT2.Repository
         bool ExisteMatricula(int idEstudiante, int idCurso, int idGrupo);
         int ObtenerCupoDisponible(int idGrupo);
 
+
+        //OBTENER MATRICULA DE ESTUDIANTE
+        Task<IEnumerable<MatriculaEstudianteDto>> Obtener_Matricula_Estudiante(string identificacion);
+
     }
 }

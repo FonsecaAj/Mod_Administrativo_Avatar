@@ -44,7 +44,7 @@ builder.Services.AddScoped<IMatriculaService, MatriculaService>();
 
 builder.Services.AddHttpClient<BitacoraConsumer>(client =>
 {
-    client.BaseAddress = new Uri(builder.Configuration["BitacoraService:BaseUrl"] ?? "http://localhost:5293");
+    client.BaseAddress = new Uri(builder.Configuration["BitacoraService:BaseUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral/");
     client.DefaultRequestHeaders.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/json"));
 });
 

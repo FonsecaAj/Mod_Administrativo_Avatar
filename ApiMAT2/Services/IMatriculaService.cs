@@ -12,6 +12,8 @@ namespace ApiMAT2.Services
 
         MatriculaLookupsDto ObtenerLookups();
 
+        Task<BusinessLogicResponse> Obtener_Matricula_Estudiante(string identificacion);
+
 
     }
 }
