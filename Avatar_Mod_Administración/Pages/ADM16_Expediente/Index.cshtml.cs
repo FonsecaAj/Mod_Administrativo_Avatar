@@ -146,6 +146,10 @@ namespace Avatar_Mod_Administración.Pages.ADM16_Expediente
 
             if (!resultado.ok)
             {
+          
+                Mensaje = null;
+                TempData.Remove("Mensaje");
+
                 MensajeError = resultado.message;
                 Expedientes = (await _expedienteClient.ObtenerTodosAsync()).ToList();
                 return Page();

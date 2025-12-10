@@ -15,6 +15,8 @@ namespace Avatar_Mod_Administración.Entities
         [Display(Name = "Correo electrónico")]
         [Required(ErrorMessage = "El correo es obligatorio.")]
         [EmailAddress(ErrorMessage = "Formato de correo no válido.")]
+        [RegularExpression(@"^[^@\s]+@cuc\.cr$",
+             ErrorMessage = "El correo debe pertenecer al dominio cuc.cr.")]
         public string Email { get; set; } = string.Empty;
 
         [Display(Name = "Nombre completo")]

@@ -54,7 +54,6 @@
 
                         @if (Model.EsEdicion)
                         {
-                            <!-- Hidden real value + textbox solo lectura -->
                             <input asp-for="ExpedienteForm.Numero_Identificacion" type="hidden" />
                             <input class="form-control" value="@Model.ExpedienteForm.Numero_Identificacion" disabled />
                         }
@@ -157,10 +156,6 @@
                 </div>
 
                 <div class="d-flex justify-content-end gap-2">
-                    <a asp-page="./Index" class="btn btn-outline-secondary">
-                        <i class="fas fa-eraser"></i> Limpiar
-                    </a>
-
                     <button type="submit" class="btn btn-success">
                         <i class="fas fa-save"></i>
                         @(Model.EsEdicion ? "Guardar cambios" : "Registrar expediente")
@@ -214,13 +209,14 @@
                                         </button>
                                     </form>
 
-                                    <form method="post" asp-page-handler="Eliminar" class="d-inline"
-                                          onsubmit="return confirm('¿Seguro que desea eliminar este expediente?');">
-                                        <input type="hidden" name="id" value="@e.Numero_Identificacion" />
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
+                                    <!-- Botón que abre el modal de confirmación -->
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#confirmarEliminarModal"
+                                            data-id="@e.Numero_Identificacion">
+                                        <i class="fas fa-trash-alt"></i>
+                                    </button>
                                 </td>
                             </tr>
                         }
@@ -244,64 +240,104 @@
     </div>
 </div>
 
+<!-- ============ MODAL CONFIRMAR ELIMINACIÓN ============ -->
+<div class="modal fade" id="confirmarEliminarModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                    Confirmar eliminación
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>
+                    ¿Seguro que deseas eliminar este expediente?
+                    <br />
+                    <small class="text-muted">
+                        Esta acción no se puede deshacer.
+                    </small>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <form method="post" asp-page-handler="Eliminar" class="d-inline">
+                    <input type="hidden" id="expedienteEliminarId" name="id" />
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-trash-alt"></i> Eliminar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 
     <script>
-        $(document).ready(function() {
-            // Evento cuando cambia la provincia
-            $('#ExpedienteForm_ID_Provincia').change(function() {
+
+        $(document).ready(function () {
+          
+            $('#ExpedienteForm_ID_Provincia').change(function () {
                 var idProvincia = $(this).val();
 
-                // Limpiar cantones y distritos
                 $('#ExpedienteForm_ID_Canton').html('<option value="">Seleccione un cantón</option>');
                 $('#ExpedienteForm_DistritoID').html('<option value="">Seleccione un distrito</option>');
 
                 if (idProvincia) {
-                    // Cargar cantones
                     $.get('@Url.Page("./Index", "Cantones")', { idProvincia: idProvincia })
-                        .done(function(data) {
+                        .done(function (data) {
                             var cantonSelect = $('#ExpedienteForm_ID_Canton');
-                            $.each(data, function(i, item) {
+                            $.each(data, function (i, item) {
                                 cantonSelect.append($('<option></option>')
                                     .attr('value', item.value)
                                     .text(item.text));
                             });
                         })
-                        .fail(function() {
+                        .fail(function () {
                             console.error('Error al cargar cantones');
                         });
                 }
             });
 
-            // Evento cuando cambia el cantón
-            $('#ExpedienteForm_ID_Canton').change(function() {
+        
+            $('#ExpedienteForm_ID_Canton').change(function () {
                 var idProvincia = $('#ExpedienteForm_ID_Provincia').val();
                 var idCanton = $(this).val();
 
-                // Limpiar distritos
                 $('#ExpedienteForm_DistritoID').html('<option value="">Seleccione un distrito</option>');
 
                 if (idProvincia && idCanton) {
-                    // Cargar distritos
                     $.get('@Url.Page("./Index", "Distritos")', {
                         idProvincia: idProvincia,
                         idCanton: idCanton
                     })
-                        .done(function(data) {
+                        .done(function (data) {
                             var distritoSelect = $('#ExpedienteForm_DistritoID');
-                            $.each(data, function(i, item) {
+                            $.each(data, function (i, item) {
                                 distritoSelect.append($('<option></option>')
                                     .attr('value', item.value)
                                     .text(item.text));
                             });
                         })
-                        .fail(function() {
+                        .fail(function () {
                             console.error('Error al cargar distritos');
                         });
                 }
             });
         });
-    </script>
 
+        
+        var modalEliminar = document.getElementById('confirmarEliminarModal');
+        modalEliminar.addEventListener('show.bs.modal', function (event) {
+            var button = event.relatedTarget;              
+            var id = button.getAttribute('data-id');       
+            var inputHidden = document.getElementById('expedienteEliminarId');
+            inputHidden.value = id;
+        });
+    </script>
 }

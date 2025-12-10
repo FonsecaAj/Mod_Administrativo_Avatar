@@ -17,16 +17,56 @@ namespace ApiMAT3.Repository
         public IEnumerable<Expediente> ObtenerTodos()
         {
             using var conexion = _connectionFactory.CreateConnection();
-            string sql = "SELECT * FROM Expediente";
+            string sql = @"
+        SELECT 
+            e.Numero_Identificacion,
+            e.Tipo_Identificacion,
+            e.Email,
+            e.Nombre_Completo,
+            e.Fecha_Nacimiento,
+            e.ID_Provincia,
+            e.ID_Canton,
+            e.DistritoID,
+            e.Telefonos,
+            p.Nombre_Provincia AS Nombre_Provincia,
+            c.Nombre_Canton    AS Nombre_Canton,
+            d.Nombre_Distrito  AS Nombre_Distrito
+        FROM Expediente e
+        INNER JOIN Provincia p ON e.ID_Provincia = p.ID_Provincia
+        INNER JOIN Canton c    ON e.ID_Canton     = c.ID_Canton
+        INNER JOIN Distrito d  ON e.DistritoID    = d.ID_Distrito";
+
             return conexion.Query<Expediente>(sql);
         }
 
         public Expediente ObtenerPorId(string numeroIdentificacion)
         {
             using var conexion = _connectionFactory.CreateConnection();
-            string sql = "SELECT * FROM Expediente WHERE Numero_Identificacion = @Numero_Identificacion";
-            return conexion.QueryFirstOrDefault<Expediente>(sql, new { Numero_Identificacion = numeroIdentificacion });
+            string sql = @"
+        SELECT 
+            e.Numero_Identificacion,
+            e.Tipo_Identificacion,
+            e.Email,
+            e.Nombre_Completo,
+            e.Fecha_Nacimiento,
+            e.ID_Provincia,
+            e.ID_Canton,
+            e.DistritoID,
+            e.Telefonos,
+            p.Nombre_Provincia AS Nombre_Provincia,
+            c.Nombre_Canton    AS Nombre_Canton,
+            d.Nombre_Distrito  AS Nombre_Distrito
+        FROM Expediente e
+        INNER JOIN Provincia p ON e.ID_Provincia = p.ID_Provincia
+        INNER JOIN Canton c    ON e.ID_Canton     = c.ID_Canton
+        INNER JOIN Distrito d  ON e.DistritoID    = d.ID_Distrito
+        WHERE e.Numero_Identificacion = @Numero_Identificacion";
+
+            return conexion.QueryFirstOrDefault<Expediente>(
+                sql,
+                new { Numero_Identificacion = numeroIdentificacion });
         }
+
 
         public void Crear(Expediente expediente)
         {
