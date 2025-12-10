@@ -188,7 +188,6 @@ builder.Services.AddHttpClient<IUbicacionesApiClient, UbicacionesApiClient>(clie
 });
 
 
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
