@@ -2,7 +2,7 @@
 
 namespace Avatar_Mod_Administración.Entities
 {
-    public class ExpedienteDto
+    public class ExpedienteRequestDto
     {
         [Display(Name = "Número de identificación")]
         [Required(ErrorMessage = "La identificación es obligatoria.")]
@@ -41,13 +41,5 @@ namespace Avatar_Mod_Administración.Entities
         [Display(Name = "Teléfonos")]
         [Required(ErrorMessage = "Debe ingresar al menos un teléfono.")]
         public string Telefonos { get; set; } = string.Empty;
-
-
-        public string? Nombre_Provincia { get; set; }
-        public string? Nombre_Canton { get; set; }
-        public string? Nombre_Distrito { get; set; }
-
-
-
     }
 }

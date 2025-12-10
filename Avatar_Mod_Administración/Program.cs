@@ -179,6 +179,14 @@ builder.Services.AddHttpClient<IExpedienteApiClient, ExpedienteApiClient>(client
     client.BaseAddress = new Uri(baseUrl);
 });
 
+builder.Services.AddHttpClient<IUbicacionesApiClient, UbicacionesApiClient>(client =>
+{
+    var baseUrl = builder.Configuration["Adm_Direcciones:BaseUrl"]
+                  ?? throw new InvalidOperationException("Adm_Direcciones:BaseUrl no configurado");
+
+    client.BaseAddress = new Uri(baseUrl);
+});
+
 
 
 var app = builder.Build();

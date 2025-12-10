@@ -1,6 +1,5 @@
 ﻿using System.Net.Http.Headers;
 using System.Net.Http.Json;
-using System.Text;
 using System.Text.Json;
 using Avatar_Mod_Administración.Entities;
 
@@ -9,18 +8,22 @@ namespace Avatar_Mod_Administración.Services
     public class ExpedienteApiClient : IExpedienteApiClient
     {
         private readonly HttpClient _http;
+        private readonly IConfiguration _config;
         private readonly IAuthService _authService;
-        private readonly string _baseUrl;
+        private readonly string _baseUrl;   // http://localhost:5094
 
         public ExpedienteApiClient(HttpClient http, IConfiguration config, IAuthService authService)
         {
             _http = http;
+            _config = config;
             _authService = authService;
 
-            // BaseUrl = host del ApiMAT3, sin ruta
-            _baseUrl = config["Mat_Expediente:BaseUrl"]
+            // MISMA clave que en Program: "Mat_Expediente:BaseUrl"
+            _baseUrl = _config["Mat_Expediente:BaseUrl"]
                        ?? throw new InvalidOperationException("Mat_Expediente:BaseUrl no configurado");
         }
+
+        // ============ Token ============
 
         private string ObtenerTokenLimpio()
         {
@@ -30,7 +33,7 @@ namespace Avatar_Mod_Administración.Services
 
             var token = sesion.AccessToken;
             if (token.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
-                token = token.Substring(7).Trim();
+                token = token[7..].Trim();
 
             return token;
         }
@@ -40,6 +43,7 @@ namespace Avatar_Mod_Administración.Services
             var token = ObtenerTokenLimpio();
 
             _http.DefaultRequestHeaders.Remove("Authorization");
+
             if (!string.IsNullOrEmpty(token))
             {
                 _http.DefaultRequestHeaders.Authorization =
@@ -47,7 +51,7 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        // =============== CRUD EXPEDIENTES ===============
+        // ============ GET ============
 
         public async Task<IEnumerable<ExpedienteDto>> ObtenerTodosAsync()
         {
@@ -55,16 +59,17 @@ namespace Avatar_Mod_Administración.Services
 
             try
             {
-                var response = await _http.GetAsync($"{_baseUrl}/expediente");
-                if (!response.IsSuccessStatusCode)
-                    return new List<ExpedienteDto>();
+                var url = $"{_baseUrl}/expediente";
+                var resp = await _http.GetAsync(url);
+                if (!resp.IsSuccessStatusCode)
+                    return Enumerable.Empty<ExpedienteDto>();
 
-                var data = await response.Content.ReadFromJsonAsync<IEnumerable<ExpedienteDto>>();
-                return data ?? new List<ExpedienteDto>();
+                var data = await resp.Content.ReadFromJsonAsync<IEnumerable<ExpedienteDto>>();
+                return data ?? Enumerable.Empty<ExpedienteDto>();
             }
             catch
             {
-                return new List<ExpedienteDto>();
+                return Enumerable.Empty<ExpedienteDto>();
             }
         }
 
@@ -74,11 +79,12 @@ namespace Avatar_Mod_Administración.Services
 
             try
             {
-                var response = await _http.GetAsync($"{_baseUrl}/expediente/{numeroIdentificacion}");
-                if (!response.IsSuccessStatusCode)
+                var url = $"{_baseUrl}/expediente/{numeroIdentificacion}";
+                var resp = await _http.GetAsync(url);
+                if (!resp.IsSuccessStatusCode)
                     return null;
 
-                return await response.Content.ReadFromJsonAsync<ExpedienteDto>();
+                return await resp.Content.ReadFromJsonAsync<ExpedienteDto>();
             }
             catch
             {
@@ -86,19 +92,24 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        public async Task<(bool ok, int statusCode, string message)> CrearAsync(ExpedienteDto expediente)
+        // ============ POST ============
+
+        public async Task<(bool ok, int statusCode, string message)> CrearAsync(ExpedienteRequestDto expediente)
         {
             AplicarToken();
 
             try
             {
-                var response = await _http.PostAsJsonAsync($"{_baseUrl}/expediente", expediente);
-                var texto = await response.Content.ReadAsStringAsync();
+                var url = $"{_baseUrl}/expediente";
+                var resp = await _http.PostAsJsonAsync(url, expediente);
+                var texto = await resp.Content.ReadAsStringAsync();
 
-                // En tu ApiMAT3 los POST devuelven solo un string tipo "Expediente creado correctamente."
-                var msg = string.IsNullOrWhiteSpace(texto) ? "Respuesta vacía del servidor" : texto;
+                int status = (int)resp.StatusCode;
+                string message = string.IsNullOrWhiteSpace(texto)
+                    ? (resp.IsSuccessStatusCode ? "Expediente creado correctamente." : "Error al crear expediente.")
+                    : texto.Trim('"');
 
-                return (response.IsSuccessStatusCode, (int)response.StatusCode, msg);
+                return (resp.IsSuccessStatusCode, status, message);
             }
             catch (Exception ex)
             {
@@ -106,23 +117,32 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-        public async Task<(bool ok, int statusCode, string message)> ActualizarAsync(ExpedienteDto expediente)
+        // ============ PUT ============
+
+        public async Task<(bool ok, int statusCode, string message)> ActualizarAsync(ExpedienteRequestDto expediente)
         {
             AplicarToken();
 
             try
             {
-                var response = await _http.PutAsJsonAsync($"{_baseUrl}/expediente", expediente);
-                var texto = await response.Content.ReadAsStringAsync();
-                var msg = string.IsNullOrWhiteSpace(texto) ? "Respuesta vacía del servidor" : texto;
+                var url = $"{_baseUrl}/expediente";
+                var resp = await _http.PutAsJsonAsync(url, expediente);
+                var texto = await resp.Content.ReadAsStringAsync();
 
-                return (response.IsSuccessStatusCode, (int)response.StatusCode, msg);
+                int status = (int)resp.StatusCode;
+                string message = string.IsNullOrWhiteSpace(texto)
+                    ? (resp.IsSuccessStatusCode ? "Expediente actualizado correctamente." : "Error al actualizar expediente.")
+                    : texto.Trim('"');
+
+                return (resp.IsSuccessStatusCode, status, message);
             }
             catch (Exception ex)
             {
                 return (false, 500, $"Error llamando al API: {ex.Message}");
             }
         }
+
+        // ============ DELETE ============
 
         public async Task<(bool ok, int statusCode, string message)> EliminarAsync(string numeroIdentificacion)
         {
@@ -130,75 +150,20 @@ namespace Avatar_Mod_Administración.Services
 
             try
             {
-                var response = await _http.DeleteAsync($"{_baseUrl}/expediente/{numeroIdentificacion}");
-                var texto = await response.Content.ReadAsStringAsync();
-                var msg = string.IsNullOrWhiteSpace(texto) ? "Respuesta vacía del servidor" : texto;
+                var url = $"{_baseUrl}/expediente/{numeroIdentificacion}";
+                var resp = await _http.DeleteAsync(url);
+                var texto = await resp.Content.ReadAsStringAsync();
 
-                return (response.IsSuccessStatusCode, (int)response.StatusCode, msg);
+                int status = (int)resp.StatusCode;
+                string message = string.IsNullOrWhiteSpace(texto)
+                    ? (resp.IsSuccessStatusCode ? "Expediente eliminado correctamente." : "Error al eliminar expediente.")
+                    : texto.Trim('"');
+
+                return (resp.IsSuccessStatusCode, status, message);
             }
             catch (Exception ex)
             {
                 return (false, 500, $"Error llamando al API: {ex.Message}");
-            }
-        }
-
-        // =============== CATÁLOGOS DIRECCIÓN ===============
-
-        public async Task<IEnumerable<ProvinciaDto>> ObtenerProvinciasAsync()
-        {
-            AplicarToken();
-
-            try
-            {
-                var response = await _http.GetAsync($"{_baseUrl}/provincias");
-                if (!response.IsSuccessStatusCode)
-                    return new List<ProvinciaDto>();
-
-                var data = await response.Content.ReadFromJsonAsync<IEnumerable<ProvinciaDto>>();
-                return data ?? new List<ProvinciaDto>();
-            }
-            catch
-            {
-                return new List<ProvinciaDto>();
-            }
-        }
-
-        public async Task<IEnumerable<CantonDto>> ObtenerCantonesAsync(int idProvincia)
-        {
-            AplicarToken();
-
-            try
-            {
-                var response = await _http.GetAsync($"{_baseUrl}/cantones?provincia={idProvincia}");
-                if (!response.IsSuccessStatusCode)
-                    return new List<CantonDto>();
-
-                var data = await response.Content.ReadFromJsonAsync<IEnumerable<CantonDto>>();
-                return data ?? new List<CantonDto>();
-            }
-            catch
-            {
-                return new List<CantonDto>();
-            }
-        }
-
-        public async Task<IEnumerable<DistritoDto>> ObtenerDistritosAsync(int idProvincia, int idCanton)
-        {
-            AplicarToken();
-
-            try
-            {
-                var url = $"{_baseUrl}/distritos?provincia={idProvincia}&canton={idCanton}";
-                var response = await _http.GetAsync(url);
-                if (!response.IsSuccessStatusCode)
-                    return new List<DistritoDto>();
-
-                var data = await response.Content.ReadFromJsonAsync<IEnumerable<DistritoDto>>();
-                return data ?? new List<DistritoDto>();
-            }
-            catch
-            {
-                return new List<DistritoDto>();
             }
         }
     }

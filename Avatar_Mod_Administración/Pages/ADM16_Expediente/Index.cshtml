@@ -1,4 +1,249 @@
 ﻿@page
 @model Avatar_Mod_Administración.Pages.ADM16_Expediente.IndexModel
 @{
+    ViewData["Title"] = "Administrar Expedientes";
+}
+
+<link rel="stylesheet" href="~/css/cursos.css" />
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+<div class="cursos-container">
+    <div class="cursos-header">
+        <h2>
+            <i class="fas fa-folder-open"></i> Administrar Expedientes
+        </h2>
+    </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-curso alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["MensajeError"] != null)
+    {
+        <div class="alert alert-danger alert-curso alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            @TempData["MensajeError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- =================== FORMULARIO =================== -->
+    <div class="card mb-4">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-user-edit"></i>
+                @(Model.EsEdicion ? "Editar expediente" : "Registrar nuevo expediente")
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="post" class="curso-form" asp-page-handler="Guardar">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                <input type="hidden" asp-for="EsEdicion" />
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="ExpedienteForm.Numero_Identificacion" class="form-label">
+                            <i class="fas fa-id-card"></i> Identificación:
+                        </label>
+
+                        @if (Model.EsEdicion)
+                        {
+                            <!-- Hidden real value + textbox solo lectura -->
+                            <input asp-for="ExpedienteForm.Numero_Identificacion" type="hidden" />
+                            <input class="form-control" value="@Model.ExpedienteForm.Numero_Identificacion" disabled />
+                        }
+                        else
+                        {
+                            <input asp-for="ExpedienteForm.Numero_Identificacion" class="form-control"
+                                   placeholder="Ej: 305670111" />
+                        }
+
+                        <span asp-validation-for="ExpedienteForm.Numero_Identificacion" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="ExpedienteForm.Tipo_Identificacion" class="form-label">
+                            <i class="fas fa-id-badge"></i> Tipo:
+                        </label>
+                        <select asp-for="ExpedienteForm.Tipo_Identificacion"
+                                asp-items="Model.TiposIdentificacion"
+                                class="form-select">
+                            <option value="">Seleccione un tipo</option>
+                        </select>
+                        <span asp-validation-for="ExpedienteForm.Tipo_Identificacion" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="ExpedienteForm.Email" class="form-label">
+                            <i class="fas fa-envelope"></i> Correo institucional:
+                        </label>
+                        <input asp-for="ExpedienteForm.Email" class="form-control"
+                               placeholder="usuario@cuc.cr" />
+                        <span asp-validation-for="ExpedienteForm.Email" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label asp-for="ExpedienteForm.Nombre_Completo" class="form-label">
+                            <i class="fas fa-user"></i> Nombre completo:
+                        </label>
+                        <input asp-for="ExpedienteForm.Nombre_Completo" class="form-control"
+                               placeholder="Nombre y apellidos" />
+                        <span asp-validation-for="ExpedienteForm.Nombre_Completo" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="ExpedienteForm.Fecha_Nacimiento" class="form-label">
+                            <i class="fas fa-calendar-day"></i> Fecha de nacimiento:
+                        </label>
+                        <input asp-for="ExpedienteForm.Fecha_Nacimiento" class="form-control" type="date" />
+                        <span asp-validation-for="ExpedienteForm.Fecha_Nacimiento" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-3">
+                        <label asp-for="ExpedienteForm.Telefonos" class="form-label">
+                            <i class="fas fa-phone"></i> Teléfonos:
+                        </label>
+                        <input asp-for="ExpedienteForm.Telefonos" class="form-control"
+                               placeholder="Ej: 8888-8888, 2222-2222" />
+                        <span asp-validation-for="ExpedienteForm.Telefonos" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <!-- Dirección -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="ExpedienteForm.ID_Provincia" class="form-label">
+                            <i class="fas fa-map-marked-alt"></i> Provincia:
+                        </label>
+                        <select asp-for="ExpedienteForm.ID_Provincia"
+                                asp-items="Model.Provincias"
+                                class="form-select">
+                            <option value="">Seleccione una provincia</option>
+                        </select>
+                        <span asp-validation-for="ExpedienteForm.ID_Provincia" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="ExpedienteForm.ID_Canton" class="form-label">
+                            <i class="fas fa-city"></i> Cantón:
+                        </label>
+                        <select asp-for="ExpedienteForm.ID_Canton"
+                                asp-items="Model.Cantones"
+                                class="form-select">
+                            <option value="">Seleccione un cantón</option>
+                        </select>
+                        <span asp-validation-for="ExpedienteForm.ID_Canton" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="ExpedienteForm.DistritoID" class="form-label">
+                            <i class="fas fa-map-pin"></i> Distrito:
+                        </label>
+                        <select asp-for="ExpedienteForm.DistritoID"
+                                asp-items="Model.Distritos"
+                                class="form-select">
+                            <option value="">Seleccione un distrito</option>
+                        </select>
+                        <span asp-validation-for="ExpedienteForm.DistritoID" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2">
+                    <a asp-page="./Index" class="btn btn-outline-secondary">
+                        <i class="fas fa-eraser"></i> Limpiar
+                    </a>
+
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-save"></i>
+                        @(Model.EsEdicion ? "Guardar cambios" : "Registrar expediente")
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- =================== LISTADO =================== -->
+    <div class="cursos-table-card card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i> Listado de expedientes
+            </h5>
+        </div>
+        <div class="card-body">
+            <table class="table table-cursos">
+                <thead>
+                    <tr>
+                        <th>Identificación</th>
+                        <th>Tipo</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
+                        <th>Provincia</th>
+                        <th>Cantón</th>
+                        <th>Distrito</th>
+                        <th>Teléfonos</th>
+                        <th class="text-end">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Expedientes.Any())
+                    {
+                        foreach (var e in Model.Expedientes)
+                        {
+                            <tr>
+                                <td>@e.Numero_Identificacion</td>
+                                <td>@e.Tipo_Identificacion</td>
+                                <td>@e.Nombre_Completo</td>
+                                <td>@e.Email</td>
+                                <td>@e.Nombre_Provincia</td>
+                                <td>@e.Nombre_Canton</td>
+                                <td>@e.Nombre_Distrito</td>
+                                <td>@e.Telefonos</td>
+                                <td class="text-end">
+                                    <form method="post" asp-page-handler="Editar" class="d-inline">
+                                        <input type="hidden" name="id" value="@e.Numero_Identificacion" />
+                                        <button type="submit" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                    </form>
+
+                                    <form method="post" asp-page-handler="Eliminar" class="d-inline"
+                                          onsubmit="return confirm('¿Seguro que desea eliminar este expediente?');">
+                                        <input type="hidden" name="id" value="@e.Numero_Identificacion" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="9" class="text-center">
+                                <div class="empty-state">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p class="text-muted mb-0">
+                                        No hay expedientes registrados.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
 }

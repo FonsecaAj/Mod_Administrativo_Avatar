@@ -43,7 +43,8 @@
         { texto: 'Periodo', url: '/ADM12_Periodo', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm', prefijo: '/ADM12_Periodo' },
         { texto: 'Grupo', url: '/ADM13_Grupo', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm', prefijo: '/ADM13_Grupo' },
         { texto: 'Prematrícula', url: '/ADM14_Prematricula', icono: 'bi-receipt', grupo: 'Mantenimiento Adm', prefijo: '/ADM14_Prematricula' },
-        { texto: 'Matrícula', url: '/ADM15_Matricula', icono: 'bi-receipt', grupo: 'Mantenimiento Adm', prefijo: '/ADM15_Matricula' }
+        { texto: 'Matrícula', url: '/ADM15_Matricula', icono: 'bi-receipt', grupo: 'Mantenimiento Adm', prefijo: '/ADM15_Matricula' },
+        { texto: 'Expediente', url: '/ADM16_Expediente', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm', prefijo: '/ADM16_Expediente' }
     ];
 
     let modulosCargados = [];
