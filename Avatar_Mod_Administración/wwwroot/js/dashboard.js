@@ -1,5 +1,9 @@
-﻿(function () {
+﻿// dashboard.js - Optimizado para rendimiento máximo
+(function () {
     'use strict';
+
+    let cargaInicial = true;
+    const fechaCache = new Map();
 
     // Variables globales del dashboard
     const Dashboard = {
@@ -9,43 +13,21 @@
         timers: {}
     };
 
-    
-
-    /**
-     * Inicialización del dashboard
-     */
-    function init() {
+    document.addEventListener('DOMContentLoaded', function () {
         console.log('Inicializando Dashboard...');
-
-        // Esperar a que el DOM esté listo
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', onDOMReady);
-        } else {
-            onDOMReady();
-        }
-    }
-
-    /**
-     * Función ejecutada cuando el DOM está listo
-     */
-    function onDOMReady() {
-        console.log('Dashboard: DOM Ready');
-
-        // Registrar visualización en bitácora
-        registrarVisualizacion();
-
-        // Mostrar notificación de bienvenida
-        mostrarBienvenida();
 
         // Animar las tarjetas de estadísticas
         animateStatCards();
 
+        // Cargar actividades
+        cargarActividades();
+
+        // Registrar visualización en bitácora
+        registrarVisualizacion();
+
         // Agregar listeners a los elementos
         attachEventListeners();
-
-        // Iniciar actualización automática (opcional)
-        // startAutoRefresh();
-    }
+    });
 
     /**
      * Registra la visualización del dashboard en la bitácora
@@ -62,33 +44,9 @@
                 );
 
                 console.log('Dashboard: Visualización registrada en bitácora');
-            } else {
-                console.warn('Dashboard: Función registrarBitacora no disponible');
             }
         } catch (error) {
             console.error('Error al registrar visualización:', error);
-        }
-    }
-
-    /**
-     * Muestra notificación de bienvenida
-     */
-    function mostrarBienvenida() {
-        try {
-            if (typeof window.mostrarNotificacion === 'function') {
-                setTimeout(() => {
-                    window.mostrarNotificacion(
-                        'success',
-                        '¡Bienvenido al Sistema Avatar!'
-                    );
-                }, 500);
-
-                console.log('Dashboard: Notificación de bienvenida mostrada');
-            } else {
-                console.warn('Dashboard: Función mostrarNotificacion no disponible');
-            }
-        } catch (error) {
-            console.error('Error al mostrar notificación:', error);
         }
     }
 
@@ -157,15 +115,6 @@
             button.addEventListener('click', function (e) {
                 const href = this.getAttribute('href');
                 console.log(`Dashboard: Navegando a ${href}`);
-
-                // Registrar en bitácora
-                if (typeof window.registrarBitacora === 'function') {
-                    const buttonText = this.querySelector('.fw-bold')?.textContent || 'Desconocido';
-                    window.registrarBitacora(
-                        'Acceso Rápido',
-                        `Usuario accedió a: ${buttonText}`
-                    );
-                }
             });
         });
 
@@ -175,224 +124,259 @@
             link.addEventListener('click', function (e) {
                 const href = this.getAttribute('href');
                 console.log(`Dashboard: Accediendo a ${href} desde card`);
-
-                // Registrar en bitácora
-                if (typeof window.registrarBitacora === 'function') {
-                    const cardTitle = this.closest('.card').querySelector('h6')?.textContent || 'Desconocido';
-                    window.registrarBitacora(
-                        'Navegación',
-                        `Usuario accedió a ${cardTitle}`
-                    );
-                }
             });
         });
 
         console.log('Dashboard: Event listeners agregados');
     }
 
-    /**
-     * Inicia la actualización automática de estadísticas
-     */
-    function startAutoRefresh() {
-        console.log(`Dashboard: Iniciando auto-refresh cada ${Dashboard.refreshInterval / 1000} segundos`);
+    async function cargarActividades() {
+        const loadingDiv = document.getElementById('loading-actividades');
+        const containerDiv = document.getElementById('actividades-container');
+        const emptyDiv = document.getElementById('empty-actividades');
+        const errorDiv = document.getElementById('error-actividades');
 
-        Dashboard.timers.refresh = setInterval(() => {
-            refreshStatistics();
-        }, Dashboard.refreshInterval);
-    }
-
-    /**
-     * Detiene la actualización automática
-     */
-    function stopAutoRefresh() {
-        if (Dashboard.timers.refresh) {
-            clearInterval(Dashboard.timers.refresh);
-            Dashboard.timers.refresh = null;
-            console.log('Dashboard: Auto-refresh detenido');
+        if (cargaInicial && loadingDiv) {
+            loadingDiv.style.display = 'block';
         }
-    }
-
-    /**
-     * Refresca las estadísticas del dashboard
-     */
-    async function refreshStatistics() {
-        console.log('Dashboard: Refrescando estadísticas...');
+        if (containerDiv) containerDiv.style.display = 'none';
+        if (emptyDiv) emptyDiv.style.display = 'none';
+        if (errorDiv) errorDiv.style.display = 'none';
 
         try {
-            // Mostrar indicador de carga
-            if (typeof window.mostrarCargando === 'function') {
-                window.mostrarCargando();
-            }
+            // Timeout de 3 segundos
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
 
-            // Realizar petición al servidor
-            const response = await fetch('/Index?handler=Statistics', {
-                method: 'GET',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': getAntiForgeryToken()
-                }
+            const response = await fetch('/api/dashboard/actividades', {
+                signal: controller.signal,
+                headers: { 'Content-Type': 'application/json' }
             });
 
+            clearTimeout(timeoutId);
+
             if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+                throw new Error(`HTTP ${response.status}`);
             }
 
             const data = await response.json();
+            const notificaciones = data.notificaciones || [];
+            const bitacoras = data.bitacoras || [];
 
-            // Actualizar las estadísticas en la UI
-            updateStatisticsUI(data);
+            const countNotif = document.getElementById('count-notif');
+            const countBitacora = document.getElementById('count-bitacora');
+            if (countNotif) countNotif.textContent = notificaciones.length;
+            if (countBitacora) countBitacora.textContent = bitacoras.length;
 
-            console.log('Dashboard: Estadísticas actualizadas', data);
+            if (notificaciones.length === 0 && bitacoras.length === 0) {
+                if (loadingDiv) loadingDiv.style.display = 'none';
+                if (emptyDiv) emptyDiv.style.display = 'block';
+                return;
+            }
+
+            // Renderizar en paralelo usando Promise.all
+            await Promise.all([
+                renderizarNotificaciones(notificaciones),
+                renderizarBitacoras(bitacoras)
+            ]);
+
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            if (containerDiv) containerDiv.style.display = 'block';
+            cargaInicial = false;
 
         } catch (error) {
-            console.error('Error al refrescar estadísticas:', error);
-
-            if (typeof window.mostrarNotificacion === 'function') {
-                window.mostrarNotificacion(
-                    'error',
-                    'Error al actualizar estadísticas'
-                );
-            }
-        } finally {
-            // Ocultar indicador de carga
-            if (typeof window.ocultarCargando === 'function') {
-                window.ocultarCargando();
-            }
+            console.error('Error al cargar actividades:', error);
+            if (loadingDiv) loadingDiv.style.display = 'none';
+            if (errorDiv) errorDiv.style.display = 'block';
         }
     }
 
-    /**
-     * Actualiza la UI con las nuevas estadísticas
-     * @param {Object} data - Datos de estadísticas
-     */
-    function updateStatisticsUI(data) {
-        if (!data) return;
+    async function renderizarNotificaciones(notificaciones) {
+        const container = document.getElementById('lista-notificaciones');
+        if (!container) return;
 
-        // Actualizar cada estadística con animación
-        const stats = [
-            { selector: '.stat-number', key: 'totalUsuarios', index: 0 },
-            { selector: '.stat-number', key: 'totalInstituciones', index: 1 },
-            { selector: '.stat-number', key: 'totalCarreras', index: 2 },
-            { selector: '.stat-number', key: 'totalCursos', index: 3 }
-        ];
+        if (notificaciones.length === 0) {
+            container.innerHTML = `
+                <div class="text-center py-4 text-muted">
+                    <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                    <p class="mb-0">No hay notificaciones recientes</p>
+                </div>
+            `;
+            return;
+        }
 
-        const statElements = document.querySelectorAll('.stat-number');
+        const fragment = document.createDocumentFragment();
 
-        stats.forEach((stat, i) => {
-            if (statElements[i] && data[stat.key] !== undefined) {
-                const currentValue = parseInt(statElements[i].textContent) || 0;
-                const newValue = data[stat.key];
+        notificaciones.forEach(notif => {
+            const fecha = formatearFecha(notif.fecha_Registro || notif.fechaRegistro);
+            let destinatario = 'N/A';
+            let asunto = 'Sin asunto';
 
-                if (currentValue !== newValue) {
-                    animateNumber(statElements[i], currentValue, newValue, 800);
+            try {
+                const desc = JSON.parse(notif.descripcion);
+                destinatario = desc.Destinatario || desc.destinatario || 'N/A';
+                asunto = desc.Asunto || desc.asunto || 'Sin asunto';
+            } catch { }
+
+            const card = document.createElement('div');
+            card.className = 'card mb-2';
+            card.innerHTML = `
+                <div class="card-body py-2">
+                    <div class="d-flex align-items-start">
+                        <div class="me-3">
+                            <i class="bi bi-envelope fs-4 text-success"></i>
+                        </div>
+                        <div class="flex-grow-1">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <strong class="text-dark">${escapeHtml(asunto)}</strong>
+                                <small class="text-muted">${fecha}</small>
+                            </div>
+                            <p class="mb-1 text-muted small">
+                                <i class="bi bi-person me-1"></i>Para: ${escapeHtml(destinatario)}
+                            </p>
+                            <small class="text-muted">
+                                <i class="bi bi-person-circle me-1"></i>Enviado por: ${escapeHtml(notif.usuario)}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            `;
+            fragment.appendChild(card);
+        });
+
+        container.innerHTML = '';
+        container.appendChild(fragment);
+    }
+
+    async function renderizarBitacoras(bitacoras) {
+        const tbody = document.getElementById('tabla-bitacoras');
+        if (!tbody) return;
+
+        if (bitacoras.length === 0) {
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="4" class="text-center py-4 text-muted">
+                        <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+                        <p class="mb-0">No hay registros de bitácora</p>
+                    </td>
+                </tr>
+            `;
+            return;
+        }
+
+        const fragment = document.createDocumentFragment();
+
+        bitacoras.forEach(bit => {
+            const fecha = formatearFecha(bit.fecha_Registro || bit.fechaRegistro);
+            const tipoAccion = bit.tipo_Accion || bit.tipoAccion || 'N/A';
+            const iconoAccion = obtenerIconoAccion(tipoAccion);
+            const colorAccion = obtenerColorAccion(tipoAccion);
+
+            let descripcionTexto = bit.descripcion || '';
+            try {
+                const desc = JSON.parse(descripcionTexto);
+                if (desc.accion) {
+                    descripcionTexto = desc.accion;
                 }
-            }
+            } catch { }
+
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td class="text-muted small">${fecha}</td>
+                <td>
+                    <span class="badge bg-light text-dark">
+                        <i class="bi bi-person me-1"></i>${escapeHtml(bit.usuario)}
+                    </span>
+                </td>
+                <td>
+                    <span class="badge bg-${colorAccion} bg-opacity-10 text-${colorAccion}">
+                        <i class="bi ${iconoAccion} me-1"></i>${escapeHtml(tipoAccion)}
+                    </span>
+                </td>
+                <td class="small">${escapeHtml(truncarTexto(descripcionTexto, 80))}</td>
+            `;
+            fragment.appendChild(tr);
         });
+
+        tbody.innerHTML = '';
+        tbody.appendChild(fragment);
     }
 
-    /**
-     * Obtiene el token anti-forgery
-     * @returns {string} Token anti-forgery
-     */
-    function getAntiForgeryToken() {
-        const token = document.querySelector('input[name="__RequestVerificationToken"]');
-        return token ? token.value : '';
-    }
+    function formatearFecha(fecha) {
+        const key = fecha.toString();
+        if (fechaCache.has(key)) {
+            return fechaCache.get(key);
+        }
 
-    /**
-     * Exporta datos del dashboard a CSV
-     */
-    function exportToCSV() {
-        console.log('Dashboard: Exportando a CSV...');
+        const ahora = new Date();
+        const fechaReg = new Date(fecha);
+        const diff = ahora - fechaReg;
+        const minutos = Math.floor(diff / 60000);
+        const horas = Math.floor(diff / 3600000);
+        const dias = Math.floor(diff / 86400000);
 
-        try {
-            const stats = [];
-            const statCards = document.querySelectorAll('.stat-card');
-
-            statCards.forEach(card => {
-                const title = card.querySelector('h6')?.textContent.trim() || '';
-                const value = card.querySelector('.stat-number')?.textContent.trim() || '0';
-                stats.push({ title, value });
+        let resultado;
+        if (minutos < 1) resultado = 'Hace un momento';
+        else if (minutos < 60) resultado = `Hace ${minutos} min`;
+        else if (horas < 24) resultado = `Hace ${horas} h`;
+        else if (dias < 7) resultado = `Hace ${dias} días`;
+        else {
+            resultado = fechaReg.toLocaleDateString('es-ES', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit'
             });
-
-            const csvContent = [
-                ['Estadística', 'Valor'],
-                ...stats.map(s => [s.title, s.value])
-            ].map(row => row.join(',')).join('\n');
-
-            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-            const link = document.createElement('a');
-            const url = URL.createObjectURL(blob);
-
-            link.setAttribute('href', url);
-            link.setAttribute('download', `dashboard_${new Date().toISOString().split('T')[0]}.csv`);
-            link.style.visibility = 'hidden';
-
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-
-            console.log('Dashboard: Exportación completada');
-
-            if (typeof window.mostrarNotificacion === 'function') {
-                window.mostrarNotificacion('success', 'Datos exportados correctamente');
-            }
-
-        } catch (error) {
-            console.error('Error al exportar:', error);
-
-            if (typeof window.mostrarNotificacion === 'function') {
-                window.mostrarNotificacion('error', 'Error al exportar datos');
-            }
-        }
-    }
-
-    /**
-     * Imprime el dashboard
-     */
-    function printDashboard() {
-        console.log('Dashboard: Preparando para imprimir...');
-
-        // Registrar en bitácora
-        if (typeof window.registrarBitacora === 'function') {
-            window.registrarBitacora(
-                'Impresión Dashboard',
-                'Usuario imprimió el dashboard'
-            );
         }
 
-        window.print();
+        fechaCache.set(key, resultado);
+        return resultado;
     }
 
-    /**
-     * Limpieza al salir de la página
-     */
-    function cleanup() {
-        console.log('Dashboard: Limpiando recursos...');
-        stopAutoRefresh();
+    const ICONOS_ACCION = {
+        'INSERT': 'bi-plus-circle',
+        'UPDATE': 'bi-pencil-square',
+        'DELETE': 'bi-trash',
+        'SELECT': 'bi-eye',
+        'GENERICA': 'bi-gear'
+    };
 
-        // Limpiar cualquier otro recurso
-        Object.keys(Dashboard.charts).forEach(key => {
-            if (Dashboard.charts[key] && typeof Dashboard.charts[key].destroy === 'function') {
-                Dashboard.charts[key].destroy();
-            }
-        });
+    function obtenerIconoAccion(tipo) {
+        return ICONOS_ACCION[tipo] || 'bi-question-circle';
     }
 
-    // Event listener para limpieza antes de salir
-    window.addEventListener('beforeunload', cleanup);
+    const COLORES_ACCION = {
+        'INSERT': 'success',
+        'UPDATE': 'warning',
+        'DELETE': 'danger',
+        'SELECT': 'info',
+        'GENERICA': 'secondary'
+    };
+
+    function obtenerColorAccion(tipo) {
+        return COLORES_ACCION[tipo] || 'secondary';
+    }
+
+    function truncarTexto(texto, maxLength) {
+        if (!texto) return '';
+        if (texto.length <= maxLength) return texto;
+        return texto.substring(0, maxLength) + '...';
+    }
+
+    let divEscape = null;
+    function escapeHtml(text) {
+        if (!divEscape) divEscape = document.createElement('div');
+        divEscape.textContent = text || '';
+        return divEscape.innerHTML;
+    }
+
+    window.cargarActividades = cargarActividades;
 
     // Exponer funciones públicas
     window.Dashboard = {
-        init,
-        refresh: refreshStatistics,
-        export: exportToCSV,
-        print: printDashboard,
-        startAutoRefresh,
-        stopAutoRefresh
+        refresh: cargarActividades,
+        animateCards: animateStatCards
     };
-
-    // Auto-inicializar
-    init();
 
 })();

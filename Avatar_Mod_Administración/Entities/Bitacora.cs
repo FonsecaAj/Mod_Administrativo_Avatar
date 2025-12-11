@@ -7,12 +7,16 @@
         public string usuario { get; set; } = "";
         public string tipo_Accion { get; set; } = "";
         public object detalle { get; set; } = new();
+
+        // Propiedades adicionales para compatibilidad con API
+        public string descripcion { get; set; } = "";
     }
 
     public class BitacoraCrearDto
     {
         public string Usuario { get; set; } = string.Empty;
         public string Descripcion { get; set; } = string.Empty;
+        public string? Tipo_Accion { get; set; }
     }
 
     public class BitacoraFiltroDto
@@ -23,6 +27,6 @@
         public string? Accion { get; set; }
         public string? Modulo { get; set; }
         public int Pagina { get; set; } = 1;
-        public int PorPagina { get; set; } = 10;
+        public int PorPagina { get; set; } = 20;
     }
 }

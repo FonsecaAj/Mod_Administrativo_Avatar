@@ -3,7 +3,6 @@
 
     console.log('menu-dinamico.js CARGADO');
 
-    // Módulos que se cargan dinámicamente según la API de roles
     const MODULOS_CONFIG = {
         'Usuarios': { icono: 'bi-people', url: '/Usuario/Usuarios', grupo: 'Administración', prefijo: '/Usuario' },
         'Roles': { icono: 'bi-shield-check', url: '/Rol/Roles', grupo: 'Administración', prefijo: '/Rol' },
@@ -13,39 +12,32 @@
         'Bitácoras': { icono: 'bi-journal-text', url: '/api/Bitacora', grupo: 'Administración', prefijo: '/api/Bitacora' },
         'Instituciones': { icono: 'bi-building', url: '/Institucion/Instituciones', grupo: 'Académico', prefijo: '/Institucion' },
         'Carreras': { icono: 'bi-mortarboard', url: '/Carrera/Carreras', grupo: 'Académico', prefijo: '/Carrera' },
-        'Cursos': { icono: 'bi-book', url: '/Curso/Cursos', grupo: 'Académico', prefijo: '/Curso' }, 
-        'Grupos': { icono: 'bi-diagram-3', url: '/Grupo/Grupos', grupo: 'Académico', prefijo: '/Grupo' },
-        'Prematrícula': { icono: 'bi-clipboard-check', url: '/Prematricula/Index', grupo: 'Matrícula', prefijo: '/Prematricula' },
+        'Cursos': { icono: 'bi-book', url: '/ADM10_Cursos', grupo: 'Académico', prefijo: '/ADM10_Cursos' },
+        'Grupos': { icono: 'bi-diagram-3', url: '/ADM13_Grupo', grupo: 'Académico', prefijo: '/ADM13_Grupo' },
+        'Prematrícula': { icono: 'bi-clipboard-check', url: '/ADM14_Prematricula/Index', grupo: 'Matrícula', prefijo: '/ADM14_Prematricula' },
         'Matrícula': { icono: 'bi-journal-check', url: '/Matricula/Index', grupo: 'Matrícula', prefijo: '/Matricula' },
         'Mis Cursos': { icono: 'bi-book-half', url: '/MisCursos/Index', grupo: 'Estudiante', prefijo: '/MisCursos' },
         'Desglose y Notas': { icono: 'bi-clipboard-data', url: '/Notas/Index', grupo: 'Evaluación', prefijo: '/Notas' },
         'Promedios': { icono: 'bi-graph-up', url: '/Promedios/Index', grupo: 'Evaluación', prefijo: '/Promedios' },
-        'Reportes': { icono: 'bi-file-earmark-bar-graph', url: '/Reportes/Index', grupo: 'Reportes', prefijo: '/Reportes' }
-
+        'Reportes': { icono: 'bi-file-earmark-bar-graph', url: '/Reportes/Index', grupo: 'Reportes', prefijo: '/Reportes' },
+        'Profesores': { icono: 'bi-file-earmark-bar-graph', url: '/ADM11_Profesor', grupo: 'Profesores', prefijo: '/ADM11_Profesor' },
+        'Notificaciones': { icono: 'bi-envelope', url: '/Notificaciones_Correo/Index', grupo: 'Comunicación', prefijo: '/Notificaciones_Correo' }
     };
 
-    //  OPCIONES PARA EL ROL ADMINISTRADOR (o rol con ID 1)
     const ADMIN_MENU_EXTENSIONS = [
-        // Dashboard y otros
         { texto: 'Home', url: '/Index', icono: 'bi-house', grupo: 'Principal', esDashboard: true, prefijo: '/Index' },
         { texto: 'Historial Académico', url: '/Academico/HistorialAcademico', icono: 'bi-journal-text', grupo: 'Académico', prefijo: '/Academico/HistorialAcademico' },
         { texto: 'Listados por periodo', url: '/Academico/ListadoEstudiantes', icono: 'bi-people', grupo: 'Académico', prefijo: '/Academico/ListadoEstudiantes' },
-        { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt', grupo: 'Facturación', prefijo: '/Facturacion/Facturas' },
-        { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
-
-        { texto: 'Notificaciones', url: '/Notificaciones_Correo/Index', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
-
-        { texto: 'Reporte Bitacoras', url: '/Mod_General/Index', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
-
-        // RUTAS DE ADMINISTRACIÓN MANTENIMIENTO (Las que deben reemplazar a las originales)
+        { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt', grupo: 'Facturación', prefijo: '/Facturacion' },
+        { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos' },
+        { texto: 'Prueba Notificaciones', url: '/Notificaciones_Correo/Index', icono: 'bi-envelope', grupo: 'Comunicación', prefijo: '/Notificaciones_Correo' },
         { texto: 'Cursos', url: '/ADM10_Cursos', icono: 'bi-book', grupo: 'Mantenimiento Adm', prefijo: '/ADM10_Cursos' },
         { texto: 'Profesores', url: '/ADM11_Profesor', icono: 'bi-people', grupo: 'Mantenimiento Adm', prefijo: '/ADM11_Profesor' },
         { texto: 'Periodo', url: '/ADM12_Periodo', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm', prefijo: '/ADM12_Periodo' },
-        { texto: 'Grupo', url: '/ADM13_Grupo', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm', prefijo: '/ADM13_Grupo' },
-        { texto: 'Prematrícula', url: '/ADM14_Prematricula', icono: 'bi-receipt', grupo: 'Mantenimiento Adm', prefijo: '/ADM14_Prematricula' },
-        { texto: 'Matrícula', url: '/ADM15_Matricula', icono: 'bi-receipt', grupo: 'Mantenimiento Adm', prefijo: '/ADM15_Matricula' },
-        { texto: 'Expediente', url: '/ADM16_Expediente', icono: 'bi-journal-text', grupo: 'Mantenimiento Adm', prefijo: '/ADM16_Expediente' }
+        { texto: 'Grupo', url: '/ADM13_Grupo', icono: 'bi-diagram-3', grupo: 'Mantenimiento Adm', prefijo: '/ADM13_Grupo' },
+        { texto: 'Prematrícula', url: '/ADM14_Prematricula', icono: 'bi-receipt', grupo: 'Mantenimiento Adm', prefijo: '/ADM14_Prematricula' }
     ];
+
 
     let modulosCargados = [];
     let datosUsuarioCache = null;
@@ -72,7 +64,6 @@
         } catch (error) { return false; }
     }
 
-    // La función cargarModulosPorRol está duplicada, se deja una
     async function cargarModulosPorRol(rolId, token) {
         try {
             const rolIdNum = parseInt(rolId);
@@ -99,27 +90,23 @@
             if (!modulos || modulos.length === 0) { mostrarMenuPorDefecto(); return; }
             modulosCargados = modulos;
             if (loader) loader.remove();
-            construirMenu(modulos, datosUsuario.rol); //  Pasar el rol a construirMenu
+            construirMenu(modulos, datosUsuario.rol);
             actualizarBreadcrumbs();
         } catch (error) { mostrarMenuPorDefecto(); }
     }
 
-    // Recibe el rol del usuario
     function construirMenu(modulos, rolUsuario) {
         const sidebarNav = document.querySelector('.sidebar-nav');
         if (!sidebarNav) return;
         sidebarNav.innerHTML = '';
 
-        // 1. Agrupar módulos dinámicos primero
         let grupos = agruparModulos(modulos);
 
         agregarDashboard(sidebarNav);
 
-        // 2. Lógica para incluir las opciones extra si el rol es 'Administrador'
         if (rolUsuario && rolUsuario.toLowerCase() === 'administrador') {
             ADMIN_MENU_EXTENSIONS.forEach(item => {
                 if (!item.esDashboard) {
-                    // Crea un nuevo objeto módulo con la configuración de la extensión
                     const extensionModule = {
                         nombreModulo: item.texto,
                         moduloActivo: true,
@@ -131,25 +118,22 @@
                         }
                     };
 
-                    // Lógica de reemplazo/adición:
                     const existingGroup = grupos[item.grupo];
 
                     if (!existingGroup) {
                         grupos[item.grupo] = [extensionModule];
                     } else {
-                        // Busca si existe un módulo con el mismo nombre y lo reemplaza (Ej. Cursos)
                         const index = existingGroup.findIndex(m => m.nombreModulo === item.texto);
                         if (index !== -1) {
-                            existingGroup[index] = extensionModule; // Reemplaza el módulo dinámico (el que tiene la ruta rota)
+                            existingGroup[index] = extensionModule;
                         } else {
-                            existingGroup.push(extensionModule); // Simplemente lo añade
+                            existingGroup.push(extensionModule);
                         }
                     }
                 }
             });
         }
 
-        // 3. Renderizar el menú
         Object.keys(grupos).sort().forEach(nombreGrupo => {
             const modulosGrupo = grupos[nombreGrupo];
             const tituloSeccion = document.createElement('div');
@@ -158,117 +142,130 @@
             sidebarNav.appendChild(tituloSeccion);
 
             modulosGrupo.forEach(modulo => {
-                // Prioriza la configuración de la extensión (modulo.config) si existe.
                 const config = modulo.config || MODULOS_CONFIG[modulo.nombreModulo];
                 if (config && modulo.moduloActivo) {
-                    agregarItemMenu(sidebarNav, modulo.nombreModulo, config);
+                    const li = document.createElement('li');
+                    li.className = 'nav-item';
+                    const a = document.createElement('a');
+                    a.className = 'nav-link';
+                    a.href = config.url;
+                    a.dataset.moduloPrefijo = config.prefijo;
+                    a.innerHTML = `<i class="bi ${config.icono}"></i><span class="nav-text">${modulo.nombreModulo}</span>`;
+                    li.appendChild(a);
+                    sidebarNav.appendChild(li);
                 }
             });
         });
+
         marcarRutaActiva();
     }
 
-    // Agrupa módulos dinámicos. Es buena práctica asegurarte de que solo se usen módulos activos.
     function agruparModulos(modulos) {
         const grupos = {};
         modulos.forEach(modulo => {
             const config = MODULOS_CONFIG[modulo.nombreModulo];
-            if (config && modulo.moduloActivo) { // <-- Se añadió la verificación modulo.moduloActivo
-                if (!grupos[config.grupo]) grupos[config.grupo] = [];
-                grupos[config.grupo].push(modulo);
-            }
+            if (!config) return;
+            const nombreGrupo = config.grupo;
+            if (!grupos[nombreGrupo]) grupos[nombreGrupo] = [];
+            grupos[nombreGrupo].push(modulo);
         });
         return grupos;
     }
 
-    function agregarDashboard(container) {
-        const navItem = document.createElement('div');
-        navItem.className = 'nav-item';
-        navItem.innerHTML = '<a href="/Index" class="nav-link"><i class="bi bi-house"></i><span>Home</span></a>'; // Cambiado a 'Home' y 'bi-house'
-        container.appendChild(navItem);
-    }
-
-    function agregarItemMenu(container, nombre, config) {
-        const navItem = document.createElement('div');
-        navItem.className = 'nav-item';
-        // Se usa config.url y config.icono
-        navItem.innerHTML = '<a href="' + config.url + '" class="nav-link"><i class="bi ' + config.icono + '"></i><span>' + nombre + '</span></a>';
-        container.appendChild(navItem);
+    function agregarDashboard(sidebarNav) {
+        const tituloSeccion = document.createElement('div');
+        tituloSeccion.className = 'nav-section-title';
+        tituloSeccion.textContent = 'Principal';
+        sidebarNav.appendChild(tituloSeccion);
+        const li = document.createElement('li');
+        li.className = 'nav-item';
+        const a = document.createElement('a');
+        a.className = 'nav-link';
+        a.href = '/Index';
+        a.dataset.moduloPrefijo = '/Index';
+        a.innerHTML = '<i class="bi bi-house"></i><span class="nav-text">Home</span>';
+        li.appendChild(a);
+        sidebarNav.appendChild(li);
     }
 
     function marcarRutaActiva() {
-        const rutaActual = window.location.pathname;
-        const links = document.querySelectorAll('.sidebar-nav .nav-link');
-        let mejorCoincidencia = null;
-        let longitudCoincidencia = 0;
-        links.forEach(function (link) {
+        const navLinks = document.querySelectorAll('.sidebar-nav .nav-link');
+        const rutaActual = window.location.pathname.toLowerCase();
+
+        navLinks.forEach(link => {
             link.classList.remove('active');
-            const href = link.getAttribute('href');
-            if (rutaActual === href) {
-                mejorCoincidencia = link;
-                longitudCoincidencia = href.length;
-            } else if (href !== '/' && rutaActual.startsWith(href) && href.length > longitudCoincidencia) {
-                mejorCoincidencia = link;
-                longitudCoincidencia = href.length;
+            const prefijo = link.dataset.moduloPrefijo?.toLowerCase();
+            if (prefijo) {
+                // Normalizar rutas para comparación
+                const rutaNormalizada = rutaActual.endsWith('/') ? rutaActual.slice(0, -1) : rutaActual;
+                const prefijoNormalizado = prefijo.endsWith('/') ? prefijo.slice(0, -1) : prefijo;
+
+                if (rutaNormalizada === prefijoNormalizado || rutaNormalizada.startsWith(prefijoNormalizado + '/')) {
+                    link.classList.add('active');
+                }
             }
         });
-        if (mejorCoincidencia) mejorCoincidencia.classList.add('active');
     }
 
     function actualizarBreadcrumbs() {
-        const breadcrumbOl = document.querySelector('.breadcrumb-container ol');
+        const breadcrumbOl = document.querySelector('.breadcrumb');
         if (!breadcrumbOl) return;
 
-        const ruta = window.location.pathname;
-        let html = '<li class="breadcrumb-item"><a href="/Index"><i class="bi bi-house-door"></i> Inicio</a></li>'; // Cambiado a /Index
+        const ruta = window.location.pathname.toLowerCase();
+        let html = '<li class="breadcrumb-item"><a href="/Index"><i class="bi bi-house"></i> Home</a></li>';
 
-        if (ruta === '/' || ruta === '/Index') {
-            breadcrumbOl.innerHTML = html;
+        // Casos especiales primero
+        if (ruta === '/' || ruta === '/index' || ruta === '/index/') {
+            breadcrumbOl.innerHTML = '<li class="breadcrumb-item active" aria-current="page"><i class="bi bi-house"></i> Home</li>';
             return;
         }
 
+        // Buscar coincidencia en todas las configuraciones
         let moduloMatch = null;
 
-        // Búsqueda en MODULOS_CONFIG (Modulos de la API)
-        // Priorizamos coincidencia con prefijo para URL base (ej. /Usuario -> /Usuario/Crear)
-        for (const nombre in MODULOS_CONFIG) {
-            const config = MODULOS_CONFIG[nombre];
-            if (ruta.startsWith(config.prefijo + '/')) {
-                moduloMatch = { nombre: nombre, url: config.url, grupo: config.grupo };
-                break;
+        // 1. Primero buscar en ADMIN_MENU_EXTENSIONS (para administradores)
+        const datosUsuario = obtenerDatosUsuario();
+        if (datosUsuario?.rol.toLowerCase() === 'administrador') {
+            for (const item of ADMIN_MENU_EXTENSIONS) {
+                if (item.esDashboard) continue;
+                const prefijoItem = item.prefijo || item.url;
+                const rutaNormalizada = ruta.endsWith('/') ? ruta.slice(0, -1) : ruta;
+                const prefijoNormalizado = prefijoItem.toLowerCase().endsWith('/')
+                    ? prefijoItem.toLowerCase().slice(0, -1)
+                    : prefijoItem.toLowerCase();
+
+                if (rutaNormalizada === prefijoNormalizado || rutaNormalizada.startsWith(prefijoNormalizado + '/')) {
+                    moduloMatch = {
+                        nombre: item.texto,
+                        url: item.url,
+                        grupo: item.grupo,
+                        prefijo: prefijoItem
+                    };
+                    break;
+                }
             }
         }
 
-        // Búsqueda en ADMIN_MENU_EXTENSIONS (Módulos manuales)
-        // Esta sección es CRUCIAL. Si el usuario es Administrador, debemos preferir la extensión.
+        // 2. Si no se encontró, buscar en MODULOS_CONFIG
         if (!moduloMatch) {
+            for (const nombre in MODULOS_CONFIG) {
+                const config = MODULOS_CONFIG[nombre];
+                const rutaNormalizada = ruta.endsWith('/') ? ruta.slice(0, -1) : ruta;
+                const prefijoNormalizado = config.prefijo.toLowerCase().endsWith('/')
+                    ? config.prefijo.toLowerCase().slice(0, -1)
+                    : config.prefijo.toLowerCase();
 
-            const extensionMatch = ADMIN_MENU_EXTENSIONS.find(item => {
-                const prefix = item.prefijo || item.url;
-                return ruta.startsWith(prefix + '/');
-            });
-
-            if (extensionMatch) {
-                // Sobrescribe si ya existía un match por nombre en MODULOS_CONFIG que ahora es extensión
-                moduloMatch = { nombre: extensionMatch.texto, url: extensionMatch.url, grupo: extensionMatch.grupo, prefijo: extensionMatch.prefijo };
+                if (rutaNormalizada === prefijoNormalizado || rutaNormalizada.startsWith(prefijoNormalizado + '/')) {
+                    moduloMatch = {
+                        nombre: nombre,
+                        url: config.url,
+                        grupo: config.grupo,
+                        prefijo: config.prefijo
+                    };
+                    break;
+                }
             }
         }
-
-        // CORRECCIÓN: Si el rol es administrador y se encontró un módulo dinámico,
-        // verificamos si existe una extensión con el mismo nombre y la usamos.
-        if (moduloMatch && obtenerDatosUsuario()?.rol.toLowerCase() === 'administrador') {
-            const adminOverride = ADMIN_MENU_EXTENSIONS.find(item => item.texto === moduloMatch.nombre);
-            if (adminOverride) {
-                // Reemplazamos la información del módulo dinámico con la información de la extensión
-                moduloMatch = {
-                    nombre: adminOverride.texto,
-                    url: adminOverride.url,
-                    grupo: adminOverride.grupo,
-                    prefijo: adminOverride.prefijo
-                };
-            }
-        }
-
 
         if (!moduloMatch) {
             breadcrumbOl.innerHTML = html;
@@ -277,8 +274,14 @@
 
         html += '<li class="breadcrumb-item">' + moduloMatch.grupo + '</li>';
 
+        // Normalizar URLs para comparación
+        const rutaNormalizada = ruta.endsWith('/') ? ruta.slice(0, -1) : ruta;
+        const urlNormalizada = moduloMatch.url.toLowerCase().endsWith('/')
+            ? moduloMatch.url.toLowerCase().slice(0, -1)
+            : moduloMatch.url.toLowerCase();
+
         // Comprobar si la ruta actual es la ruta base del módulo
-        if (ruta === moduloMatch.url || ruta === moduloMatch.url + '/') {
+        if (rutaNormalizada === urlNormalizada) {
             html += '<li class="breadcrumb-item active" aria-current="page">' + moduloMatch.nombre + '</li>';
         } else {
             html += '<li class="breadcrumb-item"><a href="' + moduloMatch.url + '">' + moduloMatch.nombre + '</a></li>';
@@ -292,47 +295,69 @@
     function obtenerNombreSubpagina(ruta) {
         const r = ruta.toLowerCase();
 
-        if (r.includes('institucioncrear')) return 'Crear Institución';
-        if (r.includes('institucioneditar')) return 'Editar Institución';
+        // Instituciones
+        if (r.includes('institucion/institucioncrear')) return 'Crear Institución';
+        if (r.includes('institucion/institucioneditar')) return 'Editar Institución';
 
-        if (r.includes('usuariocrear')) return 'Crear Usuario';
-        if (r.includes('usuarioeditar')) return 'Editar Usuario';
+        // Usuarios
+        if (r.includes('usuario/usuariocrear')) return 'Crear Usuario';
+        if (r.includes('usuario/usuarioeditar')) return 'Editar Usuario';
 
-        if (r.includes('carreracrear')) return 'Crear Carrera';
-        if (r.includes('carreraeditar')) return 'Editar Carrera';
+        // Carreras
+        if (r.includes('carrera/carreracrear')) return 'Crear Carrera';
+        if (r.includes('carrera/carreraeditar')) return 'Editar Carrera';
 
-        if (r.includes('cursocrear')) return 'Crear Curso';
-        if (r.includes('cursoeditar')) return 'Editar Curso';
+        // Cursos
+        if (r.includes('adm10_cursos/crear')) return 'Crear Curso';
+        if (r.includes('adm10_cursos/editar')) return 'Editar Curso';
+        if (r.includes('adm10_cursos/eliminar')) return 'Eliminar Curso';
+        if (r.includes('adm10_cursos')) return 'Cursos';
 
-        if (r.includes('rolcrear')) return 'Crear Rol';
-        if (r.includes('roleditar')) return 'Editar Rol';
+        // Profesores
+        if (r.includes('adm11_profesor/crear')) return 'Crear Profesor';
+        if (r.includes('adm11_profesor/editar')) return 'Editar Profesor';
+        if (r.includes('adm11_profesor')) return 'Profesores';
 
-        if (r.includes('grupocrear')) return 'Crear Grupo';
-        if (r.includes('grupoeditar')) return 'Editar Grupo';
+        // Periodos
+        if (r.includes('adm12_periodo/crear')) return 'Crear Periodo';
+        if (r.includes('adm12_periodo/editar')) return 'Editar Periodo';
+        if (r.includes('adm12_periodo')) return 'Periodos';
 
-        if (r.includes('parametrocrear')) return 'Crear Parámetro';
-        if (r.includes('parametroeditar')) return 'Editar Parámetro';
+        // Grupos
+        if (r.includes('adm13_grupo/crear')) return 'Crear Grupo';
+        if (r.includes('adm13_grupo/editar')) return 'Editar Grupo';
+        if (r.includes('adm13_grupo')) return 'Grupos';
 
-        if (r.includes('modulocrear')) return 'Crear Módulo';
-        if (r.includes('moduloeditar')) return 'Editar Módulo';
+        // Prematrícula
+        if (r.includes('adm14_prematricula/crear')) return 'Crear Prematrícula';
+        if (r.includes('adm14_prematricula/editar')) return 'Editar Prematrícula';
+        if (r.includes('adm14_prematricula')) return 'Prematrícula';
 
-        if (r.includes('crear')) return 'Crear';
-        if (r.includes('editar')) return 'Editar';
-        if (r.includes('detalle')) return 'Detalle';
+        // Roles
+        if (r.includes('rol/rolcrear')) return 'Crear Rol';
+        if (r.includes('rol/roleditar')) return 'Editar Rol';
 
-        // Nuevas páginas
-        if (r.includes('historialacademico')) return 'Historial Académico';
-        if (r.includes('listadoestudiantes')) return 'Listados por Periodo';
-        if (r.includes('facturas')) return 'Administración de Facturas';
-        if (r.includes('pagos')) return 'Consulta de Pagos';
+        // Parámetros
+        if (r.includes('parametro/parametrocrear')) return 'Crear Parámetro';
+        if (r.includes('parametro/parametroeditar')) return 'Editar Parámetro';
 
-        // Módulos de Mantenimiento Adm (ADM)
-        if (r.includes('adm10_cursos')) return 'Mantenimiento Cursos';
-        if (r.includes('adm11_profesor')) return 'Mantenimiento Profesores';
-        if (r.includes('adm12_periodo')) return 'Mantenimiento Periodos';
-        if (r.includes('adm13_grupo')) return 'Mantenimiento Grupos';
-        if (r.includes('adm14_prematricula')) return 'Mantenimiento Prematrícula';
+        // Módulos
+        if (r.includes('modulo/modulocrear')) return 'Crear Módulo';
+        if (r.includes('modulo/moduloeditar')) return 'Editar Módulo';
 
+        // Académico
+        if (r.includes('academico/historialacademico')) return 'Historial Académico';
+        if (r.includes('academico/listadoestudiantes')) return 'Listados por Periodo';
+
+        // Facturación
+        if (r.includes('facturacion/facturas')) return 'Administración de Facturas';
+        if (r.includes('pagos/pagos')) return 'Consulta de Pagos';
+
+        // Genéricos
+        if (r.includes('/crear')) return 'Crear';
+        if (r.includes('/editar')) return 'Editar';
+        if (r.includes('/eliminar')) return 'Eliminar';
+        if (r.includes('/detalle')) return 'Detalle';
 
         return 'Página';
     }
