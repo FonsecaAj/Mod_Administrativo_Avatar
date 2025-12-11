@@ -33,9 +33,9 @@
         { texto: 'Administración de facturas', url: '/Facturacion/Facturas', icono: 'bi-receipt', grupo: 'Facturación', prefijo: '/Facturacion/Facturas' },
         { texto: 'Consulta de pagos', url: '/Pagos/Pagos', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
 
-        { texto: 'Prueba Notificaciones', url: '/Notificaciones_Correo/Index', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
+        { texto: 'Notificaciones', url: '/Notificaciones_Correo/Index', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
 
-        { texto: 'Prueba Bitacoras', url: '/Mod_General/Index', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
+        { texto: 'Reporte Bitacoras', url: '/Mod_General/Index', icono: 'bi-cash', grupo: 'Facturación', prefijo: '/Pagos/Pagos' },
 
         // RUTAS DE ADMINISTRACIÓN MANTENIMIENTO (Las que deben reemplazar a las originales)
         { texto: 'Cursos', url: '/ADM10_Cursos', icono: 'bi-book', grupo: 'Mantenimiento Adm', prefijo: '/ADM10_Cursos' },
