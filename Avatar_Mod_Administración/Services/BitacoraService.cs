@@ -22,8 +22,10 @@ namespace Avatar_Mod_Administración.Services
             ILogger<BitacoraService> logger)
         {
             _httpClient = httpClient;
+
             _apiUrl = configuration["GEN1ApiUrl"]
                       ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral";
+
             _logger = logger;
         }
 
@@ -32,6 +34,7 @@ namespace Avatar_Mod_Administración.Services
             try
             {
                 _logger.LogInformation("Consultando Bitácora…");
+
 
                 var query = BuildQueryString(new Dictionary<string, string?>
                 {
@@ -42,6 +45,15 @@ namespace Avatar_Mod_Administración.Services
                     ["fechaHasta"] = filtro.FechaFin?.ToString("yyyy-MM-dd"),
                     ["pagina"] = "1",
                     ["porPagina"] = "100"
+
+                var request = new HttpRequestMessage(HttpMethod.Post, $"{_apiUrl}/api/bitacora");
+                request.Headers.Add("Authorization", token);
+                request.Content = JsonContent.Create(new
+                {
+                    usuario = dto.Usuario,
+                    descripcion = dto.Descripcion,
+                    tipo_Accion = dto.Tipo_Accion
+
                 });
 
                 var url = $"{_apiUrl}/api/bitacora/consulta{query}";
@@ -91,6 +103,7 @@ namespace Avatar_Mod_Administración.Services
             {
                 if (string.IsNullOrWhiteSpace(p.Value)) continue;
 
+
                 sb.Append(first ? "?" : "&");
                 sb.Append($"{WebUtility.UrlEncode(p.Key)}={WebUtility.UrlEncode(p.Value)}");
 
@@ -98,6 +111,103 @@ namespace Avatar_Mod_Administración.Services
             }
 
             return sb.ToString();
+        }
+    }
+}
+
+                var queryParams = new List<string>();
+
+                // Solo aplicar filtros si se proporcionan
+                if (filtro != null)
+                {
+                    if (filtro.FechaInicio.HasValue)
+                        queryParams.Add($"fechaInicio={filtro.FechaInicio.Value:yyyy-MM-dd}");
+                    if (filtro.FechaFin.HasValue)
+                        queryParams.Add($"fechaFin={filtro.FechaFin.Value:yyyy-MM-dd}");
+                    if (!string.IsNullOrWhiteSpace(filtro.Usuario))
+                        queryParams.Add($"usuario={Uri.EscapeDataString(filtro.Usuario)}");
+                    if (!string.IsNullOrWhiteSpace(filtro.Accion))
+                        queryParams.Add($"accion={Uri.EscapeDataString(filtro.Accion)}");
+                    if (!string.IsNullOrWhiteSpace(filtro.Modulo))
+                        queryParams.Add($"modulo={Uri.EscapeDataString(filtro.Modulo)}");
+                }
+
+                var queryString = queryParams.Count > 0 ? "?" + string.Join("&", queryParams) : "";
+                var url = $"{_apiUrl}api/bitacora{queryString}";
+
+                var request = new HttpRequestMessage(HttpMethod.Get, url);
+                request.Headers.Add("Authorization", token);
+
+                // Timeout de 5 segundos para evitar esperas largas
+                using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(5));
+
+                var response = await _httpClient.SendAsync(request, cts.Token);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogWarning("Error al obtener bitácoras: {StatusCode}", response.StatusCode);
+                    return new List<Bitacora>();
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+
+                var bitacoras = JsonSerializer.Deserialize<List<Bitacora>>(content, options)
+                    ?? new List<Bitacora>();
+
+                _logger.LogInformation("Bitácoras obtenidas: {Count}", bitacoras.Count);
+
+                return bitacoras;
+            }
+            catch (TaskCanceledException)
+            {
+                _logger.LogWarning("Timeout al obtener bitácoras");
+                return new List<Bitacora>();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener bitácoras");
+                return new List<Bitacora>();
+            }
+        }
+
+        public async Task<Bitacora?> ObtenerPorIdAsync(int id, string token)
+        {
+            try
+            {
+                _logger.LogInformation("Obteniendo bitácora {Id}", id);
+
+                var request = new HttpRequestMessage(HttpMethod.Get, $"{_apiUrl}/api/bitacora/{id}");
+                request.Headers.Add("Authorization", token);
+
+                var response = await _httpClient.SendAsync(request);
+
+                if (!response.IsSuccessStatusCode)
+                {
+                    _logger.LogError("Error al obtener bitácora: {Status}", response.StatusCode);
+                    return null;
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                
+                var options = new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true,
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                };
+
+                return JsonSerializer.Deserialize<Bitacora>(content, options);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error al obtener bitácora");
+                return null;
+            }
         }
     }
 }

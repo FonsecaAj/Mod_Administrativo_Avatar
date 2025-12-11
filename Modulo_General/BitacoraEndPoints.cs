@@ -6,7 +6,6 @@ namespace Avatar_Mod_Administración
 {
     public static class BitacoraEndPoints
     {
-
         public static void MapBitacoraEndpoints(this IEndpointRouteBuilder routes)
         {
             var group = routes.MapGroup("/api/bitacora").WithTags(nameof(Bitacora));
@@ -51,5 +50,14 @@ namespace Avatar_Mod_Administración
             .WithOpenApi();
         }
 
+            // GET /api/bitacora?usuario=email@ejemplo.com
+            group.MapGet("/", async ([FromQuery] string? usuario, [FromServices] IBitacoraService service) =>
+            {
+                var response = await service.ObtenerTodas(usuario);
+                return Results.Json(response.ResponseObject, statusCode: response.StatusCode);
+            })
+            .WithName("ObtenerBitacoras")
+            .WithOpenApi();
+        }
     }
 }

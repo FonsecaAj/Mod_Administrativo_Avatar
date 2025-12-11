@@ -6,10 +6,8 @@ namespace Avatar_Mod_Administración.Repository
 {
     public class BitacoraRepository
     {
-
         private readonly IDbConnectionFactory _dbConnectionFactory;
 
-            
         public BitacoraRepository(IDbConnectionFactory dbConnectionFactory)
         {
             _dbConnectionFactory = dbConnectionFactory;
@@ -31,6 +29,13 @@ namespace Avatar_Mod_Administración.Repository
                 });
             }
         }
+
+        public async Task<List<Bitacora>> ObtenerTodas(string? usuario = null)
+        {
+            using (var connection = _dbConnectionFactory.CreateConnection())
+            {
+                string sql;
+                object? parametros = null;
 
 
         public async Task<(IEnumerable<Bitacora> Data, int Total)> Consultar(BitacoraFiltroRequest filtro)
@@ -68,7 +73,24 @@ namespace Avatar_Mod_Administración.Repository
             return (Data: lista, Total: total);
         }
 
+                if (!string.IsNullOrWhiteSpace(usuario))
+                {
+                    sql = @"SELECT ID_Bitacora, Fecha_Registro, Usuario, Descripcion, Tipo_Accion 
+                            FROM Bitacora 
+                            WHERE Usuario = @Usuario
+                            ORDER BY Fecha_Registro DESC";
+                    parametros = new { Usuario = usuario };
+                }
+                else
+                {
+                    sql = @"SELECT ID_Bitacora, Fecha_Registro, Usuario, Descripcion, Tipo_Accion 
+                            FROM Bitacora 
+                            ORDER BY Fecha_Registro DESC";
+                }
 
-
+                var result = await connection.QueryAsync<Bitacora>(sql, parametros);
+                return result.ToList();
+            }
+        }
     }
 }
