@@ -22,4 +22,27 @@
         public string Message { get; set; } = string.Empty;
         public object? ResponseObject { get; set; }
     }
+
+    public class BitacoraFiltroRequest
+    {
+        public DateTime? FechaDesde { get; set; }
+
+        public DateTime? FechaHasta { get; set; }
+
+        public string? Usuario { get; set; }
+
+        public string? Tipo_Accion { get; set; }
+
+        public int? IdModulo { get; set; }
+
+        public string? NombreModulo { get; set; }
+
+        public int Pagina { get; set; } = 1;
+
+        public int PorPagina { get; set; } = 10;
+
+        public string OrdenColumna { get; set; } = "Fecha_Registro";
+
+        public string OrdenDireccion { get; set; } = "DESC";
+    }
 }

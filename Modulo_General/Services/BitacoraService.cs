@@ -17,6 +17,7 @@ namespace Avatar_Mod_Administración.Services
         {
             try
             {
+                // Validaciones requeridas
                 if (string.IsNullOrWhiteSpace(request.Usuario))
                     return new BusinessLogicResponse
                     {
@@ -31,10 +32,12 @@ namespace Avatar_Mod_Administración.Services
                         Message = "El campo 'Descripción' es requerida y no puede estar vacía."
                     };
 
+                // Default "INSERT"
                 var tipoAccion = string.IsNullOrWhiteSpace(request.Tipo_Accion)
                     ? "INSERT"
                     : request.Tipo_Accion.Trim().ToUpper();
 
+                // Validar formato JSON solo para operaciones CRUD (no SELECT ni GENERICA)
                 if (tipoAccion != "SELECT" && tipoAccion != "GENERICA" && !IsValidJson(request.Descripcion))
                     return new BusinessLogicResponse
                     {
@@ -42,6 +45,7 @@ namespace Avatar_Mod_Administración.Services
                         Message = "El campo 'Descripción' debe tener un formato JSON válido para operaciones de tipo INSERT, UPDATE o DELETE."
                     };
 
+                // Construir entidad Bitácora
                 var bitacora = new Bitacora
                 {
                     Usuario = request.Usuario.Trim(),
@@ -50,6 +54,7 @@ namespace Avatar_Mod_Administración.Services
                     Fecha_Registro = DateTime.Now
                 };
 
+                // Registrar bitácora
                 var id = await _bitacoraRepository.Registrar(bitacora);
 
                 return new BusinessLogicResponse
@@ -67,10 +72,53 @@ namespace Avatar_Mod_Administración.Services
             }
             catch (Exception ex)
             {
+                // Manejo de errores 
                 return new BusinessLogicResponse
                 {
                     StatusCode = 500,
                     Message = $"Error al registrar bitácora: {ex.Message}"
+                };
+            }
+        }
+
+        public async Task<BusinessLogicResponse> Consultar(BitacoraFiltroRequest request)
+        {
+            try
+            {
+                (IEnumerable<Bitacora>, int) tuple = await _bitacoraRepository.Consultar(request);
+                IEnumerable<Bitacora> data = tuple.Item1;
+                int total = tuple.Item2;
+
+                var dataFormateada = data.Select((Bitacora x) => new
+                {
+                    ID_Bitacora = x.ID_Bitacora,
+                    Fecha_Registro = x.Fecha_Registro,
+                    Usuario = x.Usuario,
+                    Tipo_Accion = x.Tipo_Accion,
+                    Detalle = ParseDescripcion(x.Descripcion)
+                });
+
+                var respuesta = new
+                {
+                    TotalRegistros = total,
+                    Pagina = request.Pagina,
+                    PorPagina = request.PorPagina,
+                    Data = dataFormateada
+                };
+
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 200,
+                    Message = "Registros obtenidos correctamente.",
+                    ResponseObject = respuesta
+                };
+            }
+            catch (Exception ex)
+            {
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 500,
+                    Message = "Error al consultar bitácora: " + ex.Message
                 };
             }
         }
@@ -98,6 +146,7 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
+        // Método auxiliar para validar si la descripción es JSON válido
         private bool IsValidJson(string str)
         {
             try
@@ -108,6 +157,23 @@ namespace Avatar_Mod_Administración.Services
             catch
             {
                 return false;
+            }
+        }
+
+        // Método auxiliar para parsear la descripción JSON
+        private object? ParseDescripcion(string descripcionRaw)
+        {
+            if (string.IsNullOrWhiteSpace(descripcionRaw))
+            {
+                return null;
+            }
+            try
+            {
+                return JsonSerializer.Deserialize<object>(descripcionRaw);
+            }
+            catch
+            {
+                return descripcionRaw;
             }
         }
     }
