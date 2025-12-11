@@ -61,27 +61,33 @@ namespace ApiMAT1.Repository
         {
             using var connection = _connectionFactory.CreateConnection();
 
-            // La consulta SQL proporcionada (modificada para usar el parámetro @Identificacion)
+            // Consulta SQL corregida para manejar ambos casos:
+            // 1. Cuando pm.ID_Estudiante es el ID numérico real
+            // 2. Cuando pm.ID_Estudiante contiene la identificación (como en tu caso)
             const string sql = @"
-                SELECT 
-                    e.Identificacion,
-                    e.Nombre + ' ' + e.Apellido1 + ' ' + e.Apellido2 AS Nombre_Completo,
-                    e.Carrera AS Carrera_Estudiante,
-                    c.Nombre_Carrera,
-                    cur.Nombre_Curso,
-                    cur.Codigo_Curso,
-                    pm.Observaciones,
-                    per.Año,
-                    per.Numero_Periodo,
-                    per.Fecha_Inicio,
-                    per.Fecha_Fin
-                FROM Estudiante e
-                JOIN Prematricula pm ON e.ID_Estudiante = pm.ID_Estudiante
-                LEFT JOIN [User_ApisG].[Carrera] c ON pm.ID_Carrera = c.ID_Carrera
-                LEFT JOIN Curso cur ON pm.ID_Curso = cur.ID_Curso
-                LEFT JOIN Periodo per ON pm.ID_Periodo = per.ID_Periodo
-                WHERE e.Identificacion = @Identificacion
-                ORDER BY per.Año DESC, per.Numero_Periodo DESC, pm.ID_Prematricula;";
+        SELECT 
+            e.Identificacion,
+            e.Nombre + ' ' + e.Apellido1 + ' ' + e.Apellido2 AS Nombre_Completo,
+            e.Carrera AS Carrera_Estudiante,
+            c.Nombre_Carrera,
+            cur.Nombre_Curso,
+            cur.Codigo_Curso,
+            pm.Observaciones,
+            per.Año,
+            per.Numero_Periodo,
+            per.Fecha_Inicio,
+            per.Fecha_Fin
+        FROM Prematricula pm
+        JOIN Estudiante e ON (
+            e.ID_Estudiante = pm.ID_Estudiante  -- Si es un ID numérico
+            OR 
+            e.Identificacion = CAST(pm.ID_Estudiante AS VARCHAR(15))  -- Si es la identificación
+        )
+        LEFT JOIN [User_ApisG].[Carrera] c ON pm.ID_Carrera = c.ID_Carrera
+        LEFT JOIN Curso cur ON pm.ID_Curso = cur.ID_Curso
+        LEFT JOIN Periodo per ON pm.ID_Periodo = per.ID_Periodo
+        WHERE e.Identificacion = @Identificacion
+        ORDER BY per.Año DESC, per.Numero_Periodo DESC, pm.ID_Prematricula;";
 
             // Dapper mapeará los resultados directamente a la clase PrematriculaDetallada
             var result = await connection.QueryAsync<PrematriculaDetallada>(sql, new { Identificacion = identificacion });

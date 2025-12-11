@@ -6,5 +6,7 @@ namespace Avatar_Mod_Administración.Services
     {
         Task<BusinessLogicResponse> Registrar(BitacoraRequest request);
 
+        Task<BusinessLogicResponse> Consultar(BitacoraFiltroRequest request);
+
     }
 }
