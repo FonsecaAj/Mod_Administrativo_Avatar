@@ -19,6 +19,34 @@ namespace Avatar_Mod_Administración
             })
             .WithName("RegistrarBitacora")
             .WithOpenApi();
+
+            // GET /api/bitacora?pagina=1&porPagina=10&usuario=admin...
+            group.MapGet("api/bitacora/consulta", async (
+                [FromServices] IBitacoraService service,  
+                [FromQuery] int pagina = 1,
+                [FromQuery] int porPagina = 10,
+                [FromQuery] string? usuario = null,
+                [FromQuery] string? tipoAccion = null,
+                [FromQuery] DateTime? fechaInicio = null,
+                [FromQuery] DateTime? fechaFin = null) =>
+            {
+                // Crear el objeto request con los parámetros
+                var request = new BitacoraFiltroRequest
+                {
+                    Pagina = pagina,
+                    PorPagina = porPagina,
+                    Usuario = usuario,
+                    Tipo_Accion = tipoAccion,
+                    FechaDesde = fechaInicio,
+                    FechaHasta = fechaFin
+                };
+
+                var response = await service.Consultar(request);
+                return Results.Json(response, statusCode: response.StatusCode);
+            })
+            .WithName("ConsultarBitacora")
+            .WithOpenApi();
+
         }
 
     }
