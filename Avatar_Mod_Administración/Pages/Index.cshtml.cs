@@ -12,6 +12,7 @@ namespace Avatar_Mod_Administración.Pages
         private readonly IGrupoApiClient _grupoApiClient;
         private readonly IFacturaApiClient _facturaApiClient;
         private readonly IProfesorApiClient _profesorApiClient;
+        private readonly IBitacoraService _bitacoraService;
 
         public string UsuarioEmailPublic => UsuarioEmail;
         public string UsuarioNombrePublic => UsuarioNombre;
@@ -40,6 +41,7 @@ namespace Avatar_Mod_Administración.Pages
             IGrupoApiClient grupoApiClient,
             IFacturaApiClient facturaApiClient,
             IProfesorApiClient profesorApiClient,
+            IBitacoraService bitacoraService,
             ILogger<IndexModel> logger)
             : base(authService, usuarioService, logger)
         {
@@ -49,6 +51,7 @@ namespace Avatar_Mod_Administración.Pages
             _grupoApiClient = grupoApiClient;
             _facturaApiClient = facturaApiClient;
             _profesorApiClient = profesorApiClient;
+            _bitacoraService = bitacoraService;
         }
 
         public async Task<IActionResult> OnGetAsync()
@@ -66,6 +69,9 @@ namespace Avatar_Mod_Administración.Pages
                 var token = ObtenerToken();
                 if (!string.IsNullOrEmpty(token))
                 {
+                    // Registrar visualización del dashboard en bitácora
+                    await RegistrarVisualizacionDashboardAsync(token);
+
                     await CargarEstadisticasAsync(token);
                 }
 
@@ -76,6 +82,35 @@ namespace Avatar_Mod_Administración.Pages
                 _logger.LogError(ex, "Error al cargar el dashboard");
                 TempData["Error"] = "Ocurrió un error al cargar el dashboard";
                 return Page();
+            }
+        }
+
+        private async Task RegistrarVisualizacionDashboardAsync(string token)
+        {
+            try
+            {
+                var bitacoraDto = new BitacoraCrearDto
+                {
+                    Usuario = UsuarioEmail,
+                    Tipo_Accion = "SELECT",
+                    Descripcion = $"Visualización del dashboard por {UsuarioNombre} ({UsuarioRol})"
+                };
+
+                var registrado = await _bitacoraService.RegistrarAsync(bitacoraDto, token);
+
+                if (registrado)
+                {
+                    _logger.LogDebug("Visualización del dashboard registrada en bitácora para {Email}", UsuarioEmail);
+                }
+                else
+                {
+                    _logger.LogWarning("No se pudo registrar la visualización del dashboard en bitácora para {Email}", UsuarioEmail);
+                }
+            }
+            catch (Exception ex)
+            {
+                // No fallar la carga del dashboard si el registro en bitácora falla
+                _logger.LogWarning(ex, "Error al registrar visualización del dashboard en bitácora para {Email}", UsuarioEmail);
             }
         }
 
