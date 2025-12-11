@@ -20,9 +20,9 @@ namespace Avatar_Mod_Administración
             .WithName("RegistrarBitacora")
             .WithOpenApi();
 
-            // GET /api/bitacora?pagina=1&porPagina=10&usuario=admin...
-            group.MapGet("api/bitacora/consulta", async (
-                [FromServices] IBitacoraService service,  
+
+            group.MapGet("/consulta", async (
+                [FromServices] IBitacoraService service,
                 [FromQuery] int pagina = 1,
                 [FromQuery] int porPagina = 10,
                 [FromQuery] string? usuario = null,
@@ -30,7 +30,7 @@ namespace Avatar_Mod_Administración
                 [FromQuery] DateTime? fechaInicio = null,
                 [FromQuery] DateTime? fechaFin = null) =>
             {
-                // Crear el objeto request con los parámetros
+                // Crear el objeto request con los parámetros del Query String
                 var request = new BitacoraFiltroRequest
                 {
                     Pagina = pagina,
@@ -41,12 +41,14 @@ namespace Avatar_Mod_Administración
                     FechaHasta = fechaFin
                 };
 
+                // Llamar al método Consultar del Service, que devuelve BusinessLogicResponse
                 var response = await service.Consultar(request);
+
+                // El Service ya maneja los status codes (200, 500)
                 return Results.Json(response, statusCode: response.StatusCode);
             })
             .WithName("ConsultarBitacora")
             .WithOpenApi();
-
         }
 
     }
