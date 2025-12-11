@@ -173,23 +173,41 @@
                 </div>
                 <div class="card-body">
                     <div class="row g-3">
-                        <div class="col-md-6">
-                            <div class="card border-primary">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-people-fill fs-1 text-primary mb-2"></i>
-                                    <h3 class="mb-0 fw-bold">@Model.TotalGruposAsignados</h3>
-                                    <p class="text-muted mb-0">Grupos Asignados</p>
+                        <!-- Widget 1: Mis Grupos (ahora con enlace) -->
+                        <div class="col-md-4">
+                            <a href="/ADM13_Grupo" class="text-decoration-none">
+                                <div class="card border-primary">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-diagram-3-fill fs-1 text-primary mb-2"></i>
+                                        <h3 class="mb-0 fw-bold">@Model.TotalGruposAsignados</h3>
+                                        <p class="text-muted mb-0">Mis Grupos</p>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
                         </div>
-                        <div class="col-md-6">
-                            <div class="card border-info">
-                                <div class="card-body text-center">
-                                    <i class="bi bi-book-fill fs-1 text-info mb-2"></i>
-                                    <h3 class="mb-0 fw-bold">@Model.TotalCursosImpartidos</h3>
-                                    <p class="text-muted mb-0">Cursos que Imparto</p>
+                        <!-- Widget 2: Cursos que Imparto (ahora con enlace) -->
+                        <div class="col-md-4">
+                            <a href="/ADM10_Cursos" class="text-decoration-none">
+                                <div class="card border-info">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-book-fill fs-1 text-info mb-2"></i>
+                                        <h3 class="mb-0 fw-bold">@Model.TotalCursosImpartidos</h3>
+                                        <p class="text-muted mb-0">Cursos que Imparto</p>
+                                    </div>
                                 </div>
-                            </div>
+                            </a>
+                        </div>
+                        <!-- Widget 3: Desglose y Notas (nuevo) -->
+                        <div class="col-md-4">
+                            <a href="/Notas/Index" class="text-decoration-none">
+                                <div class="card border-success">
+                                    <div class="card-body text-center">
+                                        <i class="bi bi-clipboard-data-fill fs-1 text-success mb-2"></i>
+                                        <h3 class="mb-0 fw-bold"><i class="bi bi-pencil-square"></i></h3>
+                                        <p class="text-muted mb-0">Desglose y Notas</p>
+                                    </div>
+                                </div>
+                            </a>
                         </div>
                     </div>
                 </div>
