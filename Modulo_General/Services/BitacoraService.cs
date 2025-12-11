@@ -89,6 +89,48 @@ namespace Avatar_Mod_Administración.Services
                 (IEnumerable<Bitacora>, int) tuple = await _bitacoraRepository.Consultar(request);
                 IEnumerable<Bitacora> data = tuple.Item1;
                 int total = tuple.Item2;
+
+                var dataFormateada = data.Select((Bitacora x) => new
+                {
+                    ID_Bitacora = x.ID_Bitacora,
+                    Fecha_Registro = x.Fecha_Registro,
+                    Usuario = x.Usuario,
+                    Tipo_Accion = x.Tipo_Accion,
+                    Detalle = ParseDescripcion(x.Descripcion)
+                });
+
+                var respuesta = new
+                {
+                    TotalRegistros = total,
+                    Pagina = request.Pagina,
+                    PorPagina = request.PorPagina,
+                    Data = dataFormateada
+                };
+
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 200,
+                    Message = "Registros obtenidos correctamente.",
+                    ResponseObject = respuesta
+                };
+            }
+            catch (Exception ex)
+            {
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 500,
+                    Message = "Error al consultar bitácora: " + ex.Message
+                };
+            }
+        }
+
+        public async Task<BusinessLogicResponse> ObtenerTodas(string? usuario = null)
+        {
+            try
+            {
+                (IEnumerable<Bitacora>, int) tuple = await _bitacoraRepository.Consultar(request);
+                IEnumerable<Bitacora> data = tuple.Item1;
+                int total = tuple.Item2;
                 var dataFormateada = data.Select((Bitacora x) => new
                 {
                     ID_Bitacora = x.ID_Bitacora,
@@ -121,7 +163,6 @@ namespace Avatar_Mod_Administración.Services
             }
         }
 
-
         // Método auxiliar para validar si la descripción es JSON válido
         private bool IsValidJson(string str)
         {
@@ -135,7 +176,6 @@ namespace Avatar_Mod_Administración.Services
                 return false;
             }
         }
-
 
         private object? ParseDescripcion(string descripcionRaw)
         {
@@ -152,6 +192,5 @@ namespace Avatar_Mod_Administración.Services
                 return descripcionRaw;
             }
         }
-
     }
 }

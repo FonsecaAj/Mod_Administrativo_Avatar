@@ -11,7 +11,7 @@ namespace Avatar_Mod_Administración
         {
             var group = routes.MapGroup("/api/bitacora").WithTags(nameof(Bitacora));
 
-            // POST /api/bitacora
+            // POST /api/bitacora - Registrar nueva bitácora
             group.MapPost("/", async ([FromBody] BitacoraRequest request, [FromServices] IBitacoraService service) =>
             {
                 var response = await service.Registrar(request);
@@ -21,6 +21,7 @@ namespace Avatar_Mod_Administración
             .WithOpenApi();
 
 
+            // GET /api/bitacora/consulta - Consultar bitácoras con filtros y paginación
             group.MapGet("/consulta", async (
                 [FromServices] IBitacoraService service,
                 [FromQuery] int pagina = 1,
@@ -29,6 +30,38 @@ namespace Avatar_Mod_Administración
                 [FromQuery] string? tipoAccion = null,
                 [FromQuery] DateTime? fechaInicio = null,
                 [FromQuery] DateTime? fechaFin = null) =>
+                [FromQuery] DateTime? fechaFin = null,
+                [FromQuery] int? idModulo = null,
+                [FromQuery] string? nombreModulo = null,
+                [FromQuery] string? ordenColumna = null,
+                [FromQuery] string? ordenDireccion = null) =>
+            {
+                // Crear el objeto request con los parámetros del Query String
+                var request = new BitacoraFiltroRequest
+                {
+                    Pagina = pagina,
+                    PorPagina = porPagina,
+                    Usuario = usuario,
+                    Tipo_Accion = tipoAccion,
+                    FechaDesde = fechaInicio,
+                    FechaHasta = fechaFin,
+                    IdModulo = idModulo,
+                    NombreModulo = nombreModulo,
+                    OrdenColumna = ordenColumna,
+                    OrdenDireccion = ordenDireccion
+                };
+
+                // Llamar al método Consultar del Service, que devuelve BusinessLogicResponse
+                var response = await service.Consultar(request);
+
+                // El Service ya maneja los status codes (200, 500)
+                return Results.Json(response, statusCode: response.StatusCode);
+            })
+            .WithName("ConsultarBitacora")
+            .WithOpenApi();
+
+            // GET /api/bitacora?usuario=email@ejemplo.com - Obtener todas las bitácoras
+            group.MapGet("/", async ([FromQuery] string? usuario, [FromServices] IBitacoraService service) =>
             {
                 // Crear el objeto request con los parámetros del Query String
                 var request = new BitacoraFiltroRequest
