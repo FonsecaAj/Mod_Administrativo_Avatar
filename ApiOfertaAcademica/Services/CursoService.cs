@@ -261,7 +261,7 @@ namespace ApiACD3.Services
         {
             try
             {
-                // 1. Validación para string: verifica si la cadena es nula o está vacía/espacios en blanco.
+                // 1. Validar identificación
                 if (string.IsNullOrWhiteSpace(id))
                 {
                     return new BusinessLogicResponse
@@ -271,32 +271,30 @@ namespace ApiACD3.Services
                     };
                 }
 
-                // Se asume que _repo.ObtenerMisCursos(id) devuelve List<Curso>
-                var cursos = await _repo.ObtenerMisCursos(id);
+                // 2. Usar la NUEVA consulta con detalle desde la BD de matrícula
+                //    (ObtenerMisCursosConDetalle usa _matriculaFactory y devuelve MisCursoDto)
+                var cursos = await _repo.ObtenerMisCursosConDetalle(id);
 
-                // 2. Validación para lista: verifica si la lista es nula o está vacía (cero elementos).
+                // 3. Validar resultado
                 if (cursos == null || cursos.Count == 0)
                 {
                     return new BusinessLogicResponse
                     {
                         StatusCode = 404,
-                        // Mensaje ajustado para reflejar que no se encontraron cursos para la identificación.
                         Message = $"No se encontraron cursos para el estudiante con identificación: {id}."
                     };
                 }
 
-                // 3. Respuesta exitosa (200 OK)
+                // 4. OK
                 return new BusinessLogicResponse
                 {
                     StatusCode = 200,
                     Message = "Cursos obtenidos correctamente.",
-                    // El objeto de respuesta ahora es la lista de cursos.
-                    ResponseObject = cursos
+                    ResponseObject = cursos   // ← aquí ahora va la lista de MisCursoDto
                 };
             }
             catch (Exception ex)
             {
-                // 4. Manejo de errores internos (500)
                 return new BusinessLogicResponse
                 {
                     StatusCode = 500,
@@ -304,6 +302,7 @@ namespace ApiACD3.Services
                 };
             }
         }
+
 
 
     }

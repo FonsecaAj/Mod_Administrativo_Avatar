@@ -5,7 +5,6 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.WebHost.UseUrls("http://127.0.0.1:5088"); // Puerto diferente
 
 builder.Services.AddEndpointsApiExplorer();
 

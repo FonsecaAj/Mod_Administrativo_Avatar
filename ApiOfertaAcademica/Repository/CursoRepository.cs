@@ -148,5 +148,61 @@ namespace ApiACD3.Repository
             // Devolver la lista.
             return cursos.ToList();
         }
+
+        public async Task<List<MisCursoDto>> ObtenerMisCursosConDetalle(string identificacion)
+        {
+            // Usamos la conexión de la BD de matrícula
+            using var conn = _matriculaFactory.CreateConnection();
+
+            var sql = @"
+        SELECT DISTINCT
+            C.ID_Curso,
+            C.Codigo_Curso,
+            C.Nombre_Curso AS Nombre,
+
+            -- Datos del grupo
+            G.Nombre_Grupo AS Grupo,
+            ISNULL(
+                'Profesor ' + CAST(G.ID_Profesor AS VARCHAR(10)),
+                ''
+            ) AS Profesor,
+            ISNULL(G.Horario, '') AS Horario,
+
+            -- Periodo formateado
+            CASE 
+                WHEN P.ID_Periodo IS NULL THEN ''
+                ELSE 'Año ' 
+                     + CAST(P.[Año] AS VARCHAR(4)) 
+                     + ' - Periodo ' 
+                     + CAST(P.Numero_Periodo AS VARCHAR(2))
+            END AS Periodo,
+
+            -- ¿Es periodo actual?
+            CASE 
+                WHEN P.ID_Periodo IS NOT NULL
+                     AND GETDATE() BETWEEN P.Fecha_Inicio AND P.Fecha_Fin
+                THEN 1 
+                ELSE 0 
+            END AS EsPeriodoActual
+        FROM dbo.Estudiante  AS E
+        INNER JOIN dbo.Matricula AS M ON E.ID_Estudiante = M.ID_Estudiante
+        INNER JOIN dbo.Grupo     AS G ON M.ID_Grupo      = G.ID_Grupo
+        INNER JOIN dbo.Curso     AS C ON G.ID_Curso      = C.ID_Curso
+        LEFT  JOIN dbo.Periodo   AS P ON G.ID_Periodo    = P.ID_Periodo
+        WHERE E.Identificacion = @Identificacion;
+    ";
+
+            var resultado = await conn.QueryAsync<MisCursoDto>(
+                sql,
+                new { Identificacion = identificacion }
+            );
+
+            return resultado.ToList();
+        }
+
+
+
+
+
     }
 }
