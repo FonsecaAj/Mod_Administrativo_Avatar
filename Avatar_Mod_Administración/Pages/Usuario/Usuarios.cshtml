@@ -1,0 +1,396 @@
+﻿@page
+@using Avatar_Mod_Administración.Entities
+@model Avatar_Mod_Administración.Pages.Usuario.UsuariosModel
+@{
+    ViewData["Title"] = "Administración de Usuarios";
+    ViewData["Breadcrumb"] = "<li class='breadcrumb-item active'>Usuarios</li>";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/usuarios.css" asp-append-version="true" />
+}
+
+<div class="container usuarios-container">
+    <!-- Header -->
+    <div class="usuarios-header">
+        <h2>
+            <i class="bi bi-people-fill"></i>
+            Administración de Usuarios
+        </h2>
+        <a asp-page="/Usuario/UsuarioCrear" class="btn-crear-usuario">
+            <i class="bi bi-person-plus-fill"></i>
+            Crear Usuario
+        </a>
+    </div>
+
+    <!-- Alertas -->
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show alert-usuario" role="alert">
+            <i class="bi bi-check-circle-fill"></i>
+            <div>
+                <strong>¡Éxito!</strong>
+                <p class="mb-0">@TempData["Mensaje"]</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show alert-usuario" role="alert">
+            <i class="bi bi-exclamation-triangle-fill"></i>
+            <div>
+                <strong>Error</strong>
+                <p class="mb-0">@TempData["Error"]</p>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Card de Filtros -->
+    <div class="card filtros-card">
+        <div class="card-header">
+            <h5>
+                <i class="bi bi-funnel-fill"></i>
+                Filtros de Búsqueda
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            <i class="bi bi-credit-card"></i>
+                            Identificación
+                        </label>
+                        <input type="text" class="form-control" asp-for="FiltroIdentificacion" placeholder="Buscar por identificación" />
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">
+                            <i class="bi bi-person"></i>
+                            Nombre
+                        </label>
+                        <input type="text" class="form-control" asp-for="FiltroNombre" placeholder="Buscar por nombre" />
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="bi bi-card-list"></i>
+                            Tipo ID
+                        </label>
+                        <select class="form-select" asp-for="FiltroTipo">
+                            <option value="">Todos</option>
+                            @foreach (var tipo in Model.TiposIdentificacion)
+                            {
+                                <option value="@tipo.IdTipoIdentificacion">@tipo.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="bi bi-at"></i>
+                            Dominio
+                        </label>
+                        <select class="form-select" asp-for="FiltroDominio">
+                            <option value="">Todos</option>
+                            <option value="cuc.cr">cuc.cr</option>
+                            <option value="cuc.ac.cr">cuc.ac.cr</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="bi bi-shield-check"></i>
+                            Rol
+                        </label>
+                        <select class="form-select" asp-for="FiltroRol">
+                            <option value="">Todos</option>
+                            @foreach (var rol in Model.Roles)
+                            {
+                                <option value="@rol.IdRol">@rol.Nombre</option>
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-2">
+                        <label class="form-label">
+                            <i class="bi bi-list-ol"></i>
+                            Registros por página
+                        </label>
+                        <select class="form-select" asp-for="ElementosPorPagina" onchange="this.form.submit()">
+                            <option value="5" selected="@(Model.ElementosPorPagina == 5)">5</option>
+                            <option value="10" selected="@(Model.ElementosPorPagina == 10)">10</option>
+                            <option value="25" selected="@(Model.ElementosPorPagina == 25)">25</option>
+                            <option value="50" selected="@(Model.ElementosPorPagina == 50)">50</option>
+                        </select>
+                    </div>
+                    <div class="col-md-10 d-flex align-items-end gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-search"></i> Filtrar
+                        </button>
+                        <a asp-page="/Usuario/Usuarios" class="btn btn-secondary">
+                            <i class="bi bi-x-circle"></i> Limpiar
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabla de Usuarios -->
+    <div class="card usuarios-table-card">
+        <div class="card-body">
+            @if (Model.Usuarios.Count > 0)
+            {
+                <div class="mb-3 px-3 pt-3">
+                    <span class="text-muted">
+                        <i class="bi bi-info-circle me-1"></i>
+                        Mostrando <strong>@Model.Usuarios.Count</strong>
+                        @(Model.Usuarios.Count == 1 ? "usuario" : "usuarios")
+                    </span>
+                </div>
+            }
+
+            <div class="table-responsive">
+                <table class="table table-hover table-usuarios mb-0">
+                    <thead>
+                        <tr>
+                            <th>
+                                <a asp-page="/Usuario/Usuarios"
+                                   asp-route-OrdenarPor="Email"
+                                   asp-route-Descendente="@(Model.OrdenarPor == "Email" ? !Model.Descendente : false)"
+                                   asp-route-FiltroIdentificacion="@Model.FiltroIdentificacion"
+                                   asp-route-FiltroNombre="@Model.FiltroNombre"
+                                   asp-route-FiltroTipo="@Model.FiltroTipo"
+                                   asp-route-FiltroDominio="@Model.FiltroDominio"
+                                   asp-route-FiltroRol="@Model.FiltroRol"
+                                   asp-route-ElementosPorPagina="@Model.ElementosPorPagina">
+                                    Email @if (Model.OrdenarPor == "Email") {
+                                    <i class="bi bi-@(Model.Descendente ? "sort-down" : "sort-up")"></i>
+                                                                        }
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="Usuarios"
+                                   asp-route-OrdenarPor="TipoIdentificacion"
+                                   asp-route-Descendente="@(Model.OrdenarPor == "TipoIdentificacion" ? !Model.Descendente : false)"
+                                   asp-route-FiltroIdentificacion="@Model.FiltroIdentificacion"
+                                   asp-route-FiltroNombre="@Model.FiltroNombre"
+                                   asp-route-FiltroTipo="@Model.FiltroTipo"
+                                   asp-route-FiltroDominio="@Model.FiltroDominio"
+                                   asp-route-FiltroRol="@Model.FiltroRol"
+                                   asp-route-ElementosPorPagina="@Model.ElementosPorPagina">
+                                    Tipo ID @if (Model.OrdenarPor == "TipoIdentificacion") {
+                                    <i class="bi bi-@(Model.Descendente ? "sort-down" : "sort-up")"></i>
+                                                                        }
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="Usuarios"
+                                   asp-route-OrdenarPor="Identificacion"
+                                   asp-route-Descendente="@(Model.OrdenarPor == "Identificacion" ? !Model.Descendente : false)"
+                                   asp-route-FiltroIdentificacion="@Model.FiltroIdentificacion"
+                                   asp-route-FiltroNombre="@Model.FiltroNombre"
+                                   asp-route-FiltroTipo="@Model.FiltroTipo"
+                                   asp-route-FiltroDominio="@Model.FiltroDominio"
+                                   asp-route-FiltroRol="@Model.FiltroRol"
+                                   asp-route-ElementosPorPagina="@Model.ElementosPorPagina">
+                                    Identificación @if (Model.OrdenarPor == "Identificacion") {
+                                    <i class="bi bi-@(Model.Descendente ? "sort-down" : "sort-up")"></i>
+                                                                        }
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="Usuarios"
+                                   asp-route-OrdenarPor="Nombre"
+                                   asp-route-Descendente="@(Model.OrdenarPor == "Nombre" ? !Model.Descendente : false)"
+                                   asp-route-FiltroIdentificacion="@Model.FiltroIdentificacion"
+                                   asp-route-FiltroNombre="@Model.FiltroNombre"
+                                   asp-route-FiltroTipo="@Model.FiltroTipo"
+                                   asp-route-FiltroDominio="@Model.FiltroDominio"
+                                   asp-route-FiltroRol="@Model.FiltroRol"
+                                   asp-route-ElementosPorPagina="@Model.ElementosPorPagina">
+                                    Nombre @if (Model.OrdenarPor == "Nombre") {
+                                    <i class="bi bi-@(Model.Descendente ? "sort-down" : "sort-up")"></i>
+                                                                        }
+                                </a>
+                            </th>
+                            <th>
+                                <a asp-page="Usuarios"
+                                   asp-route-OrdenarPor="RolNombre"
+                                   asp-route-Descendente="@(Model.OrdenarPor == "RolNombre" ? !Model.Descendente : false)"
+                                   asp-route-FiltroIdentificacion="@Model.FiltroIdentificacion"
+                                   asp-route-FiltroNombre="@Model.FiltroNombre"
+                                   asp-route-FiltroTipo="@Model.FiltroTipo"
+                                   asp-route-FiltroDominio="@Model.FiltroDominio"
+                                   asp-route-FiltroRol="@Model.FiltroRol"
+                                   asp-route-ElementosPorPagina="@Model.ElementosPorPagina">
+                                    Rol @if (Model.OrdenarPor == "RolNombre") {
+                                    <i class="bi bi-@(Model.Descendente ? "sort-down" : "sort-up")"></i>
+                                                                        }
+                                </a>
+                            </th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (Model.Usuarios.Count == 0)
+                        {
+                            <tr>
+                                <td colspan="6" class="empty-state">
+                                    <i class="bi bi-inbox"></i>
+                                    <span class="text-muted">No se encontraron usuarios</span>
+                                </td>
+                            </tr>
+                        }
+                        else
+                        {
+                            @foreach (var usuario in Model.Usuarios)
+                            {
+                                <tr>
+                                    <td><strong>@usuario.Email</strong></td>
+                                    <td>@usuario.TipoIdentificacion</td>
+                                    <td>@usuario.Identificacion</td>
+                                    <td>@usuario.Nombre</td>
+                                    <td><span class="badge bg-info">@usuario.RolNombre</span></td>
+                                    <td class="text-end">
+                                        <div class="d-inline-flex gap-2">
+                                            <a asp-page="/Usuario/UsuarioDetalle" asp-route-email="@usuario.Email"
+                                               class="btn-action-usuario btn-info"
+                                               data-bs-toggle="tooltip"
+                                               title="Ver detalle">
+                                                <i class="bi bi-eye-fill"></i>
+                                            </a>
+                                            <a asp-page="/Usuario/UsuarioEditar" asp-route-email="@usuario.Email"
+                                               class="btn-action-usuario btn-warning"
+                                               data-bs-toggle="tooltip"
+                                               title="Editar usuario">
+                                                <i class="bi bi-pencil-fill"></i>
+                                            </a>
+                                            <button type="button"
+                                                    class="btn-action-usuario btn-danger"
+                                                    onclick="confirmarEliminacion('@usuario.Email')"
+                                                    data-bs-toggle="tooltip"
+                                                    title="Eliminar usuario">
+                                                <i class="bi bi-trash-fill"></i>
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paginación -->
+    @if (Model.TotalPaginas > 1)
+    {
+        <nav aria-label="Paginación" class="mt-4">
+            <ul class="pagination justify-content-center mb-0">
+                <li class="page-item @(Model.PaginaActual == 1 ? "disabled" : "")">
+                    <a class="page-link" asp-page="/Usuario/Usuarios"
+                       asp-route-PaginaActual="@(Model.PaginaActual - 1)"
+                       asp-route-OrdenarPor="@Model.OrdenarPor"
+                       asp-route-Descendente="@Model.Descendente"
+                       asp-route-FiltroIdentificacion="@Model.FiltroIdentificacion"
+                       asp-route-FiltroNombre="@Model.FiltroNombre"
+                       asp-route-FiltroTipo="@Model.FiltroTipo"
+                       asp-route-FiltroDominio="@Model.FiltroDominio"
+                       asp-route-FiltroRol="@Model.FiltroRol"
+                       asp-route-ElementosPorPagina="@Model.ElementosPorPagina">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+
+                @for (int i = Math.Max(1, Model.PaginaActual - 2); i <= Math.Min(Model.TotalPaginas, Model.PaginaActual + 2); i++)
+                {
+                    <li class="page-item @(i == Model.PaginaActual ? "active" : "")">
+                        <a class="page-link" asp-page="Usuarios"
+                           asp-route-PaginaActual="@i"
+                           asp-route-OrdenarPor="@Model.OrdenarPor"
+                           asp-route-Descendente="@Model.Descendente"
+                           asp-route-FiltroIdentificacion="@Model.FiltroIdentificacion"
+                           asp-route-FiltroNombre="@Model.FiltroNombre"
+                           asp-route-FiltroTipo="@Model.FiltroTipo"
+                           asp-route-FiltroDominio="@Model.FiltroDominio"
+                           asp-route-FiltroRol="@Model.FiltroRol"
+                           asp-route-ElementosPorPagina="@Model.ElementosPorPagina">
+                            @i
+                        </a>
+                    </li>
+                }
+
+                <li class="page-item @(Model.PaginaActual == Model.TotalPaginas ? "disabled" : "")">
+                    <a class="page-link" asp-page="/Usuario/Usuarios"
+                       asp-route-PaginaActual="@(Model.PaginaActual + 1)"
+                       asp-route-OrdenarPor="@Model.OrdenarPor"
+                       asp-route-Descendente="@Model.Descendente"
+                       asp-route-FiltroIdentificacion="@Model.FiltroIdentificacion"
+                       asp-route-FiltroNombre="@Model.FiltroNombre"
+                       asp-route-FiltroTipo="@Model.FiltroTipo"
+                       asp-route-FiltroDominio="@Model.FiltroDominio"
+                       asp-route-FiltroRol="@Model.FiltroRol"
+                       asp-route-ElementosPorPagina="@Model.ElementosPorPagina">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+            </ul>
+            <p class="text-center mt-2 text-muted">
+                Mostrando @((Model.PaginaActual - 1) * Model.ElementosPorPagina + 1) a @(Math.Min(Model.PaginaActual * Model.ElementosPorPagina, Model.TotalRegistros)) de @Model.TotalRegistros registros
+            </p>
+        </nav>
+    }
+</div>
+
+<!-- Modal de confirmación -->
+<div class="modal fade modal-eliminar-usuario" id="modalEliminar" tabindex="-1" aria-labelledby="modalEliminarLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalEliminarLabel">
+                    <i class="bi bi-exclamation-triangle-fill"></i>
+                    Confirmar eliminación
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p class="mb-3">
+                    ¿Está seguro que desea eliminar el usuario
+                    <strong id="emailEliminar"></strong>?
+                </p>
+
+                <div class="alert alert-warning alert-usuario mb-3">
+                    <i class="bi bi-info-circle-fill"></i>
+                    <div>
+                        <strong>Importante:</strong> Esta acción eliminará permanentemente el usuario del sistema.
+                    </div>
+                </div>
+
+                <p class="text-danger mb-0">
+                    <i class="bi bi-exclamation-triangle-fill me-2"></i>
+                    <strong>Esta acción no se puede deshacer.</strong>
+                </p>
+            </div>
+            <div class="modal-footer">
+                <form method="post" id="formEliminar">
+                    <input type="hidden" name="email" id="emailInput" />
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                            <i class="bi bi-x-circle"></i> Cancelar
+                        </button>
+                        <button type="submit" asp-page-handler="Eliminar" class="btn btn-danger">
+                            <i class="bi bi-trash-fill"></i> Eliminar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/usuarios.js" asp-append-version="true"></script>
+}

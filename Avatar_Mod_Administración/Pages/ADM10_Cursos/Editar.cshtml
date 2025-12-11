@@ -1,0 +1,37 @@
+﻿@page "{id:int}"
+@model Avatar_Mod_Administracion.Pages.ADM10_Cursos.EditarModel
+@{
+    ViewData["Title"] = "Editar Curso";
+}
+
+<h2>Editar Curso</h2>
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+  
+    <input type="hidden" asp-for="CursoEditado.ID_Curso" />
+
+    <div class="mb-3">
+        <label>Identificador</label>
+        <input asp-for="CursoEditado.Identificador" class="form-control" readonly />
+    </div>
+
+    <div class="mb-3">
+        <label>Nombre</label>
+        <input asp-for="CursoEditado.Nombre" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Nivel</label>
+        <input asp-for="CursoEditado.Nivel" type="number" class="form-control" />
+    </div>
+
+    <div class="mb-3">
+        <label>Carrera</label>
+        <select asp-for="CursoEditado.ID_Carrera" asp-items="Model.Carreras" class="form-select"></select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Actualizar</button>
+    <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+</form>

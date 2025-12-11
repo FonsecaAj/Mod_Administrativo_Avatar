@@ -1,0 +1,291 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.ADM15_Matricula.IndexModel
+@{
+    ViewData["Title"] = "Matricular Estudiantes";
+}
+
+<link rel="stylesheet" href="~/css/cursos.css" />
+<link rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<div class="cursos-container">
+    <div class="cursos-header">
+        <h2>
+            <i class="fas fa-user-graduate"></i>Matricular Estudiantes
+        </h2>
+    </div>
+
+    @if (TempData["Mensaje"] != null)
+    {
+        <div class="alert alert-success alert-curso alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i>
+            @TempData["Mensaje"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["MensajeError"] != null)
+    {
+        <div class="alert alert-danger alert-curso alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i>
+            @TempData["MensajeError"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- === SECCIÓN 1: Registrar nueva matrícula === -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5><i class="fas fa-plus-circle"></i>Registrar matrícula</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" class="curso-form">
+                <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="NuevaMatricula.Identificacion" class="form-label">
+                            <i class="fas fa-id-card"></i>Identificación del estudiante:
+                        </label>
+                        <input asp-for="NuevaMatricula.Identificacion" class="form-control"
+                               placeholder="Digite la cédula / identificación" />
+                        <span asp-validation-for="NuevaMatricula.Identificacion" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="NuevaMatricula.ID_Periodo" class="form-label">
+                            <i class="fas fa-calendar-alt"></i>Periodo:
+                        </label>
+                        <select asp-for="NuevaMatricula.ID_Periodo"
+                                asp-items="Model.Periodos"
+                                class="form-select">
+                            <option value="">Seleccione un periodo</option>
+                        </select>
+                        <span asp-validation-for="NuevaMatricula.ID_Periodo" class="text-danger"></span>
+                    </div>
+
+                    <div class="col-md-4">
+                        <label asp-for="NuevaMatricula.ID_Curso" class="form-label">
+                            <i class="fas fa-book"></i>Curso:
+                        </label>
+                        <select asp-for="NuevaMatricula.ID_Curso"
+                                asp-items="Model.Cursos"
+                                class="form-select">
+                            <option value="">Seleccione un curso</option>
+                        </select>
+                        <span asp-validation-for="NuevaMatricula.ID_Curso" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label asp-for="NuevaMatricula.ID_Grupo" class="form-label">
+                            <i class="fas fa-users"></i>Grupo:
+                        </label>
+                        <select asp-for="NuevaMatricula.ID_Grupo"
+                                class="form-select"
+                                id="NuevaMatricula_ID_Grupo">
+                            <option value="">Seleccione un grupo</option>
+                            @foreach (var g in Model.GruposCrear)
+                            {
+                                <option value="@g.ID_Grupo"
+                                        data-curso-id="@g.ID_Curso">
+                                    @g.Nombre_Curso - @g.Nombre_Grupo (@g.Cupo_Disponible cupos, @g.EstadoGrupo)
+                                </option>
+                            }
+                        </select>
+                        <span asp-validation-for="NuevaMatricula.ID_Grupo" class="text-danger"></span>
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end">
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check-circle"></i>Confirmar matrícula
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- === SECCIÓN 2: Filtros de listado === -->
+    <div class="filtros-card card mb-3">
+        <div class="card-header">
+            <h5><i class="fas fa-filter"></i>Filtrar matriculados por curso / grupo</h5>
+        </div>
+        <div class="card-body">
+            <form method="get" class="curso-form">
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-book"></i>Curso:
+                        </label>
+                        <select asp-for="CursoFiltro"
+                                asp-items="Model.Cursos"
+                                class="form-select"
+                                id="CursoFiltro">
+                            <option value="">Todos los cursos</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="fas fa-users"></i>Grupo:
+                        </label>
+                        <select asp-for="GrupoFiltro"
+                                class="form-select"
+                                id="GrupoFiltro">
+                            <option value="">Todos los grupos</option>
+                            @foreach (var g in Model.GruposFiltro)
+                            {
+                                <option value="@g.ID_Grupo"
+                                        data-curso-id="@g.ID_Curso">
+                                    @g.Nombre_Curso - @g.Nombre_Grupo (@g.Cupo_Disponible cupos, @g.EstadoGrupo)
+                                </option>
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row mt-3">
+                    <div class="col-md-12 d-flex justify-content-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-search"></i>Aplicar filtros
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- === SECCIÓN 3: Listado de matriculados === -->
+    <div class="cursos-table-card card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i>Listado de estudiantes matriculados
+            </h5>
+
+            @if (Model.Matriculados.Any())
+            {
+                <a asp-page-handler="ExportarCsv"
+                   asp-route-cursoFiltro="@Model.CursoFiltro"
+                   asp-route-grupoFiltro="@Model.GrupoFiltro"
+                   class="btn btn-outline-secondary btn-sm">
+                    <i class="fas fa-file-csv"></i> Exportar CSV
+                </a>
+            }
+        </div>
+        <div class="card-body">
+            <table class="table table-cursos">
+                <thead>
+                    <tr>
+                        <th>Identificación</th>
+                        <th>Nombre completo</th>
+                        <th>Curso</th>
+                        <th>Grupo</th>
+                        <th>Fecha de matrícula</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Matriculados.Any())
+                    {
+                        foreach (var m in Model.Matriculados)
+                        {
+                            <tr>
+                                <td>@m.Identificacion</td>
+                                <td>@m.NombreCompleto</td>
+                                <td>@m.NombreCurso</td>
+                                <td>@m.NombreGrupo</td>
+                                <td>@m.Fecha_Matricula.ToString("dd/MM/yyyy")</td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="5" class="text-center">
+                                <div class="empty-state">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p class="text-muted">
+                                        No hay matrículas que coincidan con los filtros seleccionados.
+                                    </p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+
+            // ====== REGISTRAR MATRÍCULA (arriba) ======
+            const selectCursoCrear = document.getElementById('NuevaMatricula_ID_Curso');
+            const selectGrupoCrear = document.getElementById('NuevaMatricula_ID_Grupo');
+
+            // ====== FILTROS (abajo) ======
+            const selectCursoFiltro = document.getElementById('CursoFiltro');
+            const selectGrupoFiltro = document.getElementById('GrupoFiltro');
+
+            function filtrarGruposPorCurso(selectGrupos, idCurso) {
+                if (!selectGrupos) return;
+
+                const numCurso = parseInt(idCurso, 10);
+
+                Array.from(selectGrupos.options).forEach(opt => {
+                    if (opt.value === "") {
+                        // opción "Seleccione..." o "Todos los grupos"
+                        opt.hidden = false;
+                        return;
+                    }
+
+                    const cursoOpt = parseInt(opt.dataset.cursoId || "0", 10);
+
+                    if (!numCurso || Number.isNaN(numCurso)) {
+                        opt.hidden = false; // sin curso → mostrar todos
+                    } else {
+                        opt.hidden = (cursoOpt !== numCurso);
+                    }
+                });
+
+                // Si el grupo seleccionado ya no aplica, resetear
+                const selected = selectGrupos.selectedOptions[0];
+                if (selected && selected.hidden) {
+                    selectGrupos.value = "";
+                }
+            }
+
+            // Eventos para registrar matrícula
+            if (selectCursoCrear && selectGrupoCrear) {
+                selectCursoCrear.addEventListener('change', function () {
+                    filtrarGruposPorCurso(selectGrupoCrear, this.value);
+                });
+
+                // Si viene ya seleccionado al entrar (por validación), filtrar
+                if (selectCursoCrear.value) {
+                    filtrarGruposPorCurso(selectGrupoCrear, selectCursoCrear.value);
+                }
+            }
+
+            // Eventos para filtros de listado
+            if (selectCursoFiltro && selectGrupoFiltro) {
+                selectCursoFiltro.addEventListener('change', function () {
+                    filtrarGruposPorCurso(selectGrupoFiltro, this.value);
+                });
+
+                // Al cargar la página respetar valores de filtros actuales
+                if (selectCursoFiltro.value) {
+                    filtrarGruposPorCurso(selectGrupoFiltro, selectCursoFiltro.value);
+                    const grupoActual = '@(Model.GrupoFiltro?.ToString() ?? "")';
+                    if (grupoActual) {
+                        selectGrupoFiltro.value = grupoActual;
+                    }
+                }
+            }
+        });
+    </script>
+}

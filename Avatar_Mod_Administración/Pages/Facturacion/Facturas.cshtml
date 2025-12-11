@@ -4,88 +4,450 @@
     ViewData["Title"] = "Administración de Facturas";
 }
 
-<h1 class="display-6 mb-4">Administración de Facturas</h1>
+<link rel="stylesheet" href="~/css/facturas.css" />
+<!-- Incluir Font Awesome para los iconos -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-@if (Model.ErrorMessage != null)
-{
-    <div class="alert alert-danger">@Model.ErrorMessage</div>
-}
-else if (Model.Message != null)
-{
-    <div class="alert alert-info">@Model.Message</div>
-}
-
-<div class="row g-4">
-    <div class="col-md-6">
-        <div class="card p-4 shadow-sm">
-            <h5>🧾 Crear Factura</h5>
-            <form method="post" asp-page-handler="Crear">
-                <div class="mb-3">
-                    <label class="form-label">Identificación del Estudiante</label>
-                    <input asp-for="Identificacion" class="form-control" placeholder="Ej: 305670111" />
-                </div>
-                <button type="submit" class="btn btn-primary">Crear Factura</button>
-            </form>
-        </div>
+<div class="facturas-container">
+    <div class="facturas-header">
+        <h1>
+            <i class="fas fa-file-invoice-dollar"></i>Administración de Facturas
+        </h1>
     </div>
 
-    <div class="col-md-6">
-        <div class="card p-4 shadow-sm">
-            <h5>♻️ Reversar Factura</h5>
-            <form method="post" asp-page-handler="Reversar" onsubmit="return confirm('¿Reversar esta factura?');">
-                <div class="mb-3">
-                    <label class="form-label">ID Factura</label>
-                    <input asp-for="ID_Factura" type="number" class="form-control" placeholder="Ej: 5" />
-                </div>
-                <button type="submit" class="btn btn-danger">Reversar</button>
-            </form>
-        </div>
-    </div>
-</div>
-
-<hr class="my-4" />
-
-<div class="card p-4 shadow-sm">
-    <h5>🔍 Consultar Factura</h5>
-    <form method="post" asp-page-handler="Consultar">
-        <div class="mb-3 d-flex" style="max-width: 350px;">
-            <input asp-for="ID_Factura" type="number" class="form-control me-2" placeholder="ID Factura" />
-            <button type="submit" class="btn btn-secondary">Buscar</button>
-        </div>
-    </form>
-
-    @if (Model.Factura != null)
+    @if (Model.ErrorMessage != null)
     {
-        <h6 class="mt-3">Detalle de Factura</h6>
-        <table class="table table-bordered mt-2">
-            <tr><th>ID</th><td>@Model.Factura.ID_Factura</td></tr>
-            <tr><th>Estudiante</th><td>@Model.Factura.Identificacion_Estudiante</td></tr>
-            <tr><th>Fecha</th><td>@Model.Factura.Fecha_Emision.ToString("dd/MM/yyyy")</td></tr>
-            <tr><th>Monto Base</th><td>@Model.Factura.Monto_Base.ToString("C")</td></tr>
-            <tr><th>Impuesto</th><td>@Model.Factura.Impuesto.ToString("C")</td></tr>
-            <tr><th>Total</th><td>@Model.Factura.Total.ToString("C")</td></tr>
-            <tr><th>Estado</th><td>@Model.Factura.Estado</td></tr>
-        </table>
-
-        <h6>Detalle</h6>
-        <table class="table table-sm table-striped">
-            <thead>
-                <tr>
-                    <th>ID Detalle</th>
-                    <th>Descripción</th>
-                    <th>Monto</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var d in Model.Factura.Detalles)
-                {
-                    <tr>
-                        <td>@d.ID_Detalle</td>
-                        <td>@d.Descripcion</td>
-                        <td>@d.Monto.ToString("C")</td>
-                    </tr>
-                }
-            </tbody>
-        </table>
+        <div class="alert alert-danger alert-factura">
+            <i class="fas fa-exclamation-circle"></i>@Model.ErrorMessage
+        </div>
     }
+    else if (Model.Message != null)
+    {
+        <div class="alert alert-success alert-factura">
+            <i class="fas fa-check-circle"></i>@Model.Message
+        </div>
+    }
+
+    <div class="funcionalidades-grid">
+        <div class="funcionalidad-card card">
+            <div class="card-header">
+                <h5><i class="fas fa-plus-circle"></i>Crear Factura</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" asp-page-handler="Crear" class="factura-form">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-id-card"></i>Identificación del Estudiante
+                        </label>
+                        <input asp-for="Identificacion" class="form-control" placeholder="Ej: 305670111" />
+                    </div>
+                    <button type="submit" class="btn-crear-factura w-100">
+                        <i class="fas fa-plus"></i>Crear Factura
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <div class="funcionalidad-card card">
+            <div class="card-header">
+                <h5><i class="fas fa-undo-alt"></i>Reversar Factura</h5>
+            </div>
+            <div class="card-body">
+                <form id="formReversar" method="post" asp-page-handler="Reversar" class="factura-form">
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-hashtag"></i>ID Factura
+                        </label>
+                        <input asp-for="ID_Factura" type="number" class="form-control" placeholder="Ej: 5" />
+                    </div>
+                    <button type="button" class="btn-reversar-factura w-100" onclick="abrirModalReversar()">
+                        <i class="fas fa-undo"></i>Reversar Factura
+                    </button>
+                    <input type="hidden" asp-for="Motivo" id="inputMotivo" />
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="listado-card card">
+        <div class="card-header">
+            <h5><i class="fas fa-list"></i>Listado de Facturas por Periodo y Estado</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="Listar" id="formListarFacturas" class="factura-form">
+                <div class="filtros-row">
+                    <div class="row g-3 align-items-end">
+                        <div class="col-md-3">
+                            <label asp-for="FechaInicio" class="form-label">
+                                <i class="fas fa-calendar-plus"></i>Fecha Inicio
+                            </label>
+                            <input asp-for="FechaInicio" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="FechaFin" class="form-label">
+                                <i class="fas fa-calendar-minus"></i>Fecha Fin
+                            </label>
+                            <input asp-for="FechaFin" type="date" class="form-control" />
+                        </div>
+                        <div class="col-md-3">
+                            <label asp-for="EstadoFiltro" class="form-label">
+                                <i class="fas fa-filter"></i>Estado
+                            </label>
+                            <select asp-for="EstadoFiltro" class="form-select">
+                                <option value="">TODOS</option>
+                                <option value="Pendiente">Pendiente</option>
+                                <option value="Pagada">Pagada</option>
+                                <option value="Anulada">Anulada</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <button type="submit" class="btn btn-info w-100">
+                                <i class="fas fa-search"></i>Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+            @if (Model.FacturasListado != null && Model.FacturasListado.Any())
+            {
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar"></i>Resultados
+                        <span class="badge bg-primary" id="totalFilas">@Model.FacturasListado.Count()</span>
+                    </h6>
+                </div>
+
+                <div class="facturas-table-card card">
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-facturas" id="tablaFacturas">
+                                <thead>
+                                    <tr>
+                                        <th onclick="ordenarPor(0)">ID <i class="fas fa-sort"></i></th>
+                                        <th onclick="ordenarPor(1)">Identificación <i class="fas fa-sort"></i></th>
+                                        <th onclick="ordenarPor(2)">Fecha <i class="fas fa-sort"></i></th>
+                                        <th onclick="ordenarPor(3)">Total <i class="fas fa-sort"></i></th>
+                                        <th onclick="ordenarPor(4)">Estado <i class="fas fa-sort"></i></th>
+                                        <th>Acción</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var f in Model.FacturasListado)
+                                    {
+                                        <tr>
+                                            <td><strong>@f.ID_Factura</strong></td>
+                                            <td>@f.Identificacion_Estudiante</td>
+                                            <td>@f.Fecha_Emision.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>
+                                                <span class="fw-bold text-success">@f.Total.ToString("C")</span>
+                                            </td>
+                                            <td>
+                                                <span class="badge @(f.Estado == "Pagada" ? "bg-success" : f.Estado == "Anulada" ? "bg-danger" : "bg-warning")">
+                                                    @f.Estado
+                                                </span>
+                                            </td>
+                                            <td>
+                                                <form method="post" asp-page-handler="Consultar" class="d-inline">
+                                                    <input type="hidden" asp-for="FechaInicio" />
+                                                    <input type="hidden" asp-for="FechaFin" />
+                                                    <input type="hidden" asp-for="EstadoFiltro" />
+                                                    <input type="hidden" asp-for="ID_Factura" value="@f.ID_Factura" />
+                                                    <button type="submit" class="btn-action-factura btn-outline-secondary" data-bs-toggle="tooltip" title="Ver detalle de factura">
+                                                        <i class="fas fa-eye"></i>Ver Detalle
+                                                    </button>
+                                                </form>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="pagination-facturas">
+                            <button id="btnAnterior" type="button" class="btn btn-outline-secondary">
+                                <i class="fas fa-chevron-left"></i>Anterior
+                            </button>
+                            <span id="paginaInfo" class="pagina-info"></span>
+                            <button id="btnSiguiente" type="button" class="btn btn-outline-secondary">
+                                Siguiente<i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+            else if (Model.FacturasListado != null && !string.IsNullOrEmpty(Model.FechaInicio.ToString()) && !string.IsNullOrEmpty(Model.FechaFin.ToString()))
+            {
+                <div class="empty-state">
+                    <i class="fas fa-search"></i>
+                    <p class="text-muted">No se encontraron facturas con los filtros seleccionados.</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="detalle-factura-card card mt-4">
+        <div class="card-header">
+            <h5><i class="fas fa-search"></i>Consultar Factura por ID</h5>
+        </div>
+        <div class="card-body">
+            <form method="post" asp-page-handler="Consultar" class="factura-form">
+                <div class="mb-3 d-flex" style="max-width: 350px;">
+                    <input type="hidden" asp-for="FechaInicio" />
+                    <input type="hidden" asp-for="FechaFin" />
+                    <input type="hidden" asp-for="EstadoFiltro" />
+                    <input asp-for="ID_Factura" type="number" class="form-control me-2" placeholder="ID Factura" />
+                    <button type="submit" class="btn btn-secondary">
+                        <i class="fas fa-search"></i>Buscar
+                    </button>
+                </div>
+            </form>
+
+            @if (Model.Factura != null)
+            {
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6 class="mb-3">
+                            <i class="fas fa-file-invoice"></i>Detalle de Factura #@Model.Factura.ID_Factura
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-bordered">
+                                <tr><th>ID</th><td>@Model.Factura.ID_Factura</td></tr>
+                                <tr><th>Estudiante</th><td>@Model.Factura.Identificacion_Estudiante</td></tr>
+                                <tr><th>Fecha</th><td>@Model.Factura.Fecha_Emision.ToString("dd/MM/yyyy")</td></tr>
+                                <tr><th>Monto Base</th><td>@Model.Factura.Monto_Base.ToString("C")</td></tr>
+                                <tr><th>Impuesto</th><td>@Model.Factura.Impuesto.ToString("C")</td></tr>
+                                <tr><th>Total</th><td class="fw-bold text-success">@Model.Factura.Total.ToString("C")</td></tr>
+                                <tr>
+                                    <th>Estado</th>
+                                    <td>
+                                        <span class="badge @(Model.Factura.Estado == "Pagada" ? "bg-success" : Model.Factura.Estado == "Anulada" ? "bg-danger" : "bg-warning")">
+                                            @Model.Factura.Estado
+                                        </span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6 class="mb-3">
+                            <i class="fas fa-list-ul"></i>Detalle de Conceptos
+                        </h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-striped">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>ID Detalle</th>
+                                        <th>Descripción</th>
+                                        <th>Monto</th>
+                                        <th>Detalle</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var d in Model.Factura.Detalles)
+                                    {
+                                        <tr>
+                                            <td>@d.ID_Detalle</td>
+                                            <td>@d.Descripcion</td>
+                                            <td>@d.Monto.ToString("C")</td>
+                                            <td>@d.Detalle</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
 </div>
+
+<!-- Modal de Reversión -->
+<div class="modal fade" id="modalReversar" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content modal-reversar-factura">
+            <div class="modal-header">
+                <h5 class="modal-title">
+                    <i class="fas fa-exclamation-triangle"></i>Confirmar reversión
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Estás a punto de <strong>reversar la factura</strong>. Esta acción no se puede deshacer.</p>
+                <div class="mb-3">
+                    <label for="motivo" class="form-label fw-semibold">
+                        <i class="fas fa-comment"></i>Motivo de reversión
+                    </label>
+                    <textarea id="motivo" class="form-control" rows="3" placeholder="Describa brevemente el motivo..." required></textarea>
+                </div>
+                <div id="errorModalMsg" class="text-danger small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarReversion()">
+                    <i class="fas fa-undo"></i>Confirmar Reversión
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modal;
+        // ⭐ Variables para Paginación y Ordenamiento (Adaptadas)
+        let paginaActual = 1;
+        const filasPorPagina = 10;
+        let ordenColumna = -1;
+        let ordenAsc = true;
+        const tablaID = "tablaFacturas"; // ID de la tabla de facturas
+
+        document.addEventListener("DOMContentLoaded", () => {
+            modal = new bootstrap.Modal(document.getElementById("modalReversar"));
+
+            // Inicializar campos de fecha al valor de las propiedades del modelo si están vacíos
+            const today = new Date().toISOString().split('T')[0];
+            const defaultStart = new Date();
+            defaultStart.setDate(defaultStart.getDate() - 30);
+            const defaultStartISO = defaultStart.toISOString().split('T')[0];
+
+            if (!document.getElementById("FechaInicio").value) {
+                document.getElementById("FechaInicio").value = defaultStartISO;
+            }
+            if (!document.getElementById("FechaFin").value) {
+                document.getElementById("FechaFin").value = today;
+            }
+
+            // Iniciar Paginación si la tabla existe
+            if (document.getElementById(tablaID)) {
+                mostrarPagina();
+                document.getElementById("btnAnterior").addEventListener("click", anteriorPagina);
+                document.getElementById("btnSiguiente").addEventListener("click", siguientePagina);
+            }
+        });
+
+        // ============================
+        // Paginación y Ordenamiento
+        // ============================
+
+        function mostrarPagina() {
+            const filas = document.querySelectorAll(`#${tablaID} tbody tr`);
+            const totalFilas = filas.length;
+            const totalPaginas = Math.ceil(totalFilas / filasPorPagina);
+
+            // Actualizar el total de resultados mostrado
+            const totalFilasSpan = document.getElementById("totalFilas");
+            if (totalFilasSpan) {
+                totalFilasSpan.innerText = totalFilas;
+            }
+
+            filas.forEach((fila, i) => {
+                fila.style.display = (i >= (paginaActual - 1) * filasPorPagina && i < paginaActual * filasPorPagina)
+                    ? "" : "none";
+            });
+
+            const infoSpan = document.getElementById("paginaInfo");
+            if (infoSpan) {
+                 infoSpan.innerText = `Página ${paginaActual} de ${totalPaginas}`;
+            }
+
+            const btnAnt = document.getElementById("btnAnterior");
+            const btnSig = document.getElementById("btnSiguiente");
+
+            if (btnAnt) btnAnt.disabled = paginaActual === 1;
+            if (btnSig) btnSig.disabled = paginaActual === totalPaginas || totalPaginas === 0;
+        }
+
+        function siguientePagina() {
+            const filas = document.querySelectorAll(`#${tablaID} tbody tr`);
+            const totalPaginas = Math.ceil(filas.length / filasPorPagina);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                mostrarPagina();
+            }
+        }
+
+        function anteriorPagina() {
+            if (paginaActual > 1) {
+                paginaActual--;
+                mostrarPagina();
+            }
+        }
+
+        function ordenarPor(indice) {
+            const tabla = document.getElementById(tablaID);
+            const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+
+            // Lógica de ordenamiento: Cambiar dirección si se hace clic en la misma columna
+            const multiplicador = (ordenColumna === indice && ordenAsc) ? -1 : 1;
+            ordenColumna = indice;
+            ordenAsc = multiplicador === 1;
+
+            filas.sort((a, b) => {
+                // Se usa innerText para obtener el valor de la celda
+                const valorA = a.children[indice].innerText.toLowerCase();
+                const valorB = b.children[indice].innerText.toLowerCase();
+
+                // Intenta convertir a número para ordenar por valor numérico (útil para ID y Monto)
+                // Se limpia el string de caracteres no numéricos excepto el punto decimal y la coma
+                const numA = parseFloat(valorA.replace(/[^0-9.,]/g, '').replace(',', '.'));
+                const numB = parseFloat(valorB.replace(/[^0-9.,]/g, '').replace(',', '.'));
+
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return (numA - numB) * multiplicador;
+                }
+
+                // Para ordenar fechas o cadenas
+                return valorA.localeCompare(valorB, 'es') * multiplicador;
+            });
+
+            const cuerpo = tabla.querySelector("tbody");
+            cuerpo.innerHTML = "";
+            filas.forEach(f => cuerpo.appendChild(f));
+
+            paginaActual = 1;
+            mostrarPagina();
+        }
+
+        // ============================
+        // Funciones de Reversión (Modal)
+        // ============================
+
+        function abrirModalReversar() {
+            const id = document.querySelector("#ID_Factura").value;
+            if (!id || parseInt(id) <= 0) {
+                alert("Debe ingresar un ID de factura válido antes de continuar.");
+                return;
+            }
+            // Limpiar campos y mensajes de error
+            document.getElementById("motivo").value = "";
+            document.getElementById("errorModalMsg").innerText = "";
+            modal.show();
+        }
+
+        function confirmarReversion() {
+            const motivo = document.getElementById("motivo").value.trim();
+            if (!motivo) {
+                document.getElementById("errorModalMsg").innerText = "Por favor, indique un motivo antes de continuar.";
+                return;
+            }
+
+            const form = document.getElementById("formReversar");
+            let hiddenMotivo = document.getElementById("inputMotivo");
+
+            if (!hiddenMotivo) {
+                hiddenMotivo = document.createElement("input");
+                hiddenMotivo.type = "hidden";
+                hiddenMotivo.name = "Motivo";
+                hiddenMotivo.id = "inputMotivo";
+                form.appendChild(hiddenMotivo);
+            }
+
+            hiddenMotivo.value = motivo;
+
+            modal.hide();
+            form.submit();
+        }
+    </script>
+}

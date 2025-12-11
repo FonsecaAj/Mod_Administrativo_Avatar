@@ -28,11 +28,12 @@ namespace ADM_Pagos
             group.MapPut("/{idPago}/reversar", async (
                 [FromHeader(Name = "Authorization")] string? authorization,
                 int idPago,
+                [FromBody] string detalle,
                 [FromServices] IPagoService service) =>
-            {
-                var resp = await service.ReversarPagoAsync(idPago, authorization);
-                return Results.Json(resp, statusCode: resp.StatusCode);
-            })
+                        {
+                            var resp = await service.ReversarPagoAsync(idPago, detalle, authorization);
+                            return Results.Json(resp, statusCode: resp.StatusCode);
+                        })
             .WithName("ReversarPago")
             .WithOpenApi();
 

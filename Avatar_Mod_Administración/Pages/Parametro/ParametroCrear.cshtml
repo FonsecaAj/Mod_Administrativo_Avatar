@@ -1,0 +1,144 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.Parametro.ParametroCrearModel
+@{
+    ViewData["Title"] = "Crear Parámetro";
+    ViewData["Breadcrumb"] = "<li class='breadcrumb-item'><a href='/Parametro/Parametros'>Parámetros</a></li><li class='breadcrumb-item active'>Crear Parámetro</li>";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/parametros.css" asp-append-version="true" />
+}
+
+<div class="container parametros-container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <!-- Card Principal -->
+            <div class="card parametro-form-card">
+                <div class="card-header">
+                    <h4>
+                        <i class="bi bi-gear-fill"></i>
+                        Crear Nuevo Parámetro
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="parametro-form">
+                        <!-- Errores de validación -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-parametro">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div>
+                                <strong>Error de validación</strong>
+                                <p class="mb-0">Por favor, corrija los errores e intente nuevamente.</p>
+                            </div>
+                        </div>
+
+                        <!-- Alerta informativa -->
+                        <div class="alert alert-info alert-parametro">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <div>
+                                <strong>Importante:</strong>
+                                El ID del parámetro debe ser único y usar el formato correcto (mayúsculas y guiones bajos).
+                            </div>
+                        </div>
+
+                        <!-- Campo ID -->
+                        <div class="mb-4">
+                            <label asp-for="Input.IdParametro" class="form-label">
+                                <i class="bi bi-tag-fill"></i>
+                                ID del Parámetro
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Input.IdParametro"
+                                   class="form-control"
+                                   placeholder="Ej: JWT_SECRET, MAX_LOGIN"
+                                   maxlength="10"
+                                   style="text-transform: uppercase;"
+                                   autofocus />
+                            <div class="form-text">
+                                <i class="bi bi-check-circle text-success"></i>
+                                Máximo 10 caracteres. Solo letras mayúsculas y guiones bajos
+                            </div>
+                            <span asp-validation-for="Input.IdParametro" class="text-danger"></span>
+                        </div>
+
+                        <!-- Campo Valor -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Valor" class="form-label">
+                                <i class="bi bi-file-text"></i>
+                                Valor del Parámetro
+                                <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="Input.Valor"
+                                      class="form-control"
+                                      rows="4"
+                                      placeholder="Ingrese el valor del parámetro"
+                                      maxlength="500"></textarea>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Máximo 500 caracteres
+                            </div>
+                            <span asp-validation-for="Input.Valor" class="text-danger"></span>
+                        </div>
+
+                        <!-- Ejemplos de parámetros -->
+                        <div class="alert alert-info alert-parametro">
+                            <i class="bi bi-lightbulb-fill"></i>
+                            <div>
+                                <strong>Ejemplos de parámetros comunes:</strong>
+                                <ul class="mb-0 mt-2">
+                                    <li>
+                                        <code onclick="usarSugerencia('JWTEXPMIN')" style="cursor: pointer;">JWTEXPMIN</code>
+                                        - Tiempo de expiración del JWT en minutos
+                                    </li>
+                                    <li>
+                                        <code onclick="usarSugerencia('REFEXPMIN')" style="cursor: pointer;">REFEXPMIN</code>
+                                        - Tiempo de expiración del refresh token en minutos
+                                    </li>
+                                    <li>
+                                        <code onclick="usarSugerencia('MAX_LOGIN')" style="cursor: pointer;">MAX_LOGIN</code>
+                                        - Número máximo de intentos de login
+                                    </li>
+                                    <li>
+                                        <code onclick="usarSugerencia('SMTP_HOST')" style="cursor: pointer;">SMTP_HOST</code>
+                                        - Host del servidor SMTP
+                                    </li>
+                                    <li>
+                                        <code onclick="usarSugerencia('SMTP_PORT')" style="cursor: pointer;">SMTP_PORT</code>
+                                        - Puerto del servidor SMTP
+                                    </li>
+                                </ul>
+                                <small class="text-muted mt-2 d-block">
+                                    <i class="bi bi-hand-index"></i> Haz clic en cualquier código para usarlo
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Nota de campos requeridos -->
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check"></i>
+                                Los campos marcados con <span class="text-danger fw-bold">*</span> son obligatorios
+                            </small>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="form-actions">
+                            <a asp-page="/Parametro/Parametros" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i>
+                                Crear Parámetro
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/parametros.js" asp-append-version="true"></script>
+}

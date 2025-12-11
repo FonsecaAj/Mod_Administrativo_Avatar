@@ -4,90 +4,206 @@
     ViewData["Title"] = "Historial Académico";
 }
 
-<h1 class="display-6 mb-4">Consulta de Promedios por Estudiante</h1>
+<link rel="stylesheet" href="~/css/historialacademico.css" />
 
-<form method="get" class="card p-4 shadow-sm mb-4">
-    <div class="row g-3 align-items-end">
-        <div class="col-md-3">
-            <label class="form-label">Tipo de identificación</label>
-            <select name="Tipo" class="form-select">
-                <option value="">Seleccione...</option>
-                <option value="cedula" selected="@("cedula" == Model.Tipo)">Cédula</option>
-                <option value="pasaporte" selected="@("pasaporte" == Model.Tipo)">Pasaporte</option>
-            </select>
-        </div>
-        <div class="col-md-4">
-            <label class="form-label">Identificación</label>
-            <input name="Identificacion" class="form-control" value="@Model.Identificacion" placeholder="Ej: 305670111" />
-        </div>
-        <div class="col-md-2 d-grid">
-            <button type="submit" class="btn btn-primary">Buscar</button>
-        </div>
-    </div>
-</form>
 
-@if (Model.ErrorMessage != null)
-{
-    <div class="alert alert-danger">@Model.ErrorMessage</div>
-}
-else if (Model.Message != null)
-{
-    <div class="alert alert-info">@Model.Message</div>
-}
+<div class="historial-container">
 
-@if (Model.Historial != null && Model.Historial.Any())
-{
-    <div class="d-flex justify-content-between mb-2">
-        <div>
-            <button type="button" class="btn btn-outline-success btn-sm" onclick="exportarCSV()">📄 Exportar CSV</button>
-            <button type="button" class="btn btn-outline-danger btn-sm" onclick="exportarPDF()">📕 Exportar PDF</button>
-        </div>
-        <div><strong>Total cursos:</strong> @Model.Historial.Count()</div>
+    <!-- =========================================
+         TÍTULO PRINCIPAL
+    ========================================== -->
+    <div class="historial-header">
+        <h1><i class="bi bi-mortarboard"></i> Consulta de Promedios por Estudiante</h1>
     </div>
 
-    <table id="tablaHistorial" class="table table-striped shadow-sm">
-        <thead class="table-dark">
-            <tr>
-                <th>Código del Curso</th>
-                <th>Nombre del Curso</th>
-                <th>Promedio</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var item in Model.Historial)
-            {
-                <tr>
-                    <td>@item.Codigo_Curso</td>
-                    <td>@item.Nombre_Curso</td>
-                    <td>@item.Promedio</td>
-                </tr>
-            }
-        </tbody>
-    </table>
-}
-else if (Model.Tipo != null && Model.Identificacion != null)
-{
-    <div class="alert alert-warning">No se encontraron registros para este estudiante.</div>
-}
+    <!-- =========================================
+         FORMULARIO
+    ========================================== -->
+    <form method="get" class="historial-form mb-4">
+        <div class="row g-3 align-items-end">
+
+            <div class="col-md-3">
+                <label class="form-label">Tipo de identificación</label>
+                <select name="Tipo" class="form-select">
+                    <option value="">Seleccione...</option>
+                    <option value="cedula" selected="@("cedula" == Model.Tipo)">Cédula</option>
+                    <option value="pasaporte" selected="@("pasaporte" == Model.Tipo)">Pasaporte</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Identificación</label>
+                <input name="Identificacion" class="form-control" value="@Model.Identificacion" placeholder="Ej: 305670111" />
+            </div>
+
+            <div class="col-md-2 d-grid">
+                <button type="submit" class="btn-buscar">Buscar</button>
+            </div>
+
+        </div>
+    </form>
+
+    <!-- =========================================
+         ALERTAS
+    ========================================== -->
+    @if (Model.ErrorMessage != null)
+    {
+        <div class="alert-historial alert-danger">@Model.ErrorMessage</div>
+    }
+    else if (Model.Message != null)
+    {
+        <div class="alert-historial alert-info">@Model.Message</div>
+    }
+
+    <!-- =========================================
+         TABLA
+    ========================================== -->
+    @if (Model.Historial != null && Model.Historial.Any())
+    {
+        <!-- ACCIONES SUPERIORES -->
+        <div class="historial-actions d-flex justify-content-between mb-2">
+            <div>
+                <button type="button" class="btn-export-csv btn-sm" onclick="exportarCSV()">📄 Exportar CSV</button>
+                <button type="button" class="btn-export-pdf btn-sm" onclick="exportarPDF()">📕 Exportar PDF</button>
+            </div>
+
+            <div><strong>Total cursos:</strong> @Model.Historial.Count()</div>
+        </div>
+
+        <!-- TABLA -->
+        <div class="table-responsive historial-table-card">
+            <table id="tablaHistorial" class="table table-historial">
+                <thead>
+                    <tr>
+                        <th onclick="ordenarPor(0)">Código del Curso ⬍</th>
+                        <th onclick="ordenarPor(1)">Nombre del Curso ⬍</th>
+                        <th onclick="ordenarPor(2)">Promedio ⬍</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.Historial)
+                    {
+                        <tr>
+                            <td>@item.Codigo_Curso</td>
+                            <td>@item.Nombre_Curso</td>
+                            <td>@item.Promedio</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- PAGINACIÓN -->
+        <nav aria-label="Paginación" class="mt-4">
+            <ul class="pagination justify-content-center mb-0">
+
+                <li class="page-item">
+                    <a class="page-link" href="#" id="btnAnterior">
+                        <i class="bi bi-chevron-left"></i> Anterior
+                    </a>
+                </li>
+
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" id="paginaInfo">Página 1</a>
+                </li>
+
+                <li class="page-item">
+                    <a class="page-link" href="#" id="btnSiguiente">
+                        Siguiente <i class="bi bi-chevron-right"></i>
+                    </a>
+                </li>
+
+            </ul>
+        </nav>
+    }
+    else if (Model.Tipo != null && Model.Identificacion != null)
+    {
+        <div class="alert-historial alert-warning">No se encontraron registros para este estudiante.</div>
+    }
+
+</div>
 
 @section Scripts {
-    <!-- jsPDF desde CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
     <script>
         // ============================
-        //  Exportar CSV
+        // Paginación y Ordenamiento
         // ============================
-                function exportarCSV() {
+
+        let paginaActual = 1;
+        const filasPorPagina = 10;
+        let ordenColumna = -1;
+        let ordenAsc = true;
+
+        document.addEventListener("DOMContentLoaded", () => {
+            mostrarPagina();
+            document.getElementById("btnAnterior").addEventListener("click", anteriorPagina);
+            document.getElementById("btnSiguiente").addEventListener("click", siguientePagina);
+        });
+
+        function mostrarPagina() {
+            const filas = document.querySelectorAll("#tablaHistorial tbody tr");
+            const totalFilas = filas.length;
+            const totalPaginas = Math.ceil(totalFilas / filasPorPagina);
+
+            filas.forEach((fila, i) => {
+                fila.style.display = (i >= (paginaActual - 1) * filasPorPagina && i < paginaActual * filasPorPagina)
+                    ? "" : "none";
+            });
+
+            document.getElementById("paginaInfo").innerText = `Página ${paginaActual} de ${totalPaginas}`;
+            document.getElementById("btnAnterior").disabled = paginaActual === 1;
+            document.getElementById("btnSiguiente").disabled = paginaActual === totalPaginas;
+        }
+
+        function siguientePagina() {
+            const filas = document.querySelectorAll("#tablaHistorial tbody tr");
+            const totalPaginas = Math.ceil(filas.length / filasPorPagina);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                mostrarPagina();
+            }
+        }
+
+        function anteriorPagina() {
+            if (paginaActual > 1) {
+                paginaActual--;
+                mostrarPagina();
+            }
+        }
+
+        function ordenarPor(indice) {
+            const tabla = document.getElementById("tablaHistorial");
+            const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+            const multiplicador = (ordenColumna === indice && ordenAsc) ? -1 : 1;
+            ordenColumna = indice;
+            ordenAsc = multiplicador === 1;
+
+            filas.sort((a, b) => {
+                const valorA = a.children[indice].innerText.toLowerCase();
+                const valorB = b.children[indice].innerText.toLowerCase();
+                return valorA.localeCompare(valorB, 'es') * multiplicador;
+            });
+
+            const cuerpo = tabla.querySelector("tbody");
+            cuerpo.innerHTML = "";
+            filas.forEach(f => cuerpo.appendChild(f));
+
+            paginaActual = 1;
+            mostrarPagina();
+        }
+
+        // ============================
+        // Exportar CSV
+        // ============================
+        function exportarCSV() {
             const rows = [['Código del Curso', 'Nombre del Curso', 'Promedio']];
             document.querySelectorAll('#tablaHistorial tbody tr').forEach(tr => {
                 const cols = [...tr.children].map(td => td.innerText);
                 rows.push(cols);
             });
-
-            // Unir todo con comas, con BOM UTF-8 al inicio
             const csvContent = '\uFEFF' + rows.map(r => r.map(v => `"${v}"`).join(',')).join('\r\n');
-
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
             link.href = URL.createObjectURL(blob);
@@ -96,41 +212,75 @@ else if (Model.Tipo != null && Model.Identificacion != null)
         }
 
         // ============================
-        //  Exportar PDF
+        // Exportar PDF
         // ============================
-        async function exportarPDF() {
+                async function exportarPDF() {
             const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
+            const doc = new jsPDF("p", "mm", "a4");
 
-            // Título
-            doc.setFontSize(16);
+            // ENCABEZADO
+            doc.setFontSize(18);
+            doc.setFont("helvetica", "bold");
             doc.text('Historial Académico', 14, 15);
-            doc.setFontSize(11);
-            doc.text('Promedios por Estudiante', 14, 22);
 
-            // Encabezados
-            const startY = 30;
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "normal");
+            doc.text('Promedios por Estudiante', 14, 23);
+            doc.line(14, 25, 196, 25);
+
+            const tipo = document.querySelector('select[name="Tipo"]').value || 'No especificado';
+            const identificacion = document.querySelector('input[name="Identificacion"]').value || 'No ingresada';
+            const totalCursos = document.querySelectorAll('#tablaHistorial tbody tr').length;
+            const fecha = new Date().toLocaleString('es-CR');
+
+            let y0 = 33;
+            doc.setFont("helvetica", "bold");
+            doc.text("Tipo de Identificación:", 14, y0);
+            doc.text("Identificación:", 14, y0 + 7);
+            doc.text("Total de Cursos:", 14, y0 + 14);
+            doc.text("Fecha de Generación:", 14, y0 + 21);
+
+            doc.setFont("helvetica", "normal");
+            doc.text(tipo, 70, y0);
+            doc.text(identificacion, 70, y0 + 7);
+            doc.text(String(totalCursos), 70, y0 + 14);
+            doc.text(fecha, 70, y0 + 21);
+
+            doc.line(14, y0 + 25, 196, y0 + 25);
+
+            // TABLA
             const headers = ['Código del Curso', 'Nombre del Curso', 'Promedio'];
-            const colWidths = [50, 100, 30];
-            let y = startY;
+            const colWidths = [40, 120, 25];
 
-            doc.setFont(undefined, 'bold');
+            let y = y0 + 33;
+
+            doc.setFont("helvetica", "bold");
             headers.forEach((h, i) => doc.text(h, 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
-            doc.setFont(undefined, 'normal');
+            doc.setFont("helvetica", "normal");
             y += 7;
 
-            // Filas de datos
-            document.querySelectorAll('#tablaHistorial tbody tr').forEach(tr => {
+            const filas = document.querySelectorAll('#tablaHistorial tbody tr');
+            filas.forEach((tr, idx) => {
                 const cols = [...tr.children].map(td => td.innerText);
                 cols.forEach((c, i) => doc.text(String(c), 14 + colWidths.slice(0, i).reduce((a, b) => a + b, 0), y));
                 y += 7;
-                if (y > 270) { // salto de página
+
+                if (y > 270 && idx < filas.length - 1) {
                     doc.addPage();
                     y = 20;
                 }
             });
 
-            doc.save('HistorialAcademico.pdf');
+            // PIE DE PÁGINA
+            const totalPages = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= totalPages; i++) {
+                doc.setPage(i);
+                doc.setFontSize(9);
+                doc.setTextColor(100);
+                doc.text(`Página ${i} de ${totalPages}`, 105, 290, { align: "center" });
+            }
+
+            doc.save(`Historial_${identificacion}.pdf`);
         }
     </script>
 }

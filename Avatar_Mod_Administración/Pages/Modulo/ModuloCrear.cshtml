@@ -1,0 +1,151 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.Modulo.ModuloCrearModel
+@{
+    ViewData["Title"] = "Crear Módulo";
+    ViewData["Breadcrumb"] = "<li class='breadcrumb-item'><a href='/Modulo/Modulos'>Módulos</a></li><li class='breadcrumb-item active'>Crear Módulo</li>";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/modulos.css" asp-append-version="true" />
+}
+
+<div class="container modulos-container">
+    <div class="row justify-content-center">
+        <div class="col-md-10 col-lg-8">
+            <!-- Card Principal -->
+            <div class="card modulo-form-card">
+                <div class="card-header">
+                    <h4>
+                        <i class="bi bi-plus-circle"></i>
+                        Crear Nuevo Módulo
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" class="modulo-form">
+                        <!-- Errores de validación -->
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger alert-modulo">
+                            <i class="bi bi-exclamation-triangle-fill"></i>
+                            <div>
+                                <strong>Error de validación</strong>
+                                <p class="mb-0">Por favor, corrija los errores e intente nuevamente.</p>
+                            </div>
+                        </div>
+
+                        <!-- Alerta informativa -->
+                        <div class="alert alert-info alert-modulo">
+                            <i class="bi bi-info-circle-fill"></i>
+                            <div>
+                                <strong>Importante:</strong>
+                                El nombre del módulo debe ser único en el sistema.
+                            </div>
+                        </div>
+
+                        <!-- Campo Nombre -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Nombre" class="form-label">
+                                <i class="bi bi-puzzle"></i>
+                                Nombre del Módulo
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Input.Nombre"
+                                   class="form-control"
+                                   placeholder="Ej: Gestión de Usuarios"
+                                   maxlength="100"
+                                   autofocus />
+                            <div class="form-text">
+                                <i class="bi bi-check-circle text-success"></i>
+                                Solo letras y espacios (3-100 caracteres)
+                            </div>
+                            <span asp-validation-for="Input.Nombre" class="text-danger"></span>
+                        </div>
+
+                        <!-- Campo Estado -->
+                        <div class="mb-4">
+                            <label class="form-label">
+                                <i class="bi bi-toggle-on"></i>
+                                Estado del Módulo
+                            </label>
+                            <div class="form-check form-switch">
+                                <input asp-for="Input.Activo"
+                                       class="form-check-input"
+                                       type="checkbox"
+                                       role="switch"
+                                       id="switchActivo">
+                                <label asp-for="Input.Activo" class="form-check-label" for="switchActivo">
+                                    <span id="estadoTexto">@(Model.Input.Activo ? "Activo" : "Inactivo")</span>
+                                </label>
+                            </div>
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Defina si el módulo estará activo desde su creación
+                            </div>
+                        </div>
+
+
+                        <!-- Campo Orden -->
+                        <div class="mb-4">
+                            <label asp-for="Input.Orden" class="form-label">
+                                <i class="bi bi-sort-numeric-down"></i>
+                                Orden de visualización
+                                <span class="text-danger">*</span>
+                            </label>
+                            <input asp-for="Input.Orden"
+                                   type="number"
+                                   class="form-control"
+                                   min="0"
+                                   step="1"
+                                   placeholder="Ej: 10" />
+                            <div class="form-text">
+                                <i class="bi bi-info-circle"></i>
+                                Número que determina la posición del módulo en los listados (0 = primero)
+                            </div>
+                            <span asp-validation-for="Input.Orden" class="text-danger"></span>
+                        </div>
+
+                        <!-- Nota de campos requeridos -->
+                        <div class="mb-3">
+                            <small class="text-muted">
+                                <i class="bi bi-shield-check"></i>
+                                Los campos marcados con <span class="text-danger fw-bold">*</span> son obligatorios
+                            </small>
+                        </div>
+
+                        <!-- Botones de acción -->
+                        <div class="form-actions">
+                            <a asp-page="/Modulo/Modulos" class="btn btn-secondary">
+                                <i class="bi bi-x-circle"></i>
+                                Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-save"></i>
+                                Crear Módulo
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Card de Información -->
+            <div class="card info-rules-card">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="bi bi-lightbulb-fill"></i>
+                        Reglas de validación
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li>El nombre debe tener entre <strong>3 y 100 caracteres</strong></li>
+                        <li>Solo se permiten <strong>letras</strong> (incluyendo acentos y ñ) y <strong>espacios</strong></li>
+                        <li>No se permiten <strong>números</strong> ni <strong>caracteres especiales</strong></li>
+                        <li>No se permiten <strong>espacios consecutivos</strong></li>
+                        <li>El nombre debe ser <strong>único</strong> en el sistema</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script src="~/js/modulos.js" asp-append-version="true"></script>
+}

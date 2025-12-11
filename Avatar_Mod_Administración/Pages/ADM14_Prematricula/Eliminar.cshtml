@@ -1,0 +1,26 @@
+﻿@page "{id:int}"
+@model Avatar_Mod_Administración.Pages.ADM14_Prematricula.EliminarModel
+@{
+    ViewData["Title"] = "Eliminar Prematrícula";
+}
+
+<h2>Eliminar Prematrícula</h2>
+
+@if (Model.Prematricula == null)
+{
+    <div class="alert alert-danger">
+        No se encontró la prematrícula.
+    </div>
+}
+else
+{
+    <div class="alert alert-warning">
+        ¿Está seguro que desea eliminar la prematrícula con ID
+        <strong>@Model.Prematricula.ID_Prematricula</strong>?
+    </div>
+
+    <form method="post">
+        <button type="submit" class="btn btn-danger">Eliminar</button>
+        <a asp-page="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+}

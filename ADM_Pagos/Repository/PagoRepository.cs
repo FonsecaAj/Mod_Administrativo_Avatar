@@ -1,18 +1,21 @@
 ﻿using ADM_Pagos.Entities;
 using Dapper;
+using Microsoft.Data.SqlClient;
+using System.Data;
 
 namespace ADM_Pagos.Repository
 {
     public class PagoRepository
     {
-
         private readonly IDbConnectionFactory _dbconnection;
+        private readonly string _dbConexionFactura;
 
-        public PagoRepository(IDbConnectionFactory dbconnection)
+        public PagoRepository(IDbConnectionFactory dbconnection, IConfiguration config)
         {
             _dbconnection = dbconnection;
+            _dbConexionFactura = config["ConnectionStrings:FacturasConnection"]
+                ?? throw new InvalidOperationException("BD FACTURAS ERRONEA");
         }
-
 
         // Crear pago + detalle ("Servicios estudiantiles")
         public async Task<int> CrearPagoAsync(int idFactura, decimal monto, string metodo)
@@ -42,6 +45,17 @@ VALUES (@ID_Pago, @Descripcion);";
                 }, tx);
 
                 tx.Commit();
+
+                // 🔹 Actualizar el estado de la factura en la otra base
+                using (var con2 = new SqlConnection(_dbConexionFactura))
+                {
+                    await con2.OpenAsync();
+                    var sqlActualizarFactura = @"
+UPDATE Factura SET Estado = 'Pagada'
+WHERE ID_Factura = @ID_Factura";
+                    await con2.ExecuteAsync(sqlActualizarFactura, new { ID_Factura = idFactura });
+                }
+
                 return idPago;
             }
             catch
@@ -51,12 +65,75 @@ VALUES (@ID_Pago, @Descripcion);";
             }
         }
 
-
-        public async Task<int> ReversarPagoAsync(int idPago)
+        public async Task<int> ReversarPagoAsync(int idPago, string detalle)
         {
-            using var conn = _dbconnection.CreateConnection();
-            var sql = @"UPDATE Pago SET Estado = 'Reversado' WHERE ID_Pago = @ID;";
-            return await conn.ExecuteAsync(sql, new { ID = idPago });
+            using var connection = _dbconnection.CreateConnection();
+
+ 
+            if (connection is SqlConnection sqlConn)
+                await sqlConn.OpenAsync();
+            else
+                connection.Open();
+
+            using var transaction = connection.BeginTransaction();
+
+            try
+            {
+                // Obtener la factura asociada
+                var idFactura = await connection.ExecuteScalarAsync<int?>(
+                    "SELECT ID_Factura FROM Pago WHERE ID_Pago = @ID",
+                    new { ID = idPago }, transaction);
+
+                if (idFactura == null)
+                    throw new InvalidOperationException($"No existe una factura asociada al pago {idPago}.");
+
+                //  Reversar el pago
+                var sqlPago = @"
+                    UPDATE Pago 
+                    SET Estado = 'Reversado'
+                    WHERE ID_Pago = @ID;";
+                await connection.ExecuteAsync(sqlPago, new { ID = idPago }, transaction);
+
+                // Actualizar detalle del pago agregando motivo
+                var sqlDetalle = @"
+                    UPDATE Pago_Detalle 
+                    SET Detalle = CONCAT(
+                        COALESCE(Descripcion, ''), 
+                        CHAR(13) + CHAR(10) + ' [REVERSIÓN] Motivo: ', @Detalle
+                    )
+                    WHERE ID_Pago = @ID;";
+                int filas = await connection.ExecuteAsync(sqlDetalle, new { Detalle = detalle, ID = idPago }, transaction);
+
+                //  Actualizar factura en otra base
+                using (var con2 = new SqlConnection(_dbConexionFactura))
+                {
+                    await con2.OpenAsync();
+
+                    var sqlFactura = @"
+                        UPDATE Factura 
+                        SET Estado = 'Pendiente'
+                        WHERE ID_Factura = @ID_Factura;";
+                    await con2.ExecuteAsync(sqlFactura, new { ID_Factura = idFactura });
+
+                    // Agregar motivo en Factura_Detalle también
+                    var sqlDetFactura = @"
+                        UPDATE Factura_Detalle 
+                        SET Detalle = CONCAT(
+                            COALESCE(Descripcion, ''), 
+                            CHAR(13) + CHAR(10) + ' [REVERSIÓN DE PAGO] Motivo: ', @Detalle
+                        )
+                        WHERE ID_Factura = @ID_Factura;";
+                    await con2.ExecuteAsync(sqlDetFactura, new { ID_Factura = idFactura, Detalle = detalle });
+                }
+
+                transaction.Commit();
+                return filas;
+            }
+            catch (Exception ex)
+            {
+                transaction.Rollback();
+                throw new InvalidOperationException("Error al reversar el pago", ex);
+            }
         }
 
         public async Task<Pago?> ObtenerPagoAsync(int idPago)

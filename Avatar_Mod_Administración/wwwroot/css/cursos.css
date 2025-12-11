@@ -1,0 +1,761 @@
+﻿/* Container Principal cursos */
+.cursos-container {
+    animation: fadeIn 0.5s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Header de Página */
+.cursos-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--border-color);
+}
+
+    .cursos-header h2 {
+        color: var(--primary-color);
+        font-size: 1.875rem;
+        font-weight: 700;
+        margin: 0;
+        display: flex;
+        align-items: center;
+    }
+
+        .cursos-header h2 i {
+            color: var(--accent-color);
+            margin-right: 0.75rem;
+            font-size: 2rem;
+        }
+
+/* Botones de Acción */
+.btn-crear-curso {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(195, 163, 142, 0.3);
+    display: inline-flex;
+    align-items: center;
+    text-decoration: none;
+}
+
+    .btn-crear-curso i {
+        margin-right: 0.5rem;
+        font-size: 1.1rem;
+    }
+
+    .btn-crear-curso:hover {
+        background: linear-gradient(135deg, var(--accent-dark), var(--accent-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(195, 163, 142, 0.5);
+        color: white;
+    }
+
+/* Cards de Formularios */
+.curso-form-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(47, 73, 110, 0.12);
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.curso-form-card .card-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: white;
+    padding: 1.5rem 2rem;
+    border: none;
+}
+
+    .curso-form-card .card-header h4 {
+        margin: 0;
+        font-size: 1.5rem;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+        .curso-form-card .card-header h4 i {
+            margin-right: 0.75rem;
+            font-size: 1.75rem;
+        }
+
+.curso-form-card .card-body {
+    padding: 2rem;
+}
+
+/* Alertas Personalizadas */
+.alert-curso {
+    border-radius: 0.75rem;
+    border: none;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: start;
+}
+
+    .alert-curso i {
+        margin-right: 0.75rem;
+        font-size: 1.25rem;
+        flex-shrink: 0;
+        margin-top: 0.125rem;
+    }
+
+.alert-info.alert-curso {
+    background: linear-gradient(135deg, rgba(91, 143, 163, 0.15), rgba(91, 143, 163, 0.08));
+    border-left: 4px solid var(--info-color);
+    color: var(--primary-color);
+}
+
+.alert-success.alert-curso {
+    background: linear-gradient(135deg, rgba(123, 168, 146, 0.15), rgba(123, 168, 146, 0.08));
+    border-left: 4px solid var(--success-color);
+    color: var(--primary-color);
+}
+
+.alert-danger.alert-curso {
+    background: linear-gradient(135deg, rgba(200, 90, 84, 0.15), rgba(200, 90, 84, 0.08));
+    border-left: 4px solid var(--danger-color);
+    color: var(--danger-color);
+}
+
+.alert-warning.alert-curso {
+    background: linear-gradient(135deg, rgba(212, 165, 116, 0.15), rgba(212, 165, 116, 0.08));
+    border-left: 4px solid var(--warning-color);
+    color: var(--primary-color);
+}
+
+/* Formularios */
+.curso-form .form-label {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .curso-form .form-label i {
+        color: var(--accent-color);
+        margin-right: 0.5rem;
+    }
+
+.curso-form .form-control,
+.curso-form .form-select {
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: var(--bg-primary);
+}
+
+    .curso-form .form-control:focus,
+    .curso-form .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 0.25rem rgba(195, 163, 142, 0.15);
+        background: var(--bg-primary);
+    }
+
+    .curso-form .form-control.is-invalid,
+    .curso-form .form-select.is-invalid {
+        border-color: var(--danger-color);
+    }
+
+        .curso-form .form-control.is-invalid:focus,
+        .curso-form .form-select.is-invalid:focus {
+            border-color: var(--danger-color);
+            box-shadow: 0 0 0 0.25rem rgba(200, 90, 84, 0.15);
+        }
+
+.curso-form .form-text {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+}
+
+    .curso-form .form-text i {
+        margin-right: 0.5rem;
+    }
+
+.curso-form .text-danger {
+    color: var(--danger-color) !important;
+    font-size: 0.875rem;
+    margin-top: 0.375rem;
+    display: block;
+    font-weight: 500;
+}
+
+/* Card de Filtros */
+.filtros-card {
+    border: 2px solid var(--border-color);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+    transition: all 0.3s ease;
+}
+
+    .filtros-card:hover {
+        border-color: var(--accent-light);
+        box-shadow: var(--shadow-md);
+    }
+
+    .filtros-card .card-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 1rem 1.5rem;
+        border: none;
+    }
+
+        .filtros-card .card-header h5 {
+            margin: 0;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+            .filtros-card .card-header h5 i {
+                margin-right: 0.5rem;
+            }
+
+    .filtros-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .filtros-card .form-label {
+        color: var(--text-primary);
+        font-weight: 600;
+        font-size: 0.9rem;
+    }
+
+    .filtros-card .btn-primary {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        border: none;
+        font-weight: 600;
+    }
+
+        .filtros-card .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+            transform: translateY(-2px);
+        }
+
+/* Tabla de Cursos */
+.cursos-table-card {
+    border: none;
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+}
+
+    .cursos-table-card .card-body {
+        padding: 0;
+    }
+
+.table-cursos {
+    margin: 0;
+}
+
+    .table-cursos thead {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+
+        .table-cursos thead th {
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.25rem;
+            border: none;
+        }
+
+            .table-cursos thead th a {
+                color: white;
+                text-decoration: none;
+                display: inline-flex;
+                align-items: center;
+                gap: 0.25rem;
+            }
+
+                .table-cursos thead th a:hover {
+                    color: var(--accent-light);
+                }
+
+    .table-cursos tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+        .table-cursos tbody tr:hover {
+            background: var(--bg-secondary);
+            transform: scale(1.01);
+            box-shadow: 0 2px 8px rgba(47, 73, 110, 0.08);
+        }
+
+    .table-cursos tbody td {
+        padding: 1rem 1.25rem;
+        vertical-align: middle;
+        color: var(--text-primary);
+    }
+
+/* Badges de Nivel */
+.badge.bg-info {
+    background: linear-gradient(135deg, var(--info-color), #4A7B91) !important;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.badge.bg-secondary {
+    background: linear-gradient(135deg, #6c757d, #5a6268) !important;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.badge.bg-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)) !important;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.badge.bg-success {
+    background: linear-gradient(135deg, var(--success-color), #6A9780) !important;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+.badge.bg-danger {
+    background: linear-gradient(135deg, var(--danger-color), #B74944) !important;
+    color: white;
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+}
+
+/* Botones de acción en tabla */
+.btn-action-curso {
+    padding: 0.5rem 0.75rem;
+    border-radius: 0.375rem;
+    border: none;
+    font-size: 0.9rem;
+    transition: all 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+    .btn-action-curso i {
+        font-size: 1rem;
+    }
+
+    .btn-action-curso.btn-info {
+        background: linear-gradient(135deg, var(--info-color), #4A7B91);
+        color: white;
+    }
+
+        .btn-action-curso.btn-info:hover {
+            background: linear-gradient(135deg, #4A7B91, var(--info-color));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(91, 143, 163, 0.4);
+        }
+
+    .btn-action-curso.btn-warning {
+        background: linear-gradient(135deg, var(--warning-color), var(--accent-color));
+        color: white;
+    }
+
+        .btn-action-curso.btn-warning:hover {
+            background: linear-gradient(135deg, var(--accent-color), var(--warning-color));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(212, 165, 116, 0.4);
+        }
+
+    .btn-action-curso.btn-danger {
+        background: linear-gradient(135deg, var(--danger-color), #B74944);
+        color: white;
+    }
+
+        .btn-action-curso.btn-danger:hover {
+            background: linear-gradient(135deg, #B74944, var(--danger-color));
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(200, 90, 84, 0.4);
+        }
+
+/* Estado vacío */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+}
+
+    .empty-state i {
+        font-size: 4rem;
+        color: var(--accent-color);
+        opacity: 0.4;
+        display: block;
+        margin-bottom: 1rem;
+    }
+
+    .empty-state .text-muted {
+        color: var(--text-secondary) !important;
+        font-size: 1.1rem;
+    }
+
+/* Modal de Eliminación */
+.modal-eliminar-curso .modal-content {
+    border: none;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+.modal-eliminar-curso .modal-header {
+    background: linear-gradient(135deg, var(--danger-color), #B74944);
+    color: white;
+    border: none;
+    padding: 1.5rem 2rem;
+}
+
+    .modal-eliminar-curso .modal-header h5 {
+        margin: 0;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+    }
+
+        .modal-eliminar-curso .modal-header h5 i {
+            margin-right: 0.75rem;
+            font-size: 1.5rem;
+        }
+
+.modal-eliminar-curso .modal-body {
+    padding: 2rem;
+}
+
+    .modal-eliminar-curso .modal-body #nombreEliminar {
+        color: var(--danger-color);
+        font-weight: 700;
+    }
+
+.modal-eliminar-curso .modal-footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 1.25rem 2rem;
+}
+
+/* Paginación */
+.pagination {
+    margin: 0;
+}
+
+    .pagination .page-item .page-link {
+        border: 2px solid var(--border-color);
+        color: var(--primary-color);
+        font-weight: 600;
+        margin: 0 0.25rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+    }
+
+        .pagination .page-item .page-link:hover {
+            background: var(--accent-light);
+            border-color: var(--accent-color);
+            color: white;
+            transform: translateY(-2px);
+        }
+
+    .pagination .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+        border-color: var(--accent-color);
+        color: white;
+        box-shadow: 0 4px 12px rgba(195, 163, 142, 0.3);
+    }
+
+    .pagination .page-item.disabled .page-link {
+        background: var(--bg-secondary);
+        border-color: var(--border-color);
+        color: var(--text-secondary);
+    }
+
+/* Botones de Formulario */
+.form-actions-curso {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 1rem;
+    border-top: 2px solid var(--border-color);
+    margin-top: 1.5rem;
+}
+
+    .form-actions-curso .btn {
+        padding: 0.75rem 1.5rem;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+    }
+
+        .form-actions-curso .btn i {
+            margin-right: 0.5rem;
+        }
+
+    .form-actions-curso .btn-secondary {
+        background: var(--bg-secondary);
+        border: 2px solid var(--border-color);
+        color: var(--text-primary);
+    }
+
+        .form-actions-curso .btn-secondary:hover {
+            background: var(--border-color);
+            border-color: var(--text-secondary);
+            transform: translateY(-2px);
+        }
+
+    .form-actions-curso .btn-primary {
+        background: linear-gradient(135deg, var(--accent-color), var(--accent-dark));
+        border: none;
+        color: white;
+    }
+
+        .form-actions-curso .btn-primary:hover {
+            background: linear-gradient(135deg, var(--accent-dark), var(--accent-color));
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(195, 163, 142, 0.5);
+        }
+
+/* Detalle de Curso */
+.detalle-card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(47, 73, 110, 0.12);
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+}
+
+    .detalle-card .card-header {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+        color: white;
+        padding: 1.5rem 2rem;
+        border: none;
+    }
+
+        .detalle-card .card-header h4 {
+            margin: 0;
+            font-size: 1.5rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+        }
+
+            .detalle-card .card-header h4 i {
+                margin-right: 0.75rem;
+            }
+
+    .detalle-card .card-body {
+        padding: 2rem;
+    }
+
+    .detalle-card .row {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+        .detalle-card .row:last-child {
+            border-bottom: none;
+        }
+
+    .detalle-card .fw-bold {
+        color: var(--primary-color);
+        font-weight: 700;
+    }
+
+    .detalle-card hr {
+        border-color: var(--border-color);
+        border-width: 2px;
+        margin: 2rem 0;
+    }
+
+    .detalle-card h5 {
+        color: var(--primary-color);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+    }
+
+        .detalle-card h5 i {
+            color: var(--accent-color);
+            margin-right: 0.5rem;
+        }
+
+/* Animaciones de Loading */
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+    margin-left: 0.5rem;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .cursos-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+        .cursos-header h2 {
+            font-size: 1.5rem;
+        }
+
+    .btn-crear-curso {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .curso-form-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .form-actions-curso {
+        flex-direction: column-reverse;
+    }
+
+        .form-actions-curso .btn {
+            width: 100%;
+            justify-content: center;
+        }
+
+    .table-cursos {
+        font-size: 0.85rem;
+    }
+
+        .table-cursos thead th,
+        .table-cursos tbody td {
+            padding: 0.75rem;
+        }
+
+    .filtros-card .row {
+        gap: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .cursos-header h2 {
+        font-size: 1.25rem;
+    }
+
+    .curso-form-card .card-header h4 {
+        font-size: 1.25rem;
+    }
+
+    .filtros-card .card-body {
+        padding: 1rem;
+    }
+
+    .empty-state i {
+        font-size: 3rem;
+    }
+}
+
+/* Animación de Shake para Errores */
+@keyframes shake {
+    0%, 100% {
+        transform: translateX(0);
+    }
+
+    25% {
+        transform: translateX(-5px);
+    }
+
+    75% {
+        transform: translateX(5px);
+    }
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* Tooltips personalizados */
+[data-bs-toggle="tooltip"] {
+    cursor: help;
+}
+
+/* Print Styles */
+@media print {
+    .cursos-header .btn,
+    .filtros-card,
+    .btn-action-curso,
+    .form-actions-curso,
+    .pagination {
+        display: none !important;
+    }
+
+    .curso-form-card,
+    .cursos-table-card,
+    .detalle-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+    }
+}

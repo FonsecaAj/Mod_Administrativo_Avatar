@@ -1,0 +1,60 @@
+﻿@page "{id:int}"
+@model Avatar_Mod_Administración.Pages.ADM12_Periodo.EditarModel
+@{
+    ViewData["Title"] = "Editar Periodo";
+}
+
+<h1>Editar Periodo</h1>
+
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alert alert-danger">@Model.MensajeError</div>
+}
+
+<form method="post" class="row g-3">
+    <input asp-for="Periodo.IdPeriodo" type="hidden" />
+
+    <div class="col-md-3">
+        <label asp-for="Periodo.Anno" class="form-label"></label>
+        <input asp-for="Periodo.Anno" class="form-control" />
+        <span asp-validation-for="Periodo.Anno" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="Periodo.NumeroPeriodo" class="form-label"></label>
+        <input asp-for="Periodo.NumeroPeriodo" class="form-control" />
+        <span asp-validation-for="Periodo.NumeroPeriodo" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="Periodo.FechaInicio" class="form-label"></label>
+        <input asp-for="Periodo.FechaInicio" class="form-control" type="date" />
+        <span asp-validation-for="Periodo.FechaInicio" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="Periodo.FechaFin" class="form-label"></label>
+        <input asp-for="Periodo.FechaFin" class="form-control" type="date" />
+        <span asp-validation-for="Periodo.FechaFin" class="text-danger"></span>
+    </div>
+
+    <div class="col-md-3">
+        <label asp-for="Periodo.Estado" class="form-label"></label>
+        <select asp-for="Periodo.Estado" class="form-select">
+            <option value="Futuro">Futuro</option>
+            <option value="Activo">Activo</option>
+            <option value="Cerrado">Cerrado</option>
+        </select>
+        <span asp-validation-for="Periodo.Estado" class="text-danger"></span>
+    </div>
+
+
+    <div class="col-12">
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <a asp-page="Index" class="btn btn-secondary">Volver</a>
+    </div>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

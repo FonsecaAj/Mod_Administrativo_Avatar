@@ -1,0 +1,405 @@
+﻿/* Definición de Variables (Asumiendo que se usan) */
+:root {
+    /* Valores de ejemplo, ajustar si hay un archivo de variables principal */
+    --primary-color: #2f496e; /* Azul oscuro o similar a Bootstrap Primary */
+    --primary-dark: #1e3047;
+    --accent-color: #c3a38e; /* Color de acento (ej. un tono tierra) */
+    --accent-dark: #a98f7e;
+    --border-color: #dee2e6;
+    --text-primary: #212529;
+    --text-secondary: #6c757d;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f8f9fa;
+    --success-color: #198754;
+    --danger-color: #dc3545;
+    --info-color: #0dcaf0;
+    --warning-color: #ffc107;
+    --shadow-sm: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow-md: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Animaciones */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ----------------------------------- */
+/* Estilos Globales y Componentes Base */
+/* ----------------------------------- */
+
+.pagos-container { /* Un contenedor opcional para la página de pagos */
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Cards de Formularios y Consultas */
+.card {
+    border: none;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(47, 73, 110, 0.12);
+    overflow: hidden;
+    animation: slideUp 0.6s ease-out;
+    background-color: var(--bg-primary);
+    transition: box-shadow 0.3s ease;
+}
+
+/* Header principal (h1) */
+.display-6 {
+    color: var(--primary-color);
+    font-weight: 700;
+    margin-bottom: 2rem !important;
+    animation: fadeIn 0.5s ease-out;
+}
+
+/* Títulos dentro de las tarjetas (h5) */
+.card h5 {
+    color: var(--primary-color);
+    font-weight: 600;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+}
+
+/* ----------------------------------- */
+/* Alertas y Mensajes */
+/* ----------------------------------- */
+
+.alert {
+    border-radius: 0.75rem;
+    border: none;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: start;
+    font-weight: 500;
+    border-left: 4px solid;
+}
+
+/* Adaptación de colores de alerta */
+.alert-success {
+    background: linear-gradient(135deg, rgba(123, 168, 146, 0.15), rgba(123, 168, 146, 0.08));
+    border-left-color: var(--success-color);
+    color: var(--text-primary);
+}
+
+.alert-danger {
+    background: linear-gradient(135deg, rgba(200, 90, 84, 0.15), rgba(200, 90, 84, 0.08));
+    border-left-color: var(--danger-color);
+    color: var(--danger-color);
+}
+
+.alert-info {
+    background: linear-gradient(135deg, rgba(91, 143, 163, 0.15), rgba(91, 143, 163, 0.08));
+    border-left-color: var(--info-color);
+    color: var(--text-primary);
+}
+
+.alert-warning {
+    background: linear-gradient(135deg, rgba(255, 193, 7, 0.15), rgba(255, 193, 7, 0.08));
+    border-left-color: var(--warning-color);
+    color: var(--text-primary);
+}
+
+/* ----------------------------------- */
+/* Formularios y Botones */
+/* ----------------------------------- */
+
+.form-label {
+    color: var(--text-primary);
+    font-weight: 600;
+    font-size: 0.95rem;
+    margin-bottom: 0.5rem;
+}
+
+.form-control,
+.form-select {
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    background: var(--bg-primary);
+}
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 0.25rem rgba(195, 163, 142, 0.15);
+        background: var(--bg-primary);
+    }
+
+/* Botón Registrar Pago (btn-success) */
+.btn-success {
+    background: linear-gradient(135deg, var(--success-color), #40926C);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(25, 135, 84, 0.3);
+}
+
+    .btn-success:hover {
+        background: linear-gradient(135deg, #40926C, var(--success-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(25, 135, 84, 0.5);
+        color: white;
+    }
+
+/* Botón Reversar Pago (btn-danger) */
+.btn-danger {
+    background: linear-gradient(135deg, var(--danger-color), #B74944);
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(200, 90, 84, 0.3);
+}
+
+    .btn-danger:hover {
+        background: linear-gradient(135deg, #B74944, var(--danger-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(200, 90, 84, 0.5);
+    }
+
+/* Botón Buscar (btn-secondary) - Consulta por ID */
+.btn-secondary {
+    background-color: var(--text-secondary);
+    border: none;
+    color: white;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+}
+
+    .btn-secondary:hover {
+        background-color: var(--text-primary);
+        color: white;
+    }
+
+/* Botón Consultar Período (btn-primary) - Listar */
+.btn-primary {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(47, 73, 110, 0.3);
+}
+
+    .btn-primary:hover {
+        background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(47, 73, 110, 0.5);
+        color: white;
+    }
+
+
+/* ----------------------------------- */
+/* Tablas de Resultados y Detalle */
+/* ----------------------------------- */
+
+/* Detalle de Pago por ID (Tabla de 2 columnas) */
+.table-bordered th, .table-bordered td {
+    border: 1px solid var(--border-color) !important;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.95rem;
+}
+
+.table-bordered th {
+    background-color: var(--bg-secondary);
+    color: var(--primary-color);
+    font-weight: 600;
+    width: 30%;
+}
+
+/* Detalle de Elementos (Tabla de detalle) */
+.table-striped tbody tr:nth-of-type(odd) {
+    background-color: rgba(0, 0, 0, 0.03);
+}
+
+.table-light { /* Thead para Elementos Detallados */
+    background-color: var(--bg-secondary) !important;
+}
+
+.table-striped thead th {
+    background-color: var(--bg-secondary);
+    color: var(--primary-color);
+    font-weight: 600;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 2px solid var(--primary-color);
+}
+
+/* Tabla de Listado de Pagos por Período */
+#tablaPagos { /* ⭐ Cambio: tablaFacturas -> tablaPagos */
+    margin: 0;
+    border-radius: 0.75rem;
+    overflow: hidden;
+}
+
+    #tablaPagos thead {
+        background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    }
+
+        #tablaPagos thead th {
+            color: white;
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 0.05em;
+            padding: 1rem 1.25rem;
+            border: none;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+
+            #tablaPagos thead th:hover {
+                color: var(--accent-color);
+            }
+
+    #tablaPagos tbody tr {
+        transition: all 0.2s ease;
+        border-bottom: 1px solid var(--border-color);
+    }
+
+        #tablaPagos tbody tr:hover {
+            background: var(--bg-secondary);
+            transform: scale(1.005);
+            box-shadow: 0 2px 8px rgba(47, 73, 110, 0.04);
+        }
+
+    #tablaPagos tbody td {
+        padding: 0.75rem 1.25rem;
+        vertical-align: middle;
+        color: var(--text-primary);
+        font-size: 0.95rem;
+    }
+
+/* Badges de Estado */
+.badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 0.375rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+    .badge.bg-success { /* Completado */
+        background: linear-gradient(135deg, var(--success-color), #6A9780) !important;
+        color: white;
+    }
+
+    .badge.bg-danger { /* Reversado */
+        background: linear-gradient(135deg, var(--danger-color), #B74944) !important;
+        color: white;
+    }
+
+    .badge.bg-secondary { /* Otro estado */
+        background: linear-gradient(135deg, var(--text-secondary), #959fa8) !important;
+        color: white !important;
+    }
+
+/* Botón Detalle (btn-info) en la tabla */
+.btn-sm.btn-info {
+    background: linear-gradient(135deg, var(--info-color), #4A7B91) !important;
+    border: none;
+    color: white;
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.375rem;
+    transition: all 0.3s ease;
+}
+
+    .btn-sm.btn-info:hover {
+        background: linear-gradient(135deg, #4A7B91, var(--info-color)) !important;
+        transform: translateY(-1px);
+    }
+
+/* Paginación (Navegación debajo de la tabla) */
+.btn-outline-secondary {
+    border: 2px solid var(--border-color);
+    color: var(--text-secondary);
+    font-weight: 600;
+    transition: all 0.3s ease;
+}
+
+    .btn-outline-secondary:hover {
+        border-color: var(--primary-color);
+        background-color: var(--primary-color);
+        color: white;
+    }
+
+#paginaInfo {
+    color: var(--primary-color);
+    font-size: 0.95rem;
+}
+
+/* ----------------------------------- */
+/* Modal de Reversión */
+/* ----------------------------------- */
+
+#modalReversarPago .modal-content { /* ⭐ Cambio: #modalReversar -> #modalReversarPago */
+    border: none;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+}
+
+#modalReversarPago .modal-header {
+    background: linear-gradient(135deg, var(--danger-color), #B74944);
+    color: white;
+    border: none;
+    padding: 1.5rem 2rem;
+}
+
+#modalReversarPago .modal-body {
+    padding: 2rem;
+}
+
+#modalReversarPago .form-label.fw-semibold {
+    color: var(--text-primary);
+    font-weight: 700 !important;
+}
+
+#modalReversarPago textarea {
+    min-height: 100px;
+    border: 2px solid var(--border-color);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+    #modalReversarPago textarea:focus {
+        border-color: var(--danger-color);
+        box-shadow: 0 0 0 0.25rem rgba(200, 90, 84, 0.15);
+    }
+
+#modalReversarPago .modal-footer {
+    background: var(--bg-secondary);
+    border-top: 1px solid var(--border-color);
+    padding: 1.25rem 2rem;
+}

@@ -15,16 +15,13 @@ builder.Services.AddScoped<IFacturaService, FacturaService>();
 builder.Services.AddHttpClient<IAutenticacionService, AutenticacionService>();
 builder.Services.AddHttpClient<BitacoraConsumer>();
 
-builder.Configuration["AutenticacionApiUrl"] = "http://localhost:5233";
-builder.Configuration["BitacoraService:BaseUrl"] = "http://localhost:5293";
+builder.Configuration["AutenticacionApiUrl"] = "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR5Login/";
+builder.Configuration["BitacoraService:BaseUrl"] = "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral/";
 
 var app = builder.Build();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.MapFacturaEndpoints();
 app.Run();

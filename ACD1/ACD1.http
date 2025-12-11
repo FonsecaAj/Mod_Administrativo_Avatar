@@ -1,0 +1,6 @@
+@ACD1_HostAddress = http://localhost:5001
+
+GET {{ACD1_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

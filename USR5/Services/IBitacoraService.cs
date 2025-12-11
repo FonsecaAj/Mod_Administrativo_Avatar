@@ -2,36 +2,53 @@
 {
     public interface IBitacoraService
     {
-        Task RegistrarAsync(string usuario, string descripcion);
+        Task RegistrarAsync(string usuario, string descripcion, string? tipoAccion = null);
     }
 
     public class BitacoraService : IBitacoraService
     {
         private readonly HttpClient _httpClient;
         private readonly string _gen1ApiUrl;
+        private readonly ILogger<BitacoraService> _logger;
 
-        public BitacoraService(HttpClient httpClient, IConfiguration configuration)
+        public BitacoraService(HttpClient httpClient, IConfiguration configuration, ILogger<BitacoraService> logger)
         {
             _httpClient = httpClient;
-            _gen1ApiUrl = configuration["GEN1ApiUrl"] ?? "http://localhost:5208";
+            _gen1ApiUrl = configuration["GEN1ApiUrl"] ?? "http://localhost:5155";
+            _logger = logger;
         }
 
-        public async Task RegistrarAsync(string usuario, string descripcion)
+        public async Task RegistrarAsync(string usuario, string descripcion, string? tipoAccion = null)
         {
-            try
+            // Fire-and-forget para no bloquear
+            _ = Task.Run(async () =>
             {
-                var request = new
+                try
                 {
-                    usuario,
-                    descripcion
-                };
+                    var request = new
+                    {
+                        usuario,
+                        descripcion,
+                        tipo_Accion = tipoAccion
+                    };
 
-                await _httpClient.PostAsJsonAsync($"{_gen1ApiUrl}/bitacora", request);
-            }
-            catch
-            {
-                // No se registran errores según requerimiento
-            }
+                    var response = await _httpClient.PostAsJsonAsync($"{_gen1ApiUrl}/api/bitacora", request);
+
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        var content = await response.Content.ReadAsStringAsync();
+                        _logger.LogError("Error al registrar bitácora. Status: {StatusCode}, Response: {Content}",
+                            response.StatusCode, content);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Excepción al registrar bitácora en {Url}", $"{_gen1ApiUrl}/api/bitacora");
+                }
+            });
+
+            // Retornar inmediatamente sin esperar
+            await Task.CompletedTask;
         }
     }
 }

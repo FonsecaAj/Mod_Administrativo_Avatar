@@ -1,0 +1,68 @@
+﻿    @page
+    @model Avatar_Mod_Administración.Pages.Notificaciones_Correo.IndexModel
+    @{
+        ViewData["Title"] = "Enviar Notificaciones por Correo";
+    }
+
+    <h2 class="mb-4">Envío de Notificaciones por Correo</h2>
+
+@if (!string.IsNullOrWhiteSpace(Model.Resultado))
+{
+    <div class="alert @(Model.EsError ? "alert-danger" : "alert-success") alert-dismissible fade show" role="alert">
+        @Model.Resultado
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+    <form method="post" id="formNotificacion">
+        <div class="mb-3">
+            <label class="form-label">Correo(s) destinatario(s)</label>
+            <input asp-for="Formulario.Email" class="form-control" />
+            <span class="text-danger" asp-validation-for="Formulario.Email"></span>
+            <small class="text-muted">Puedes ingresar varios correos separados por coma.</small>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Asunto</label>
+            <input asp-for="Formulario.Asunto" class="form-control" />
+            <span class="text-danger" asp-validation-for="Formulario.Asunto"></span>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Cuerpo del mensaje (HTML permitido)</label>
+            <textarea asp-for="Formulario.Mensaje" class="form-control" rows="5"></textarea>
+            <span class="text-danger" asp-validation-for="Formulario.Mensaje"></span>
+        </div>
+
+        <!-- Botón que abre el modal -->
+        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#confirmModal">
+            Enviar Notificación
+        </button>
+    </form>
+
+    <!-- Modal de confirmación -->
+    <div class="modal fade" id="confirmModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmar envío</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    ¿Desea enviar la notificación?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+
+                    
+                    <button type="submit" class="btn btn-primary" form="formNotificacion">
+                        Enviar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts {
+        <partial name="_ValidationScriptsPartial" />
+    }

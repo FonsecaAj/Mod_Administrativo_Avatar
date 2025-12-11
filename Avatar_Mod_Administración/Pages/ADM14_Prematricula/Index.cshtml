@@ -1,0 +1,72 @@
+﻿@page
+@model Avatar_Mod_Administración.Pages.ADM14_Prematricula.IndexModel
+@{
+    ViewData["Title"] = "Prematrículas";
+}
+
+<h2>Prematrículas</h2>
+
+<form method="get" class="row g-3 mb-3">
+    <div class="col-md-3">
+        <label class="form-label">Periodo (solo futuros)</label>
+        <select asp-for="Filtro.ID_Periodo" asp-items="Model.Periodos" class="form-select">
+            <option value="">-- Todos --</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Carrera</label>
+        <select asp-for="Filtro.ID_Carrera" asp-items="Model.Carreras" class="form-select">
+            <option value="">-- Todas --</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Curso</label>
+        <select asp-for="Filtro.ID_Curso" asp-items="Model.Cursos" class="form-select">
+            <option value="">-- Todos --</option>
+        </select>
+    </div>
+
+    <div class="col-md-3">
+        <label class="form-label">Estudiante (texto)</label>
+        <input asp-for="Filtro.Estudiante" class="form-control" />
+    </div>
+
+    <div class="col-12 mt-2">
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+        <a asp-page="Crear" class="btn btn-success">Nueva prematrícula</a>
+    </div>
+</form>
+
+<table class="table table-striped table-bordered">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>ID Estudiante</th>
+            <th>ID Carrera</th>
+            <th>ID Curso</th>
+            <th>ID Periodo</th>
+          
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model.Prematriculas)
+        {
+            <tr>
+                <td>@p.ID_Prematricula</td>
+                <td>@p.ID_Estudiante</td>
+                <td>@p.ID_Carrera</td>
+                <td>@p.ID_Curso</td>
+                <td>@p.ID_Periodo</td>
+                
+                <td>
+                    <a asp-page="Editar" asp-route-id="@p.ID_Prematricula" class="btn btn-sm btn-warning">Editar</a>
+                    <a asp-page="Eliminar" asp-route-id="@p.ID_Prematricula" class="btn btn-sm btn-danger">Eliminar</a>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+

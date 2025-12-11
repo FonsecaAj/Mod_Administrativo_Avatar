@@ -1,0 +1,427 @@
+﻿.stat-card {
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 12px 24px -5px rgba(47, 73, 110, 0.25);
+        border-color: var(--accent-light);
+    }
+
+    .stat-card .card-body {
+        padding: 1.75rem;
+    }
+
+    .stat-card .stat-number {
+        color: var(--primary-color);
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+        transition: all 0.3s ease;
+    }
+
+    .stat-card:hover .stat-number {
+        color: var(--accent-color);
+        transform: scale(1.05);
+    }
+
+    .stat-card h6.text-muted {
+        color: var(--text-secondary) !important;
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+
+.stat-icon {
+    transition: all 0.3s ease;
+}
+
+.stat-card:hover .stat-icon {
+    transform: scale(1.1) rotate(5deg);
+}
+
+/* Footer de cards con mejor espaciado */
+.stat-card .card-footer {
+    padding: 0 1.75rem 1.25rem;
+}
+
+/* Alert de Bienvenida */
+.alert-info {
+    background: linear-gradient(135deg, rgba(91, 143, 163, 0.12), rgba(91, 143, 163, 0.06));
+    border: 1px solid rgba(91, 143, 163, 0.3);
+    border-left: 4px solid var(--info-color);
+    border-radius: 0.75rem;
+    box-shadow: var(--shadow-sm);
+    color: var(--text-primary);
+    padding: 1.25rem;
+}
+
+    .alert-info strong {
+        color: var(--primary-color);
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+
+    .alert-info small {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+    }
+
+    .alert-info i.bi-info-circle-fill {
+        color: var(--info-color);
+        flex-shrink: 0;
+    }
+
+/* Accesos Rápidos */
+.quick-access-card .card-header {
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-dark));
+    color: var(--text-light);
+    border-bottom: 3px solid var(--accent-color);
+    padding: 1.25rem 1.5rem;
+}
+
+    .quick-access-card .card-header h5 {
+        font-size: 1.125rem;
+        font-weight: 600;
+    }
+
+.quick-access-card .badge.bg-primary {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-dark)) !important;
+    color: white;
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    border-radius: 0.5rem;
+}
+
+/* Botones de accesos rápidos */
+.quick-access-btn {
+    display: flex;
+    align-items: center;
+    padding: 1.25rem 1.5rem;
+    border-radius: 0.75rem;
+    border-width: 2px;
+    transition: all 0.3s ease;
+    text-align: left;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+}
+
+    .quick-access-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .quick-access-btn:hover::before {
+        left: 100%;
+    }
+
+    .quick-access-btn:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px -5px currentColor;
+    }
+
+    .quick-access-btn i {
+        flex-shrink: 0;
+        transition: transform 0.3s ease;
+    }
+
+    .quick-access-btn:hover i {
+        transform: scale(1.15);
+    }
+
+    .quick-access-btn .fw-bold {
+        font-size: 1.05rem;
+        margin-bottom: 0.25rem;
+        display: block;
+    }
+
+    .quick-access-btn small {
+        font-size: 0.8rem;
+        opacity: 0.85;
+    }
+
+    /* Variantes de color para botones de acceso rápido */
+    .quick-access-btn.btn-outline-primary:hover {
+        background: var(--accent-color);
+        border-color: var(--accent-color);
+        color: white;
+        box-shadow: 0 8px 20px -5px rgba(195, 163, 142, 0.5);
+    }
+
+        .quick-access-btn.btn-outline-primary:hover small {
+            color: white;
+            opacity: 1;
+        }
+
+    .quick-access-btn.btn-outline-success:hover {
+        background: var(--success-color);
+        border-color: var(--success-color);
+        color: white;
+        box-shadow: 0 8px 20px -5px rgba(123, 168, 146, 0.5);
+    }
+
+        .quick-access-btn.btn-outline-success:hover small {
+            color: white;
+            opacity: 1;
+        }
+
+    .quick-access-btn.btn-outline-warning:hover {
+        background: var(--warning-color);
+        border-color: var(--warning-color);
+        color: white;
+        box-shadow: 0 8px 20px -5px rgba(212, 165, 116, 0.5);
+    }
+
+        .quick-access-btn.btn-outline-warning:hover small {
+            color: white;
+            opacity: 1;
+        }
+
+    .quick-access-btn.btn-outline-info:hover {
+        background: var(--info-color);
+        border-color: var(--info-color);
+        color: white;
+        box-shadow: 0 8px 20px -5px rgba(91, 143, 163, 0.5);
+    }
+
+        .quick-access-btn.btn-outline-info:hover small {
+            color: white;
+            opacity: 1;
+        }
+
+/* Cards de Información y Ayuda */
+.info-card,
+.help-card {
+    transition: all 0.3s ease;
+}
+
+    .info-card:hover,
+    .help-card:hover {
+        box-shadow: var(--shadow-md);
+        transform: translateY(-2px);
+    }
+
+    .info-card .card-header,
+    .help-card .card-header {
+        background: transparent;
+        border-bottom: 2px solid var(--border-color);
+        padding: 1.25rem 1.5rem;
+    }
+
+        .info-card .card-header h5,
+        .help-card .card-header h5 {
+            color: var(--primary-color);
+            font-size: 1.05rem;
+            font-weight: 600;
+        }
+
+    .info-card .card-body,
+    .help-card .card-body {
+        padding: 1.5rem;
+    }
+
+    .info-card p {
+        line-height: 1.6;
+        margin-bottom: 0.75rem;
+    }
+
+    .info-card strong {
+        color: var(--primary-color);
+        font-weight: 600;
+    }
+
+    /* Botones en card de ayuda */
+    .help-card .btn {
+        transition: all 0.3s ease;
+    }
+
+        .help-card .btn:hover {
+            transform: translateX(6px);
+        }
+
+/* Animaciones */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Aplicar animaciones con delays */
+.stat-card {
+    animation: fadeInUp 0.6s ease-out backwards;
+}
+
+    .stat-card:nth-child(1) {
+        animation-delay: 0.1s;
+    }
+
+    .stat-card:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+
+    .stat-card:nth-child(3) {
+        animation-delay: 0.3s;
+    }
+
+    .stat-card:nth-child(4) {
+        animation-delay: 0.4s;
+    }
+
+.quick-access-card {
+    animation: fadeInUp 0.6s ease-out 0.5s backwards;
+}
+
+.info-card,
+.help-card {
+    animation: fadeInUp 0.6s ease-out 0.6s backwards;
+}
+
+.alert-info {
+    animation: slideInRight 0.6s ease-out;
+}
+
+/* Responsive Design */
+@media (max-width: 992px) {
+    .quick-access-btn {
+        padding: 1rem 1.25rem;
+    }
+
+        .quick-access-btn i {
+            font-size: 1.75rem !important;
+        }
+
+        .quick-access-btn .fw-bold {
+            font-size: 1rem;
+        }
+}
+
+@media (max-width: 768px) {
+    .stat-card .stat-number {
+        font-size: 2rem;
+    }
+
+    .stat-card .card-body {
+        padding: 1.25rem;
+    }
+
+    .stat-icon {
+        padding: 0.75rem !important;
+    }
+
+        .stat-icon i {
+            font-size: 1.5rem !important;
+        }
+
+    .quick-access-btn {
+        padding: 1rem;
+        flex-direction: column;
+        text-align: center;
+    }
+
+        .quick-access-btn i {
+            margin-bottom: 0.5rem;
+            margin-right: 0 !important;
+        }
+
+        .quick-access-btn .text-start {
+            text-align: center !important;
+        }
+}
+
+@media (max-width: 576px) {
+    .stat-card .stat-number {
+        font-size: 1.75rem;
+    }
+
+    .stat-card h6.text-muted {
+        font-size: 0.8rem;
+    }
+
+    .alert-info strong {
+        font-size: 1rem;
+    }
+
+    .alert-info i.fs-4 {
+        font-size: 1.25rem !important;
+    }
+
+    .quick-access-card .card-header h5 {
+        font-size: 1rem;
+    }
+
+    .quick-access-card .badge {
+        font-size: 0.75rem;
+        padding: 0.35rem 0.75rem;
+    }
+}
+
+/* Mejoras de Accesibilidad */
+.quick-access-btn:focus {
+    outline: 3px solid var(--accent-color);
+    outline-offset: 2px;
+}
+
+.stat-card:focus-within {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    border-radius: 0.75rem;
+}
+
+/* Reducir animaciones si el usuario lo prefiere */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .stat-card,
+    .quick-access-card,
+    .info-card {
+        box-shadow: none !important;
+        border: 1px solid #ddd;
+        page-break-inside: avoid;
+    }
+
+    .quick-access-btn {
+        border: 1px solid #ddd;
+    }
+
+    .alert-info {
+        border: 1px solid #ddd;
+        box-shadow: none;
+    }
+}

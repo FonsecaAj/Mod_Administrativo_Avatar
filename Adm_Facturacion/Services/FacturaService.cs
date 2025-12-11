@@ -35,21 +35,28 @@ namespace Adm_Facturacion.Services
             };
         }
 
-        public async Task<BusinessLogicResponse> ReversarFacturaAsync(int idFactura, string? token)
+        public async Task<BusinessLogicResponse> ReversarFacturaAsync(int idFactura, string detalle, string? token)
         {
             if (!await _authService.ValidarTokenAsync(token))
                 return new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" };
 
             var usuario = await _authService.ObtenerUsuarioDelTokenAsync(token) ?? "sistema";
 
-            var filas = await _facturaRepository.ReversarFacturaAsync(idFactura);
+            var filas = await _facturaRepository.ReversarFacturaAsync(idFactura, detalle);
 
-            await _bitacoraConsumer.RegistrarAccionAsync(usuario, "UPDATE", new { factura = idFactura, accion = "Reversada" });
+            await _bitacoraConsumer.RegistrarAccionAsync(usuario, "UPDATE", new
+            {
+                factura = idFactura,
+                accion = "Factura reversada",
+                motivo = detalle
+            });
 
             return new BusinessLogicResponse
             {
                 StatusCode = filas > 0 ? 200 : 404,
-                Message = filas > 0 ? "Factura anulada correctamente." : "Factura no encontrada."
+                Message = filas > 0
+                    ? "Factura anulada correctamente."
+                    : "Factura no encontrada."
             };
         }
 
@@ -80,6 +87,33 @@ namespace Adm_Facturacion.Services
             {
                 StatusCode = 200,
                 Message = "Facturación del periodo obtenida correctamente.",
+                ResponseObject = facturas
+            };
+        }
+
+        public async Task<BusinessLogicResponse> Facturas_UsuarioAsync(string identificacion, string? token)
+        {
+
+            if (!await _authService.ValidarTokenAsync(token))
+                return new BusinessLogicResponse { StatusCode = 401, Message = "No autorizado" };
+
+            // 2. Obtener datos del Repositorio
+            var facturas = await _facturaRepository.Facturas_UsuarioAsync(identificacion);
+
+            // 3. Devolver Respuesta
+            if (facturas == null || !facturas.Any())
+            {
+                return new BusinessLogicResponse
+                {
+                    StatusCode = 404,
+                    Message = $"No se encontraron facturas para la identificación {identificacion}."
+                };
+            }
+
+            return new BusinessLogicResponse
+            {
+                StatusCode = 200,
+                Message = $"Facturas obtenidas correctamente para la identificación {identificacion}.",
                 ResponseObject = facturas
             };
         }

@@ -19,19 +19,16 @@ builder.Services.AddHttpClient<BitacoraConsumer>();
 builder.Services.AddHttpClient<FacturaCliente>();
 
 
-builder.Configuration["BitacoraService:BaseUrl"] = builder.Configuration["BitacoraService:BaseUrl"] ?? "http://localhost:5293";
-builder.Configuration["AutenticacionApiUrl"] = builder.Configuration["AutenticacionApiUrl"] ?? "http://localhost:5233";
-builder.Configuration["FacturacionServiceUrl"] = builder.Configuration["FacturacionServiceUrl"] ?? "http://localhost:5183";
+builder.Configuration["BitacoraService:BaseUrl"] = builder.Configuration["BitacoraService:BaseUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/modgeneral/";
+builder.Configuration["AutenticacionApiUrl"] = builder.Configuration["AutenticacionApiUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/USR5Login/";
+builder.Configuration["FacturacionServiceUrl"] = builder.Configuration["FacturacionServiceUrl"] ?? "https://tiusr20pl.cuc-carrera-ti.ac.cr/admfacturacion/";
 
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 app.MapPagoEndpoints();
 app.Run();

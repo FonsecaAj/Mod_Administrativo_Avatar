@@ -4,6 +4,8 @@
     ViewData["Title"] = "Administración de Pagos";
 }
 
+<link rel="stylesheet" href="~/css/pagos.css" />
+
 <h1 class="display-6 mb-4">Administración de Pagos</h1>
 
 @if (Model.ErrorMessage != null)
@@ -12,7 +14,7 @@
 }
 else if (Model.Message != null)
 {
-    <div class="alert alert-info">@Model.Message</div>
+    <div class="alert alert-success">@Model.Message</div>
 }
 
 <div class="row g-4">
@@ -40,12 +42,12 @@ else if (Model.Message != null)
     <div class="col-md-6">
         <div class="card p-4 shadow-sm">
             <h5>♻️ Reversar Pago</h5>
-            <form method="post" asp-page-handler="Reversar" onsubmit="return confirm('¿Desea reversar este pago?');">
+            <form id="formReversarPago" method="post" asp-page-handler="Reversar">
                 <div class="mb-3">
                     <label class="form-label">ID Pago</label>
                     <input asp-for="ID_Pago" type="number" class="form-control" placeholder="Ej: 4" />
                 </div>
-                <button type="submit" class="btn btn-danger">Reversar Pago</button>
+                <button type="button" class="btn btn-danger" onclick="abrirModalReversarPago()">Reversar Pago</button>
             </form>
         </div>
     </div>
@@ -53,8 +55,8 @@ else if (Model.Message != null)
 
 <hr class="my-4" />
 
-<div class="card p-4 shadow-sm">
-    <h5>🔍 Consultar Pago</h5>
+<div class="card p-4 shadow-sm mb-4">
+    <h5>🔍 Consultar Pago (por ID)</h5>
     <form method="post" asp-page-handler="Consultar">
         <div class="mb-3 d-flex" style="max-width: 350px;">
             <input asp-for="ID_Pago" type="number" class="form-control me-2" placeholder="ID Pago" />
@@ -64,12 +66,308 @@ else if (Model.Message != null)
 
     @if (Model.Pago != null)
     {
-        <h6 class="mt-3">Detalle de Pago</h6>
+        <h6 class="mt-3">Detalle de Pago Principal</h6>
         <table class="table table-bordered mt-2">
             <tr><th>ID Pago</th><td>@Model.Pago.ID_Pago</td></tr>
             <tr><th>ID Factura</th><td>@Model.Pago.ID_Factura</td></tr>
             <tr><th>Total</th><td>@Model.Pago.Monto_Pago.ToString("C")</td></tr>
             <tr><th>Método</th><td>@Model.Pago.Metodo_Pago</td></tr>
+            <tr><th>Fecha de Pago</th><td>@Model.Pago.Fecha_Pago.ToString("dd/MM/yyyy HH:mm")</td></tr>
+            <tr><th>Estado</th><td>@Model.Pago.Estado</td></tr>
         </table>
+
+        @if (Model.DetallesPago != null && Model.DetallesPago.Any())
+        {
+            <h6 class="mt-4">Elementos Detallados</h6>
+            <table class="table table-striped table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>ID Detalle</th>
+                        <th>Descripción</th>
+                        <th>Información Adicional</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var detalle in Model.DetallesPago)
+                    {
+                        <tr>
+                            <td>@detalle.ID_Detalle</td>
+                            <td>@detalle.Descripcion</td>
+                            <td>@(string.IsNullOrWhiteSpace(detalle.Detalle) ? "N/A" : detalle.Detalle)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="alert alert-info mt-3">Este pago no contiene elementos detallados.</div>
+        }
     }
 </div>
+
+<hr class="my-4" />
+
+<div class="card p-4 shadow-lg">
+    <h5 class="mb-3">📅 Listar Pagos por Período</h5>
+    <form method="post" asp-page-handler="Listar" id="formListarPagos">
+        <div class="row g-3 align-items-end mb-4">
+            <div class="col-md-4">
+                <label for="FechaInicio" class="form-label">Fecha de Inicio</label>
+                <input asp-for="FechaInicio" type="date" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <label for="FechaFin" class="form-label">Fecha de Fin</label>
+                <input asp-for="FechaFin" type="date" class="form-control" />
+            </div>
+            <div class="col-md-4">
+                <button type="submit" class="btn btn-primary w-100">Consultar Período</button>
+            </div>
+        </div>
+    </form>
+
+    @if (Model.PagosListado != null && Model.PagosListado.Any())
+    {
+        <h6 class="mt-3">Resultados (<span id="totalFilas">@Model.PagosListado.Count()</span>)</h6>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover mt-2" id="tablaPagos">
+                <thead class="table-dark">
+                    <tr>
+                        <th onclick="ordenarPor(0)">ID Pago ⬍</th>
+                        <th onclick="ordenarPor(1)">ID Factura ⬍</th>
+                        <th onclick="ordenarPor(2)">Fecha ⬍</th>
+                        <th onclick="ordenarPor(3)">Monto ⬍</th>
+                        <th onclick="ordenarPor(4)">Método ⬍</th>
+                        <th onclick="ordenarPor(5)">Estado ⬍</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var pago in Model.PagosListado)
+                    {
+                        <tr>
+                            <td>@pago.ID_Pago</td>
+                            <td>@pago.ID_Factura</td>
+                            <td>@pago.Fecha_Pago.ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@pago.Monto_Pago.ToString("C")</td>
+                            <td>@pago.Metodo_Pago</td>
+                            <td>
+                                @if (pago.Estado == "Completado")
+                                {
+                                    <span class="badge bg-success">@pago.Estado</span>
+                                }
+                                else if (pago.Estado == "Reversado")
+                                {
+                                    <span class="badge bg-danger">@pago.Estado</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">@pago.Estado</span>
+                                }
+                            </td>
+                            <td>
+                                <form method="post" asp-page-handler="Consultar" class="d-inline">
+                                    <input type="hidden" asp-for="ID_Pago" value="@pago.ID_Pago" />
+                                    <button type="submit" class="btn btn-sm btn-info" title="Ver Detalle / Comprobante">
+                                        <i class="bi bi-eye"></i> Detalle
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <nav class="d-flex justify-content-between align-items-center mt-3">
+            <button id="btnAnterior" type="button" class="btn btn-outline-secondary btn-sm">← Anterior</button>
+            <span id="paginaInfo" class="fw-semibold"></span>
+            <button id="btnSiguiente" type="button" class="btn btn-outline-secondary btn-sm">Siguiente →</button>
+        </nav>
+    }
+    else if (Model.PagosListado != null && !string.IsNullOrEmpty(Model.Message) && !string.IsNullOrEmpty(Model.FechaInicio.ToString()) && !string.IsNullOrEmpty(Model.FechaFin.ToString()))
+    {
+        <div class="alert alert-warning mt-3">No se encontraron pagos en el período seleccionado.</div>
+    }
+</div>
+
+
+<div class="modal fade" id="modalReversarPago" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content shadow-lg">
+            <div class="modal-header bg-danger text-white">
+                <h5 class="modal-title">Confirmar reversión de Pago</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+            </div>
+            <div class="modal-body">
+                <p>Estás a punto de **reversar el pago**. Esta acción no se puede deshacer.</p>
+                <div class="mb-3">
+                    <label for="motivoPago" class="form-label fw-semibold">Motivo de reversión</label>
+                    <textarea id="motivoPago" class="form-control" rows="3" placeholder="Describa brevemente el motivo..." required></textarea>
+                </div>
+                <div id="errorModalMsgPago" class="text-danger small"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" onclick="confirmarReversionPago()">Confirmar Reversión</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        let modalPago;
+        // ⭐ Variables para Paginación y Ordenamiento
+        let paginaActual = 1;
+        const filasPorPagina = 10;
+        let ordenColumna = -1;
+        let ordenAsc = true;
+
+
+        document.addEventListener("DOMContentLoaded", () => {
+            // Inicializar el modal de pago
+            modalPago = new bootstrap.Modal(document.getElementById("modalReversarPago"));
+
+            //  Inicializar campos de fecha al valor de las propiedades del modelo si están vacíos
+            const today = new Date().toISOString().split('T')[0];
+            const defaultStart = new Date();
+            defaultStart.setDate(defaultStart.getDate() - 30);
+            const defaultStartISO = defaultStart.toISOString().split('T')[0];
+
+            if (!document.getElementById("FechaInicio").value) {
+                document.getElementById("FechaInicio").value = defaultStartISO;
+            }
+            if (!document.getElementById("FechaFin").value) {
+                document.getElementById("FechaFin").value = today;
+            }
+
+            //  Iniciar Paginación si la tabla existe
+            if (document.getElementById("tablaPagos")) {
+                mostrarPagina();
+                document.getElementById("btnAnterior").addEventListener("click", anteriorPagina);
+                document.getElementById("btnSiguiente").addEventListener("click", siguientePagina);
+            }
+        });
+
+        // ============================
+        // Paginación y Ordenamiento
+        // ============================
+
+        function mostrarPagina() {
+            const filas = document.querySelectorAll("#tablaPagos tbody tr"); // ⭐ ID de tabla cambiado
+            const totalFilas = filas.length;
+            const totalPaginas = Math.ceil(totalFilas / filasPorPagina);
+
+            // Actualizar el total de resultados mostrado
+            document.getElementById("totalFilas").innerText = totalFilas;
+
+            filas.forEach((fila, i) => {
+                fila.style.display = (i >= (paginaActual - 1) * filasPorPagina && i < paginaActual * filasPorPagina)
+                    ? "" : "none";
+            });
+
+            document.getElementById("paginaInfo").innerText = `Página ${paginaActual} de ${totalPaginas}`;
+            document.getElementById("btnAnterior").disabled = paginaActual === 1;
+            document.getElementById("btnSiguiente").disabled = paginaActual === totalPaginas || totalPaginas === 0;
+        }
+
+        function siguientePagina() {
+            const filas = document.querySelectorAll("#tablaPagos tbody tr"); // ⭐ ID de tabla cambiado
+            const totalPaginas = Math.ceil(filas.length / filasPorPagina);
+            if (paginaActual < totalPaginas) {
+                paginaActual++;
+                mostrarPagina();
+            }
+        }
+
+        function anteriorPagina() {
+            if (paginaActual > 1) {
+                paginaActual--;
+                mostrarPagina();
+            }
+        }
+
+        function ordenarPor(indice) {
+            const tabla = document.getElementById("tablaPagos"); // ⭐ ID de tabla cambiado
+            const filas = Array.from(tabla.querySelectorAll("tbody tr"));
+            const multiplicador = (ordenColumna === indice && ordenAsc) ? -1 : 1;
+            ordenColumna = indice;
+            ordenAsc = multiplicador === 1;
+
+            filas.sort((a, b) => {
+                // Se usa innerText para obtener el valor de la celda
+                const valorA = a.children[indice].innerText.toLowerCase();
+                const valorB = b.children[indice].innerText.toLowerCase();
+
+                // Intenta convertir a número para ordenar por valor numérico (útil para ID y Monto)
+                const numA = parseFloat(valorA.replace(/[^0-9.,]/g, '').replace(',', '.'));
+                const numB = parseFloat(valorB.replace(/[^0-9.,]/g, '').replace(',', '.'));
+
+                if (!isNaN(numA) && !isNaN(numB)) {
+                    return (numA - numB) * multiplicador;
+                }
+
+                return valorA.localeCompare(valorB, 'es') * multiplicador;
+            });
+
+            const cuerpo = tabla.querySelector("tbody");
+            cuerpo.innerHTML = "";
+            filas.forEach(f => cuerpo.appendChild(f));
+
+            paginaActual = 1;
+            mostrarPagina();
+        }
+
+        // ============================
+        // Funciones de Pago 
+        // ============================
+
+        // Función para abrir el modal de reversión de pago
+        function abrirModalReversarPago() {
+            // Asegurarse de que se haya ingresado un ID de pago válido
+            const idInput = document.querySelector("#ID_Pago");
+            const id = idInput ? idInput.value : null;
+
+            if (!id || parseInt(id) <= 0) {
+                alert("Debe ingresar un ID de pago válido antes de continuar.");
+                return;
+            }
+
+            // Limpiar campos y mensajes de error
+            document.getElementById("motivoPago").value = "";
+            document.getElementById("errorModalMsgPago").innerText = "";
+
+            // Mostrar el modal
+            modalPago.show();
+        }
+
+        // Función para confirmar la reversión de pago y enviar el formulario con el motivo
+        function confirmarReversionPago() {
+            const motivo = document.getElementById("motivoPago").value.trim();
+            if (!motivo) {
+                document.getElementById("errorModalMsgPago").innerText = "Por favor, indique un motivo antes de continuar.";
+                return;
+            }
+
+
+            const form = document.getElementById("formReversarPago");
+
+
+            let hidden = document.getElementById("inputMotivoPago");
+            if (!hidden) {
+                hidden = document.createElement("input");
+                hidden.type = "hidden";
+                hidden.name = "Motivo";
+                hidden.id = "inputMotivoPago";
+                form.appendChild(hidden);
+            }
+            hidden.value = motivo;
+
+
+            modalPago.hide();
+            form.submit();
+        }
+    </script>
+}
