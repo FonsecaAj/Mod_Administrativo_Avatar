@@ -5,31 +5,21 @@ using Avatar_Mod_Administración.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Add services to the container.
+// Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-// AGREGAR CORS
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-});
 
 builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<BitacoraRepository>();
 builder.Services.AddScoped<IBitacoraService, BitacoraService>();
 
+
 var app = builder.Build();
 
 app.UseSwagger();
 app.UseSwaggerUI();
-
-// USAR CORS
-app.UseCors("AllowAll");
 
 app.MapBitacoraEndpoints();
 app.Run();

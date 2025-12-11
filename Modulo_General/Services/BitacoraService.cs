@@ -17,6 +17,7 @@ namespace Avatar_Mod_Administración.Services
         {
             try
             {
+                // Validaciones requeridas
                 if (string.IsNullOrWhiteSpace(request.Usuario))
                     return new BusinessLogicResponse
                     {
@@ -31,10 +32,12 @@ namespace Avatar_Mod_Administración.Services
                         Message = "El campo 'Descripción' es requerida y no puede estar vacía."
                     };
 
+                // "INSERT"
                 var tipoAccion = string.IsNullOrWhiteSpace(request.Tipo_Accion)
                     ? "INSERT"
                     : request.Tipo_Accion.Trim().ToUpper();
 
+                // Validar formato JSON solo para operaciones CRUD (no SELECT ni GENERICA)
                 if (tipoAccion != "SELECT" && tipoAccion != "GENERICA" && !IsValidJson(request.Descripcion))
                     return new BusinessLogicResponse
                     {
@@ -42,6 +45,7 @@ namespace Avatar_Mod_Administración.Services
                         Message = "El campo 'Descripción' debe tener un formato JSON válido para operaciones de tipo INSERT, UPDATE o DELETE."
                     };
 
+                // Construir entidad Bitácora
                 var bitacora = new Bitacora
                 {
                     Usuario = request.Usuario.Trim(),
@@ -50,8 +54,10 @@ namespace Avatar_Mod_Administración.Services
                     Fecha_Registro = DateTime.Now
                 };
 
+                // Registrar bitácora
                 var id = await _bitacoraRepository.Registrar(bitacora);
 
+                
                 return new BusinessLogicResponse
                 {
                     StatusCode = 201,
@@ -67,6 +73,7 @@ namespace Avatar_Mod_Administración.Services
             }
             catch (Exception ex)
             {
+                // Manejo de errores 
                 return new BusinessLogicResponse
                 {
                     StatusCode = 500,
@@ -102,18 +109,6 @@ namespace Avatar_Mod_Administración.Services
                     StatusCode = 200,
                     Message = "Registros obtenidos correctamente.",
                     ResponseObject = respuesta
-
-        public async Task<BusinessLogicResponse> ObtenerTodas(string? usuario = null)
-        {
-            try
-            {
-                var bitacoras = await _bitacoraRepository.ObtenerTodas(usuario);
-
-                return new BusinessLogicResponse
-                {
-                    StatusCode = 200,
-                    Message = "Bitácoras obtenidas exitosamente.",
-                    ResponseObject = bitacoras
                 };
             }
             catch (Exception ex)
@@ -121,11 +116,7 @@ namespace Avatar_Mod_Administración.Services
                 return new BusinessLogicResponse
                 {
                     StatusCode = 500,
-
                     Message = "Error al consultar bitácora: " + ex.Message
-
-                    Message = $"Error al obtener bitácoras: {ex.Message}"
-
                 };
             }
         }

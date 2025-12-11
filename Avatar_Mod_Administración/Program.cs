@@ -1,5 +1,4 @@
-﻿using Avatar_Mod_Administración.Entities;
-using Avatar_Mod_Administración.Services;
+﻿using Avatar_Mod_Administración.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,37 +21,34 @@ builder.Services.AddSession(options =>
 
 builder.Services.AddHttpContextAccessor();
 
-
-var timeout = TimeSpan.FromSeconds(15);
-
 builder.Services.AddHttpClient<IAuthService, AuthService>(client =>
 {
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IUsuarioService, UsuarioService>(client =>
 {
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IRolService, RolService>(client =>
 {
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IParametroService, ParametroService>(client =>
 {
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IInstitucionService, InstitucionService>(client =>
 {
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IModuloService, ModuloService>(client =>
 {
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IRubroApiClient, RubroApiClient>(client =>
@@ -60,7 +56,7 @@ builder.Services.AddHttpClient<IRubroApiClient, RubroApiClient>(client =>
     var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Adm_Notas"]
         ?? throw new InvalidOperationException("Base URL de Adm_Notas no configurada");
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<INotaApiClient, NotaApiClient>(client =>
@@ -68,7 +64,7 @@ builder.Services.AddHttpClient<INotaApiClient, NotaApiClient>(client =>
     var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Adm_Notas"]
         ?? throw new InvalidOperationException("Base URL de Adm_Notas no configurada");
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IHistorialAcademicoApiClient, HistorialAcademicoApiClient>(client =>
@@ -76,7 +72,7 @@ builder.Services.AddHttpClient<IHistorialAcademicoApiClient, HistorialAcademicoA
     var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:HistorialAcademico"]
         ?? throw new InvalidOperationException("Base URL de Historial no configurada");
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IListadoEstudiantesApiClient, ListadoEstudiantesApiClient>(client =>
@@ -84,7 +80,7 @@ builder.Services.AddHttpClient<IListadoEstudiantesApiClient, ListadoEstudiantesA
     var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Listado_Estudiantes"]
         ?? throw new InvalidOperationException("Base URL de Listado de Estudiantes no configurada");
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IFacturaApiClient, FacturaApiClient>(client =>
@@ -92,7 +88,7 @@ builder.Services.AddHttpClient<IFacturaApiClient, FacturaApiClient>(client =>
     var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Adm_Facturacion"]
         ?? throw new InvalidOperationException("Base URL de Adm_Facturacion no configurada");
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IPagoApiClient, PagoApiClient>(client =>
@@ -100,15 +96,18 @@ builder.Services.AddHttpClient<IPagoApiClient, PagoApiClient>(client =>
     var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Pagos"]
         ?? "http://localhost:5070";
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
+
 });
+
 
 builder.Services.AddHttpClient<INotificacionesApiClient, NotificacionesApiClient>(client =>
 {
     var baseUrl = builder.Configuration["ApiUrls:ServiciosApi:Notificaciones"]
         ?? throw new InvalidOperationException("Base URL de Notificaciones no configurada");
+
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
+    client.Timeout = TimeSpan.FromSeconds(30);
 });
 
 builder.Services.AddHttpClient<IBitacoraService, BitacoraService>(client =>
@@ -127,28 +126,28 @@ builder.Services.AddHttpClient<IPerfilUsuarioApiClient, PerfilUsuarioApiClient>(
 
 });
 
+//  Cliente HTTP para Cursos (Adm_Cursos)
 builder.Services.AddHttpClient<ICursoApiClient, CursoApiClient>(client =>
 {
     var baseUrl = builder.Configuration["Adm_Cursos:BaseUrl"]
                   ?? throw new InvalidOperationException("Adm_Cursos:BaseUrl no configurado");
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
 });
+
 
 builder.Services.AddHttpClient<IProfesorApiClient, ProfesorApiClient>(client =>
 {
     var baseUrl = builder.Configuration["Adm_Profesores:BaseUrl"]
                   ?? throw new InvalidOperationException("Adm_Profesores:BaseUrl no configurado");
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
 });
+
 
 builder.Services.AddHttpClient<IPeriodoApiClient, PeriodoApiClient>(client =>
 {
     var baseUrl = builder.Configuration["Adm_Periodos:BaseUrl"]
                   ?? throw new InvalidOperationException("Adm_Periodos:BaseUrl no configurado");
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
 });
 
 builder.Services.AddHttpClient<IGrupoApiClient, GrupoApiClient>(client =>
@@ -156,7 +155,6 @@ builder.Services.AddHttpClient<IGrupoApiClient, GrupoApiClient>(client =>
     var baseUrl = builder.Configuration["Adm_Grupos:BaseUrl"]
                   ?? throw new InvalidOperationException("Adm_Grupos:BaseUrl no configurado");
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
 });
 
 builder.Services.AddHttpClient<IPrematriculaApiClient, PrematriculaApiClient>(client =>
@@ -164,9 +162,7 @@ builder.Services.AddHttpClient<IPrematriculaApiClient, PrematriculaApiClient>(cl
     var baseUrl = builder.Configuration["Adm_Prematricula:BaseUrl"]
                   ?? throw new InvalidOperationException("Adm_Prematricula:BaseUrl no configurado");
     client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
 });
-
 
 builder.Services.AddHttpClient<IMatriculaApiClient, MatriculaApiClient>(client =>
 {
@@ -192,15 +188,6 @@ builder.Services.AddHttpClient<IUbicacionesApiClient, UbicacionesApiClient>(clie
 });
 
 
-builder.Services.AddHttpClient<IBitacoraService, BitacoraService>(client =>
-{
-    var baseUrl = builder.Configuration["ApiUrls:GEN1"]
-        ?? throw new InvalidOperationException("Base URL de GEN1 no configurada");
-    client.BaseAddress = new Uri(baseUrl);
-    client.Timeout = timeout;
-});
-
-
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
@@ -222,96 +209,7 @@ app.MapRazorPages();
 
 var logger = app.Services.GetRequiredService<ILogger<Program>>();
 
-app.MapGet("/api/dashboard/actividades", async (
-    IBitacoraService bitacoraService,
-    IAuthService authService,
-    ILogger<Program> log) =>
-{
-    try
-    {
-        var sesion = authService.ObtenerSesionActual();
-        if (sesion == null)
-        {
-            log.LogWarning("Dashboard: No hay sesión activa");
-            return Results.Json(new
-            {
-                notificaciones = new List<object>(),
-                bitacoras = new List<object>()
-            });
-        }
-
-        log.LogInformation("Dashboard: Obteniendo actividades para usuario {Usuario}", sesion.UsuarioID);
-
-        var filtro = new BitacoraFiltroDto
-        {
-            Usuario = sesion.UsuarioID
-        };
-
-        var todasBitacoras = await bitacoraService.ObtenerTodosAsync(sesion.AccessToken, filtro);
-
-        if (todasBitacoras == null || !todasBitacoras.Any())
-        {
-            log.LogInformation("Dashboard: No hay bitácoras para usuario {Usuario}", sesion.UsuarioID);
-            return Results.Ok(new
-            {
-                notificaciones = new List<object>(),
-                bitacoras = new List<object>()
-            });
-        }
-
-        var notificaciones = todasBitacoras
-            .Where(b => !string.IsNullOrEmpty(b.Tipo_Accion) &&
-                       b.Tipo_Accion.Equals("SEND_MAIL", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(b => b.Fecha_Registro)
-            .Take(20)
-            .Select(b => new
-            {
-                b.ID_Bitacora,
-                b.Fecha_Registro,
-                b.Usuario,
-                b.Descripcion,
-                b.Tipo_Accion
-            })
-            .ToList();
-
-        var bitacoras = todasBitacoras
-            .Where(b => string.IsNullOrEmpty(b.Tipo_Accion) ||
-                       !b.Tipo_Accion.Equals("SEND_MAIL", StringComparison.OrdinalIgnoreCase))
-            .OrderByDescending(b => b.Fecha_Registro)
-            .Take(20)
-            .Select(b => new
-            {
-                b.ID_Bitacora,
-                b.Fecha_Registro,
-                b.Usuario,
-                b.Descripcion,
-                b.Tipo_Accion
-            })
-            .ToList();
-
-        log.LogInformation("Dashboard: Usuario {Usuario} - {NotifCount} notificaciones, {BitCount} bitácoras",
-            sesion.UsuarioID, notificaciones.Count, bitacoras.Count);
-
-        return Results.Ok(new
-        {
-            notificaciones,
-            bitacoras
-        });
-    }
-    catch (Exception ex)
-    {
-        log.LogError(ex, "Dashboard: Error al obtener actividades");
-        return Results.Ok(new
-        {
-            notificaciones = new List<object>(),
-            bitacoras = new List<object>()
-        });
-    }
-})
-.WithName("ObtenerActividadesDashboard")
-.WithTags("Dashboard")
-.Produces(200);
-
+// GET /api/rol/{idRol}/modulos
 app.MapGet("/api/rol/{idRol}/modulos", async (
     int idRol,
     HttpContext context,
@@ -347,6 +245,7 @@ app.MapGet("/api/rol/{idRol}/modulos", async (
             token = $"Bearer {token}";
         }
 
+        // Eliminar substring innecesario
         log.LogDebug("Token obtenido correctamente");
 
         var modulos = await rolService.ObtenerModulosPorRolAsync(idRol, token);
@@ -381,6 +280,7 @@ app.MapGet("/api/rol/{idRol}/modulos", async (
 .WithName("ObtenerModulosPorRol")
 .WithTags("Menu");
 
+// GET /api/sesion/verificar
 app.MapGet("/api/sesion/verificar", async (
     IAuthService authService,
     ILogger<Program> log) =>
@@ -420,6 +320,87 @@ app.MapGet("/api/sesion/verificar", async (
 .WithName("VerificarSesion")
 .WithTags("Sesion");
 
+////// POST /api/bitacora
+////app.MapPost("/api/bitacora", async (
+////    HttpContext context,
+////    IAuthService authService,
+////    ILogger<Program> log) =>
+////{
+////    try
+////    {
+////        var sesion = authService.ObtenerSesionActual();
+////        if (sesion == null)
+////        {
+////            log.LogWarning("No hay sesión para registrar bitácora");
+////            return Results.StatusCode(401);
+////        }
+
+////        using var reader = new StreamReader(context.Request.Body);
+////        var bodyOriginal = await reader.ReadToEndAsync();
+
+//        log.LogDebug("Body recibido");
+
+////        using var httpClient = new HttpClient();
+////        httpClient.Timeout = TimeSpan.FromSeconds(5);
+////        var gen1Url = builder.Configuration["GEN1ApiUrl"] ?? "http://localhost:5155";
+
+////        try
+////        {
+////            var jsonDoc = System.Text.Json.JsonDocument.Parse(bodyOriginal);
+////            var root = jsonDoc.RootElement;
+
+////            var usuario = root.TryGetProperty("usuario", out var usuarioElem)
+////                ? usuarioElem.GetString()
+////                : sesion.UsuarioID;
+
+////            var descripcion = root.TryGetProperty("descripcion", out var descElem)
+////                ? descElem.GetString()
+////                : "{\"accion\":\"Sin descripción\"}";
+
+////            var payloadGEN1 = new
+////            {
+////                usuario = usuario,
+////                descripcion = descripcion
+////            };
+
+////            var jsonGEN1 = System.Text.Json.JsonSerializer.Serialize(payloadGEN1);
+
+
+//            log.LogDebug("Enviando a GEN1");
+
+////            var request = new HttpRequestMessage(HttpMethod.Post, $"{gen1Url}/api/bitacora");
+////            request.Content = new StringContent(jsonGEN1, System.Text.Encoding.UTF8, "application/json");
+
+////            var response = await httpClient.SendAsync(request);
+
+////            if (response.IsSuccessStatusCode)
+////            {
+////                log.LogDebug("Bitacora registrada");
+////                return Results.StatusCode(201);
+////            }
+
+//            var errorContent = await response.Content.ReadAsStringAsync();
+//            log.LogWarning("Error de GEN1: {StatusCode} - {Error}",
+//                response.StatusCode, errorContent);
+//            return Results.StatusCode((int)response.StatusCode);
+//        }
+//        catch (System.Text.Json.JsonException ex)
+//        {
+//            log.LogError(ex, "Error al parsear JSON");
+//            return Results.BadRequest(new { error = "JSON inválido" });
+//        }
+//    }
+//    catch (Exception ex)
+//    {
+//        log.LogError(ex, "Error al registrar bitácora");
+//        return Results.StatusCode(500);
+//    }
+//})
+//.WithName("RegistrarBitacora")
+//.WithTags("Bitacora");
+
+
+// GET /api/modulos
 app.MapGet("/api/modulos", async (
     IModuloService moduloService,
     IAuthService authService,
@@ -449,6 +430,7 @@ app.MapGet("/api/modulos", async (
 .WithName("ObtenerModulos")
 .WithTags("Menu");
 
+// GET /api/modulos/{idModulo}
 app.MapGet("/api/modulos/{idModulo}", async (
     int idModulo,
     IModuloService moduloService,
@@ -485,6 +467,7 @@ app.MapGet("/api/modulos/{idModulo}", async (
 .WithName("ObtenerModulo")
 .WithTags("Menu");
 
+// GET /api/roles
 app.MapGet("/api/roles", async (
     IRolService rolService,
     IAuthService authService,
@@ -514,6 +497,7 @@ app.MapGet("/api/roles", async (
 .WithName("ObtenerRoles")
 .WithTags("Menu");
 
+// GET /api/permisos/{idRol}
 app.MapGet("/api/permisos/{idRol}", async (
     int idRol,
     IRolService rolService,
